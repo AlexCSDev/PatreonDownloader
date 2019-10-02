@@ -60,7 +60,7 @@ namespace PatreonDownloader
 
     public class Attachments
     {
-        public List<object> data { get; set; }
+        public List<Data> data { get; set; }
     }
 
     public class Audio
@@ -87,7 +87,7 @@ namespace PatreonDownloader
 
     public class Images
     {
-        public List<object> data { get; set; }
+        public List<Data> data { get; set; }
     }
 
     public class Poll
