@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace PatreonDownloader
+// This file contains all classes used for representing deserialized json response of "campaign" api endpoint
+namespace PatreonDownloader.Models.JSONObjects.Campaign
 {
-    public class CampaignAPIAttributes
+    public class Attributes
     {
         [JsonProperty("avatar_photo_url")]
         public string AvatarUrl;
@@ -17,15 +18,15 @@ namespace PatreonDownloader
         public string Name;
     }
 
-    public class CampaignAPIData
+    public class Data
     {
         [JsonProperty("attributes")]
-        public CampaignAPIAttributes Attributes;
+        public Attributes Attributes;
     }
 
-    public class CampaignAPIRoot
+    public class Root
     {
         [JsonProperty("data")]
-        public CampaignAPIData Data;
+        public Data Data;
     }
 }

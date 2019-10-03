@@ -6,6 +6,9 @@ using PuppeteerSharp;
 
 namespace PatreonDownloader
 {
+    /// <summary>
+    /// This class is used to retrieve Campaign ID from creator's posts page
+    /// </summary>
     class CampaignIdRetriever
     {
         private Browser _browser;
@@ -15,7 +18,12 @@ namespace PatreonDownloader
             _browser = browser;
         }
 
-        public async Task<long> RetrieveCampaignId(string url)
+        /// <summary>
+        /// Retrieve campaign id from supplied url
+        /// </summary>
+        /// <param name="url">Creator's post page url</param>
+        /// <returns>Returns creator id</returns>
+        public async Task<long> RetrieveCampaignId(string url) //TODO: CHECK THAT URL IS VALID
         {
             long id = -1;
 

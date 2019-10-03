@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using PatreonDownloader.Models;
 using PuppeteerSharp;
 
 namespace PatreonDownloader
 {
-    struct CampaignInfo
-    {
-        public string AvatarUrl { get; set; }
-        public string CoverUrl { get; set; }
-        public string Name { get; set; }
-    }
+    /// <summary>
+    /// This class is used to retrieve campaign information (avatar, cover, name)
+    /// </summary>
     class CampaignInfoRetriever
     {
         private Browser _browser;
@@ -22,13 +20,18 @@ namespace PatreonDownloader
             _browser = browser;
         }
 
+        /// <summary>
+        /// Retrieve campaign information
+        /// </summary>
+        /// <param name="campaignId">Campaign ID</param>
+        /// <returns>CampaignInfo object containing retrieved campaign information</returns>
         public async Task<CampaignInfo> RetrieveCampaignInfo(long campaignId)
         {
             var page = await _browser.NewPageAsync();
             Response response = await page.GoToAsync($"https://www.patreon.com/api/campaigns/{campaignId}?include=access_rules.tier.null&fields[access_rule]=access_rule_type%2Camount_cents%2Cpost_count&fields[reward]=title%2Cid%2Camount_cents&json-api-version=1.0");
             string json = await response.TextAsync();
 
-            CampaignAPIRoot root = JsonConvert.DeserializeObject<CampaignAPIRoot>(json);
+            Models.JSONObjects.Campaign.Root root = JsonConvert.DeserializeObject<Models.JSONObjects.Campaign.Root>(json);
 
             await page.CloseAsync();
 

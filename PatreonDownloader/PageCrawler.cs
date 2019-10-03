@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using NLog;
+using PatreonDownloader.Models;
 using PuppeteerSharp;
 
 namespace PatreonDownloader
@@ -76,11 +77,21 @@ namespace PatreonDownloader
 
             Log.Instance.Debug("Filling cookies");
             CookieContainer cookieContainer = new CookieContainer();
-            foreach(CookieParam browserCookie in browserCookies)
+
+            //TODO: Check that all required cookies were extracted
+            if (browserCookies != null && browserCookies.Length > 0)
             {
-                Log.Instance.Debug($"Adding cookie: {browserCookie.Name}");
-                Cookie cookie = new Cookie(browserCookie.Name, browserCookie.Value, browserCookie.Path, browserCookie.Domain);
-                cookieContainer.Add(cookie);
+                foreach (CookieParam browserCookie in browserCookies)
+                {
+                    Log.Instance.Debug($"Adding cookie: {browserCookie.Name}");
+                    Cookie cookie = new Cookie(browserCookie.Name, browserCookie.Value, browserCookie.Path, browserCookie.Domain);
+                    cookieContainer.Add(cookie);
+                }
+            }
+            else
+            {
+                Log.Instance.Fatal("No cookies were extracted from browser, unable to proceed");
+                return;
             }
 
             FileDownloader fileDownloader = new FileDownloader(cookieContainer);
@@ -90,16 +101,15 @@ namespace PatreonDownloader
                 Directory.CreateDirectory(downloadDirectory);
             }
             //TODO: Save description for each file
-            //TODO: Output progress (x/x files)
             //TODO: Download avatar and cover
-            foreach (var entry in gallery.Entries)
+            for(int i = 0; i < gallery.Entries.Count; i++)
             {
-                Log.Instance.Info($"Downloading {entry.DownloadUrl}");
+                GalleryEntry entry = gallery.Entries[i];
+                Log.Instance.Info($"Downloading {i+1}/{gallery.Entries.Count}: {entry.DownloadUrl}");
                 await fileDownloader.DownloadFile(entry.DownloadUrl, Path.Combine(downloadDirectory, entry.Path));
             }
 
             Log.Instance.Debug($"Done");
-            //DOWNLOAD
         }
 
         private async Task<string> RetrieveRemoteFileName(string url)
@@ -128,7 +138,7 @@ namespace PatreonDownloader
         {
             List<GalleryEntry> galleryEntries = new List<GalleryEntry>();
 
-            RootObject jsonRoot = JsonConvert.DeserializeObject<RootObject>(json);
+            Models.JSONObjects.Posts.RootObject jsonRoot = JsonConvert.DeserializeObject<Models.JSONObjects.Posts.RootObject>(json);
 
             Log.Instance.Info("Parsing data entries...");
             foreach (var jsonEntry in jsonRoot.data)

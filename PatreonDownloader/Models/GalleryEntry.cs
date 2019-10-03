@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Security.Cryptography;
-using System.Text;
 
-namespace PatreonDownloader
+namespace PatreonDownloader.Models
 {
+    /// <summary>
+    /// Represents single file and all required metadata
+    /// </summary>
     public class GalleryEntry : ICloneable
     {
         public Int64 Id { get; set; }

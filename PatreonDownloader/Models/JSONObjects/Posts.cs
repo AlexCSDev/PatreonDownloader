@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace PatreonDownloader
+// This file contains all classes used for representing deserialized json response of "posts" api endpoint
+namespace PatreonDownloader.Models.JSONObjects.Posts
 {
     public class Image
     {
