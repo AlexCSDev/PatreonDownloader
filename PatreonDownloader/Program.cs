@@ -18,6 +18,8 @@ namespace PatreonDownloader
         {
             _logger.Debug("Patreon downloader started");
 
+            //TODO: Proper command system
+            //TODO: Login command
             if (args.Length == 0)
             {
                 _logger.Fatal("creator posts page url is required");

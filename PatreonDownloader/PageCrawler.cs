@@ -242,14 +242,13 @@ namespace PatreonDownloader
                             }
                             else
                             {
-                                _logger.Warn($"[{jsonEntry.Id}] Unknown provider link found for, assuming it's direct url: {url}"); //pics.Add($"{RetrieveRemoteFileName(url)}:{url}");
+                                _logger.Warn($"[{jsonEntry.Id}] Unknown provider link found for, assuming it's direct url: {url}");
 
                                 GalleryEntry subEntry = entry;
                                 subEntry.DownloadUrl = url;
-                                subEntry.Path = $"{jsonEntry.Id}_extfile_{ await RetrieveRemoteFileName(url) }"; // RetrieveRemoteFileName?
+                                subEntry.Path = $"{jsonEntry.Id}_extfile_{ await RetrieveRemoteFileName(url) }";
                                 galleryEntries.Add(subEntry);
                                 _logger.Info($"[{jsonEntry.Id}] New external (file) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
-                                //cnt++;
                             }
                         }
                         else
