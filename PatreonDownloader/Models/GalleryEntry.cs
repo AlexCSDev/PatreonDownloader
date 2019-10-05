@@ -6,10 +6,8 @@ namespace PatreonDownloader.Models
     /// <summary>
     /// Represents single file and all required metadata
     /// </summary>
-    public class GalleryEntry : ICloneable
+    public struct GalleryEntry
     {
-        public Int64 Id { get; set; }
-
         public string Name { get; set; }
 
         public string Author { get; set; }
@@ -22,28 +20,17 @@ namespace PatreonDownloader.Models
 
         public string Path { get; set; }
 
-        public DateTime AddedOn { get; set; }
-
-        public Gallery Gallery { get; set; }
-
-        [NotMapped]
-        public bool Parsed { get; set; }
-
-        public object Clone()
+        /*public object Clone()
         {
             return new GalleryEntry
             {
-                AddedOn = AddedOn,
                 Author = Author,
                 Description = Description,
                 DownloadUrl = DownloadUrl,
-                Gallery = Gallery,
-                Id = Id,
                 Name = Name,
                 PageUrl = PageUrl,
-                Parsed = Parsed,
                 Path = Path
             };
-        }
+        }*/
     }
 }

@@ -5,71 +5,89 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
+using NLog;
 
 namespace PatreonDownloader
 {
     class Program
     {
-        static void Main(string[] args)
+        private static Browser _browser;
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+        static async Task Main(string[] args)
         {
-            Log.Instance.Debug("Patreon downloader started");
+            _logger.Debug("Patreon downloader started");
+
             if (args.Length == 0)
             {
-                Log.Instance.Fatal("creator posts page url is required");
+                _logger.Fatal("creator posts page url is required");
                 return;
             }
 
-            Log.Instance.Info($"Creator page: {args[0]}");
+            _logger.Info($"Creator page: {args[0]}");
 
-            var result = RunPatreonDownloader(args[0]).Result;
-            while (true)
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
+            await RunPatreonDownloader(args[0]);
+        }
+
+        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            _logger.Debug("Entered process exit");
+            if (_browser != null && !_browser.IsClosed)
             {
-                Thread.Sleep(1000);
+                _logger.Debug("Closing browser...");
+                try
+                {
+                    _browser.CloseAsync();
+                }
+                catch (PuppeteerSharp.PuppeteerException ex)
+                {
+                    _logger.Fatal($"Browser communication error, browser process might be left open! Exception: {ex}");
+                }
             }
         }
 
-        private static async Task<bool> RunPatreonDownloader(string url)
+        private static async Task RunPatreonDownloader(string url)
         {
-            Log.Instance.Debug("Downloading browser");
-            await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-            Log.Instance.Debug("Launching browser");
-            var browser = await Puppeteer.LaunchAsync(new LaunchOptions
+            try
             {
-                Devtools = true,
-                UserDataDir = Path.Combine(Environment.CurrentDirectory,"chromedata")
-            });
+                _logger.Debug("Downloading browser");
+                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
+                _logger.Debug("Launching browser");
+                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                {
+                    Devtools = true,
+                    UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
+                });
 
-            Log.Instance.Debug("Initializing id retriever");
-            CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(browser);
-            long campaignId = await campaignIdRetriever.RetrieveCampaignId(url);
+                _logger.Debug("Initializing id retriever");
+                CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(_browser);
 
-            if (campaignId == -1)
+                _logger.Debug("Initializing campaign info retriever");
+                CampaignInfoRetriever campaignInfoRetriever = new CampaignInfoRetriever(_browser);
+
+                _logger.Debug("Initializing page crawler");
+                PageCrawler pageCrawler = new PageCrawler(_browser);
+
+                PatreonDownloader patreonDownloader = new PatreonDownloader(campaignIdRetriever, campaignInfoRetriever, pageCrawler);
+
+                await patreonDownloader.Download(url);
+
+                await _browser.CloseAsync();
+            }
+            catch (PuppeteerSharp.PuppeteerException ex)
             {
-                Log.Instance.Fatal($"Unable to retrieve campaign id for {url}");
-                return false;
+                _logger.Fatal($"Browser communication error, application will be closed. Exception: {ex}");
+                return;
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.Fatal($"Internal operation timed out, application will be closed. Exception: {ex}");
+                return;
             }
 
-            Log.Instance.Info($"Campaign ID retrieved: {campaignId}");
-
-            Log.Instance.Debug("Starting crawler");
-            PageCrawler crawler = new PageCrawler(browser);
-
-            await crawler.Crawl(campaignId);
-
-            /*tring text = await response.TextAsync();
-            var textLength = text.Length;
-            int jsonStart = text.IndexOf("Object.assign(window.patreon.bootstrap, {");
-            string json = "";
-            if (jsonStart != -1)
-            {
-                jsonStart += "Object.assign(window.patreon.bootstrap, {".Length - 1;
-                int jsonEnd = text.IndexOf("});", jsonStart) + 1;
-                Console.WriteLine(text.Substring(jsonStart, jsonEnd - jsonStart));
-                json = text.Substring(jsonStart, jsonEnd - jsonStart);
-                XmlDocument xml = JsonConvert.DeserializeXmlNode(json, "root");
-            }*/
-            //await page.ScreenshotAsync(outputFile);
-            return true;
+            _logger.Info($"Completed downloading {url}");
         }
     }
 }

@@ -2,224 +2,322 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
 
 // This file contains all classes used for representing deserialized json response of "posts" api endpoint
 namespace PatreonDownloader.Models.JSONObjects.Posts
 {
+    public class Embed
+    {
+        [JsonProperty("description")]
+        public string Description { get; set; }
+        [JsonProperty("html")]
+        public object Html { get; set; }
+        [JsonProperty("provider")]
+        public string Provider { get; set; }
+        [JsonProperty("provider_url")]
+        public string ProviderUrl { get; set; }
+        [JsonProperty("subject")]
+        public string Subject { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
+    }
     public class Image
     {
-        public int? height { get; set; }
-        public string large_url { get; set; }
-        public string thumb_url { get; set; }
-        public string url { get; set; }
-        public int? width { get; set; }
+        [JsonProperty("height")]
+        public int? Height { get; set; }
+        [JsonProperty("large_url")]
+        public string LargeUrl { get; set; }
+        [JsonProperty("thumb_url")]
+        public string ThumbUrl { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
+        [JsonProperty("width")]
+        public int? Width { get; set; }
     }
 
     public class PostFile
     {
-        public string name { get; set; }
-        public string url { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
     }
 
-    public class Attributes
+    public class RootDataAttributes
     {
-        public object change_visibility_at { get; set; }
-        public int? comment_count { get; set; }
-        public string content { get; set; }
-        public bool current_user_can_delete { get; set; }
-        public bool current_user_can_view { get; set; }
-        public bool current_user_has_liked { get; set; }
-        public object embed { get; set; }
-        public Image image { get; set; }
-        public bool is_paid { get; set; }
-        public int? like_count { get; set; }
-        public int? min_cents_pledged_to_view { get; set; }
-        public string patreon_url { get; set; }
-        public int? patron_count { get; set; }
-        public string pledge_url { get; set; }
-        public PostFile post_file { get; set; }
-        public object post_metadata { get; set; }
-        public string post_type { get; set; }
-        public DateTime published_at { get; set; }
-        public object teaser_text { get; set; }
-        public string title { get; set; }
-        public string upgrade_url { get; set; }
-        public string url { get; set; }
-        public bool was_posted_by_campaign_owner { get; set; }
-    }
-
-    public class Datum2
-    {
-        public string id { get; set; }
-        public string type { get; set; }
+        [JsonProperty("change_visibility_at")]
+        public object ChangeVisibilityAt { get; set; }
+        [JsonProperty("comment_count")]
+        public int? CommentCount { get; set; }
+        [JsonProperty("content")]
+        public string Content { get; set; }
+        [JsonProperty("current_user_can_delete")]
+        public bool CurrentUserCanDelete { get; set; }
+        [JsonProperty("current_user_can_view")]
+        public bool CurrentUserCanView { get; set; }
+        [JsonProperty("current_user_has_liked")]
+        public bool CurrentUserHasLinked { get; set; }
+        [JsonProperty("embed")]
+        public Embed Embed { get; set; }
+        [JsonProperty("image")]
+        public Image Image { get; set; }
+        [JsonProperty("is_paid")]
+        public bool IsPaid { get; set; }
+        [JsonProperty("like_count")]
+        public int? LikeCount { get; set; }
+        [JsonProperty("min_cents_pledged_to_view")]
+        public int? MinCentsPledgedToView { get; set; }
+        [JsonProperty("patreon_url")]
+        public string PatreonUrl { get; set; }
+        [JsonProperty("patron_count")]
+        public int? PatronCount { get; set; }
+        [JsonProperty("pledge_url")]
+        public string PledgeUrl { get; set; }
+        [JsonProperty("post_file")]
+        public PostFile PostFile { get; set; }
+        [JsonProperty("post_metadata")]
+        public object PostMetadata { get; set; }
+        [JsonProperty("post_type")]
+        public string PostType { get; set; }
+        [JsonProperty("published_at")]
+        public DateTime PublishedAt { get; set; }
+        [JsonProperty("teaser_text")]
+        public object TeaserText { get; set; }
+        [JsonProperty("title")]
+        public string Title { get; set; }
+        [JsonProperty("upgrade_url")]
+        public string UpgradeUrl { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
+        [JsonProperty("was_posted_by_campaign_owner")]
+        public bool WasPostedByCampaignOwner { get; set; }
     }
 
     public class AccessRules
     {
-        public List<Datum2> data { get; set; }
+        [JsonProperty("data")]
+        public List<Data> Data { get; set; }
     }
 
     public class Attachments
     {
-        public List<Data> data { get; set; }
+        [JsonProperty("data")]
+        public List<Data> Data { get; set; }
     }
 
     public class Audio
     {
-        public object data { get; set; }
+        [JsonProperty("data")]
+        public object Data { get; set; }
     }
 
     public class Data
     {
-        public string id { get; set; }
-        public string type { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
     }
 
-    public class Links
+    public class CampaignLinks
     {
-        public string related { get; set; }
+        [JsonProperty("related")]
+        public string Related { get; set; }
     }
 
     public class Campaign
     {
-        public Data data { get; set; }
-        public Links links { get; set; }
+        [JsonProperty("data")]
+        public Data Data { get; set; }
+        [JsonProperty("links")]
+        public CampaignLinks Links { get; set; }
     }
 
     public class Images
     {
-        public List<Data> data { get; set; }
+        [JsonProperty("data")]
+        public List<Data> Data { get; set; }
     }
 
     public class Poll
     {
-        public object data { get; set; }
+        [JsonProperty("data")]
+        public object Data { get; set; }
     }
 
-    public class Data2
+    public class UserLinks
     {
-        public string id { get; set; }
-        public string type { get; set; }
-    }
-
-    public class Links2
-    {
-        public string related { get; set; }
+        [JsonProperty("related")]
+        public string Related { get; set; }
     }
 
     public class User
     {
-        public Data2 data { get; set; }
-        public Links2 links { get; set; }
+        [JsonProperty("data")]
+        public Data Data { get; set; }
+        [JsonProperty("links")]
+        public UserLinks Links { get; set; }
     }
 
     public class UserDefinedTags
     {
-        public List<object> data { get; set; }
+        [JsonProperty("data")]
+        public List<object> Data { get; set; }
     }
 
-    public class Relationships
+    public class RootDataRelationships
     {
-        public AccessRules access_rules { get; set; }
-        public Attachments attachments { get; set; }
-        public Audio audio { get; set; }
-        public Campaign campaign { get; set; }
-        public Images images { get; set; }
-        public Poll poll { get; set; }
-        public User user { get; set; }
-        public UserDefinedTags user_defined_tags { get; set; }
+        [JsonProperty("access_rules")]
+        public AccessRules AccessRules { get; set; }
+        [JsonProperty("attachments")]
+        public Attachments Attachments { get; set; }
+        [JsonProperty("audio")]
+        public Audio Audio { get; set; }
+        [JsonProperty("campaign")]
+        public Campaign Campaign { get; set; }
+        [JsonProperty("images")]
+        public Images Images { get; set; }
+        [JsonProperty("poll")]
+        public Poll Poll { get; set; }
+        [JsonProperty("user")]
+        public User User { get; set; }
+        [JsonProperty("user_defined_tags")]
+        public UserDefinedTags UserDefinedTags { get; set; }
     }
 
-    public class Datum
+    public class RootData
     {
-        public Attributes attributes { get; set; }
-        public string id { get; set; }
-        public Relationships relationships { get; set; }
-        public string type { get; set; }
+        [JsonProperty("attributes")]
+        public RootDataAttributes Attributes { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
+        [JsonProperty("relationships")]
+        public RootDataRelationships Relationships { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
     }
 
     public class ImageUrls
     {
-        public string @default { get; set; }
-        public string original { get; set; }
-        public string thumbnail { get; set; }
+        [JsonProperty("default")]
+        public string Default { get; set; }
+        [JsonProperty("original")]
+        public string Original { get; set; }
+        [JsonProperty("thumbnail")]
+        public string Thumbnail { get; set; }
     }
 
     public class Dimensions
     {
-        public int? h { get; set; }
-        public int? w { get; set; }
+        [JsonProperty("h")]
+        public int? Height { get; set; }
+        [JsonProperty("w")]
+        public int? Width { get; set; }
     }
 
     public class Metadata
     {
-        public Dimensions dimensions { get; set; }
+        [JsonProperty("dimensions")]
+        public Dimensions Dimensions { get; set; }
     }
 
-    public class Attributes2
+    public class IncludedAttributes
     {
-        public string full_name { get; set; }
-        public string image_url { get; set; }
-        public string url { get; set; }
-        public string avatar_photo_url { get; set; }
-        public string earnings_visibility { get; set; }
-        public bool? is_monthly { get; set; }
-        public bool? is_nsfw { get; set; }
-        public string name { get; set; }
-        public bool? show_audio_post_download_links { get; set; }
-        public string download_url { get; set; }
-        public string file_name { get; set; }
-        public ImageUrls image_urls { get; set; }
-        public Metadata metadata { get; set; }
-        public string access_rule_type { get; set; }
-        public object amount_cents { get; set; }
-        public int? post_count { get; set; }
+        [JsonProperty("full_name")]
+        public string FullName { get; set; }
+        [JsonProperty("image_url")]
+        public string ImageUrl { get; set; }
+        [JsonProperty("url")]
+        public string Url { get; set; }
+        [JsonProperty("avatar_photo_url")]
+        public string AvatarPhotoUrl { get; set; }
+        [JsonProperty("earnings_visibility")]
+        public string EarningsVisibility { get; set; }
+        [JsonProperty("is_monthly")]
+        public bool? IsMonthly { get; set; }
+        [JsonProperty("is_nsfw")]
+        public bool? IsNsfw { get; set; }
+        [JsonProperty("name")]
+        public string Name { get; set; }
+        [JsonProperty("show_audio_post_download_links")]
+        public bool? ShowAudioPostDownloadLinks { get; set; }
+        [JsonProperty("download_url")]
+        public string DownloadUrl { get; set; }
+        [JsonProperty("file_name")]
+        public string FileName { get; set; }
+        [JsonProperty("image_urls")]
+        public ImageUrls ImageUrls { get; set; }
+        [JsonProperty("metadata")]
+        public Metadata Metadata { get; set; }
+        [JsonProperty("access_rule_type")]
+        public string AccessRuleType { get; set; }
+        [JsonProperty("amount_cents")]
+        public object AmountCents { get; set; }
+        [JsonProperty("post_count")]
+        public int? PostCount { get; set; }
     }
 
     public class Tier
     {
-        public object data { get; set; }
+        [JsonProperty("data")]
+        public object Data { get; set; }
     }
 
-    public class Relationships2
+    public class IncludedRelationships
     {
-        public Tier tier { get; set; }
+        [JsonProperty("tier")]
+        public Tier Tier { get; set; }
     }
 
     public class Included
     {
-        public Attributes2 attributes { get; set; }
-        public string id { get; set; }
-        public string type { get; set; }
-        public Relationships2 relationships { get; set; }
+        [JsonProperty("attributes")]
+        public IncludedAttributes Attributes { get; set; }
+        [JsonProperty("id")]
+        public string Id { get; set; }
+        [JsonProperty("type")]
+        public string Type { get; set; }
+        [JsonProperty("relationships")]
+        public IncludedRelationships Relationships { get; set; }
     }
 
-    public class Links3
+    public class RootLinks
     {
-        public string next { get; set; }
+        [JsonProperty("next")]
+        public string Next { get; set; }
     }
 
     public class Cursors
     {
-        public string next { get; set; }
+        [JsonProperty("next")]
+        public string Next { get; set; }
     }
 
     public class Pagination
     {
-        public Cursors cursors { get; set; }
-        public int? total { get; set; }
+        [JsonProperty("cursors")]
+        public Cursors Cursors { get; set; }
+        [JsonProperty("total")]
+        public int? Total { get; set; }
     }
 
     public class Meta
     {
-        public Pagination pagination { get; set; }
+        [JsonProperty("pagination")]
+        public Pagination Pagination { get; set; }
     }
 
-    public class RootObject
+    public class Root
     {
-        public List<Datum> data { get; set; }
-        public List<Included> included { get; set; }
-        public Links3 links { get; set; }
-        public Meta meta { get; set; }
+        [JsonProperty("data")]
+        public List<RootData> Data { get; set; }
+        [JsonProperty("included")]
+        public List<Included> Included { get; set; }
+        [JsonProperty("links")]
+        public RootLinks Links { get; set; }
+
+        [JsonProperty("meta")]
+        public Meta Meta { get; set; }
     }
 }

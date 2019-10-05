@@ -9,13 +9,13 @@ namespace PatreonDownloader
     /// <summary>
     /// This class is used to retrieve Campaign ID from creator's posts page
     /// </summary>
-    class CampaignIdRetriever
+    internal sealed class CampaignIdRetriever
     {
-        private Browser _browser;
+        private readonly Browser _browser;
 
         public CampaignIdRetriever(Browser browser)
         {
-            _browser = browser;
+            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
         }
 
         /// <summary>
@@ -32,11 +32,11 @@ namespace PatreonDownloader
             Request request = await page.WaitForRequestAsync(x => x.Url.Contains("https://www.patreon.com/api/posts"));
 
             string urlStr = request.Url;
-            int idPos = urlStr.IndexOf("filter[campaign_id]=");
+            int idPos = urlStr.IndexOf("filter[campaign_id]=", StringComparison.Ordinal);
             if (idPos != -1)
             {
                 int startPos = idPos + "filter[campaign_id]=".Length;
-                int endPos = urlStr.IndexOf("&", startPos);
+                int endPos = urlStr.IndexOf("&", startPos, StringComparison.Ordinal);
                 id = Convert.ToInt64(urlStr.Substring(startPos, endPos - startPos));
             }
 

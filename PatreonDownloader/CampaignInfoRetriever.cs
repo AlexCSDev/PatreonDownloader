@@ -11,13 +11,13 @@ namespace PatreonDownloader
     /// <summary>
     /// This class is used to retrieve campaign information (avatar, cover, name)
     /// </summary>
-    class CampaignInfoRetriever
+    internal sealed class CampaignInfoRetriever
     {
-        private Browser _browser;
+        private readonly Browser _browser;
 
         public CampaignInfoRetriever(Browser browser)
         {
-            _browser = browser;
+            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace PatreonDownloader
 
             return new CampaignInfo
             {
-                AvatarUrl = root.Data.Attributes.AvatarUrl, CoverUrl = root.Data.Attributes.CoverUrl, Name = root.Data.Attributes.Name
+                AvatarUrl = root.Data.Attributes.AvatarUrl, CoverUrl = root.Data.Attributes.CoverUrl, Name = root.Data.Attributes.Name, Id = campaignId
             };
         }
     }
