@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using PatreonDownloader.Wrappers.Browser;
 using PuppeteerSharp;
 
 namespace PatreonDownloader
@@ -9,11 +10,11 @@ namespace PatreonDownloader
     /// <summary>
     /// This class is used to retrieve Campaign ID from creator's posts page
     /// </summary>
-    internal sealed class CampaignIdRetriever
+    internal sealed class CampaignIdRetriever : ICampaignIdRetriever
     {
-        private readonly Browser _browser;
+        private readonly IWebBrowser _browser;
 
-        public CampaignIdRetriever(Browser browser)
+        public CampaignIdRetriever(IWebBrowser browser)
         {
             _browser = browser ?? throw new ArgumentNullException(nameof(browser));
         }
@@ -29,7 +30,7 @@ namespace PatreonDownloader
 
             var page = await _browser.NewPageAsync();
             page.GoToAsync(url); // Missing await is an intended behavior because we await for a specific request on the next line
-            Request request = await page.WaitForRequestAsync(x => x.Url.Contains("https://www.patreon.com/api/posts"));
+            IWebRequest request = await page.WaitForRequestAsync(x => x.Url.Contains("https://www.patreon.com/api/posts"));
 
             string urlStr = request.Url;
             int idPos = urlStr.IndexOf("filter[campaign_id]=", StringComparison.Ordinal);

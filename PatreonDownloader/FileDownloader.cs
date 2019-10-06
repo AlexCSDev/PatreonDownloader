@@ -11,7 +11,7 @@ using PatreonDownloader.Models;
 
 namespace PatreonDownloader
 {
-    internal sealed class FileDownloader
+    internal sealed class FileDownloader : IFileDownloader
     {
         private HttpClient _httpClient;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();

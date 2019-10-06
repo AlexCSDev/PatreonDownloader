@@ -1,12 +1,17 @@
 ﻿using PuppeteerSharp;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Newtonsoft.Json;
 using NLog;
+using PatreonDownloader.Wrappers.Browser;
 
+//Alow tests to see internal classes
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("PatreonDownloader.Tests")]
 namespace PatreonDownloader
 {
     class Program
@@ -63,11 +68,14 @@ namespace PatreonDownloader
                     UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
                 });
 
+                _logger.Debug("Creating IWebBrowser");
+                IWebBrowser browserWrapper = new WebBrowser(_browser);
+
                 _logger.Debug("Initializing id retriever");
-                CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(_browser);
+                CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(browserWrapper);
 
                 _logger.Debug("Initializing campaign info retriever");
-                CampaignInfoRetriever campaignInfoRetriever = new CampaignInfoRetriever(_browser);
+                CampaignInfoRetriever campaignInfoRetriever = new CampaignInfoRetriever(browserWrapper);
 
                 _logger.Debug("Initializing page crawler");
                 PageCrawler pageCrawler = new PageCrawler(_browser);

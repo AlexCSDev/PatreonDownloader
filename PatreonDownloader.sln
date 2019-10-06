@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader", "PatreonDownloader\PatreonDownloader.csproj", "{88D67B58-02E2-4231-BB89-92BB74622560}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader", "PatreonDownloader\PatreonDownloader.csproj", "{88D67B58-02E2-4231-BB89-92BB74622560}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{88D67B58-02E2-4231-BB89-92BB74622560}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88D67B58-02E2-4231-BB89-92BB74622560}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88D67B58-02E2-4231-BB89-92BB74622560}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

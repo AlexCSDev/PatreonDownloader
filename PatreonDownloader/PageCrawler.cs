@@ -15,7 +15,7 @@ using PuppeteerSharp;
 
 namespace PatreonDownloader
 {
-    internal sealed class PageCrawler
+    internal sealed class PageCrawler : IPageCrawler
     {
         private readonly Browser _browser;
 

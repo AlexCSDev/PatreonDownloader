@@ -20,3 +20,4 @@ dotnet PatreonDownloader.dll -download=https://www.patreon.com/#####/posts
 * Vimeo embedded videos
 * Google drive external links
 * Mega.nz external links
+* Gallery posts

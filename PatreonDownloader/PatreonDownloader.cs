@@ -9,15 +9,15 @@ using PuppeteerSharp;
 
 namespace PatreonDownloader
 {
-    internal sealed class PatreonDownloader
+    internal sealed class PatreonDownloader : IPatreonDownloader
     {
-        private readonly CampaignIdRetriever _campaignIdRetriever;
-        private readonly CampaignInfoRetriever _campaignInfoRetriever;
-        private readonly PageCrawler _pageCrawler;
+        private readonly ICampaignIdRetriever _campaignIdRetriever;
+        private readonly ICampaignInfoRetriever _campaignInfoRetriever;
+        private readonly IPageCrawler _pageCrawler;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public PatreonDownloader(CampaignIdRetriever campaignIdRetriever, CampaignInfoRetriever campaignInfoRetriever, PageCrawler pageCrawler)
+        public PatreonDownloader(ICampaignIdRetriever campaignIdRetriever, ICampaignInfoRetriever campaignInfoRetriever, IPageCrawler pageCrawler)
         {
             _campaignIdRetriever = campaignIdRetriever ?? throw new ArgumentNullException(nameof(campaignIdRetriever));
             _campaignInfoRetriever = campaignInfoRetriever ?? throw new ArgumentNullException(nameof(campaignInfoRetriever));
