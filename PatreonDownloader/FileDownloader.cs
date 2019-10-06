@@ -52,6 +52,11 @@ namespace PatreonDownloader
                 _logger.Error($"HttpRequestException while downloading file ({url}): {ex}");
                 return DownloadResult.HttpError;
             }
+            catch (System.IO.IOException ex)
+            {
+                _logger.Error($"IOerror while downloading file (not enough disk space?) ({url}): {ex}");
+                return DownloadResult.IOError;
+            }
             catch (Exception ex)
             {
                 _logger.Error($"Unknown error while downloading file ({url}): {ex}");

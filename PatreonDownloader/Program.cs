@@ -68,6 +68,9 @@ namespace PatreonDownloader
                     UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
                 });
 
+                Page descriptionPage = await _browser.NewPageAsync();
+                await descriptionPage.SetContentAsync("<h1>This is a browser of patreon downloader</h1>");
+
                 _logger.Debug("Creating IWebBrowser");
                 IWebBrowser browserWrapper = new WebBrowser(_browser);
 

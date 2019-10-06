@@ -154,6 +154,7 @@ namespace PatreonDownloader
         private async Task<ParsingResult> ParsePage(string json)
         {
             List<GalleryEntry> galleryEntries = new List<GalleryEntry>();
+            List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
 
             Models.JSONObjects.Posts.Root jsonRoot = JsonConvert.DeserializeObject<Models.JSONObjects.Posts.Root>(json);
 
@@ -171,6 +172,13 @@ namespace PatreonDownloader
                 if (!jsonEntry.Attributes.CurrentUserCanView)
                 {
                     _logger.Warn($"[{jsonEntry.Id}] Current user cannot view selected post");
+
+                    string[] skippedAttachments = jsonEntry.Relationships.Attachments?.Data.Select(x => x.Id).ToArray() ?? new string[0];
+                    string[] skippedMedia = jsonEntry.Relationships.Images?.Data.Select(x => x.Id).ToArray() ?? new string[0];
+                    _logger.Debug($"[{jsonEntry.Id}] Adding {skippedAttachments.Length} attachments and {skippedMedia.Length} media items to skipped list");
+
+                    skippedIncludesList.AddRange(skippedAttachments);
+                    skippedIncludesList.AddRange(skippedMedia);
                     continue;
                 }
 
@@ -258,14 +266,16 @@ namespace PatreonDownloader
                     }
                 }
 
+                _logger.Debug($"[{jsonEntry.Id}] Scanning attachment data");
                 //Attachments
                 if(jsonEntry.Relationships.Attachments?.Data != null)
                 {
                     foreach (var attachment in jsonEntry.Relationships.Attachments.Data)
                     {
+                        _logger.Debug($"[{jsonEntry.Id} A-{attachment.Id}] Scanning attachment");
                         if (attachment.Type != "attachment") //sanity check 
                         {
-                            _logger.Fatal($"[{jsonEntry.Id}] invalid attachment type for {attachment.Id}!!!");
+                            _logger.Fatal($"[{jsonEntry.Id} A-{attachment.Id}] invalid attachment type for!!!");
                             continue;
                         }
 
@@ -275,7 +285,7 @@ namespace PatreonDownloader
 
                         if (attachmentData == null)
                         {
-                            _logger.Fatal($"[{jsonEntry.Id}] attachment data not found for {attachment.Id}!!!");
+                            _logger.Fatal($"[{jsonEntry.Id} A-{attachment.Id}] attachment data not found!!!");
                             continue;
                         }
 
@@ -283,15 +293,17 @@ namespace PatreonDownloader
                         subEntry.DownloadUrl = attachmentData.Attributes.Url;
                         subEntry.Path = $"{jsonEntry.Id}_attachment_{attachmentData.Attributes.Name}";
                         galleryEntries.Add(subEntry);
-                        _logger.Info($"[{jsonEntry.Id}] New attachment entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                        _logger.Info($"[{jsonEntry.Id} A-{attachment.Id}] New attachment entry: {subEntry.Path} from {subEntry.DownloadUrl}");
                     }
                 }
 
+                _logger.Debug($"[{jsonEntry.Id}] Scanning media data");
                 //Media
                 if (jsonEntry.Relationships.Images?.Data != null)
                 {
                     foreach (var image in jsonEntry.Relationships.Images.Data)
                     {
+                        _logger.Debug($"[{jsonEntry.Id} M-{image.Id}] Scanning media");
                         if (image.Type != "media") //sanity check 
                         {
                             _logger.Fatal($"[{jsonEntry.Id}] invalid media type for {image.Id}!!!");
@@ -308,33 +320,61 @@ namespace PatreonDownloader
                             continue;
                         }
 
+                        _logger.Debug($"[{jsonEntry.Id} M-{image.Id}] Searching for download url");
+                        string downloadUrl = imageData.Attributes.DownloadUrl;
+
+                        /*if (string.IsNullOrEmpty(downloadUrl))
+                        {
+                            if (!string.IsNullOrEmpty(imageData.Attributes.ImageUrls.Original))
+                                downloadUrl = imageData.Attributes.ImageUrls.Original;
+                            else if (!string.IsNullOrEmpty(imageData.Attributes.ImageUrls.Default))
+                                downloadUrl = imageData.Attributes.ImageUrls.Default;
+                            else
+                            {
+                                _logger.Fatal($"[{jsonEntry.Id} M-{image.Id}] No valid download url found");
+                                continue;
+                            }
+                        }*/
+
+                        _logger.Debug($"[{jsonEntry.Id} M-{image.Id}] Download url is: {downloadUrl}");
+
                         GalleryEntry subEntry = entry;
-                        subEntry.DownloadUrl = imageData.Attributes.DownloadUrl;
+                        subEntry.DownloadUrl = downloadUrl;
                         subEntry.Path = $"{jsonEntry.Id}_media_{imageData.Attributes.FileName}";
                         galleryEntries.Add(subEntry);
-                        _logger.Info($"[{jsonEntry.Id}] New media entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                        _logger.Info($"[{jsonEntry.Id} M-{image.Id}] New media entry: {subEntry.Path} from {subEntry.DownloadUrl}");
                     }
                 }
 
+                _logger.Debug($"[{jsonEntry.Id}] Parsing base entry");
                 //Now parse the entry itself
                 if (jsonEntry.Attributes.PostFile != null)
                 {
+                    _logger.Debug($"[{jsonEntry.Id}] Found file data");
                     entry.DownloadUrl = jsonEntry.Attributes.PostFile.Url;
                     entry.Path = $"{jsonEntry.Id}_post_{jsonEntry.Attributes.PostFile.Name}";
                 }
                 else
                 {
+                    _logger.Debug($"[{jsonEntry.Id}] No file data, fallback to image data");
                     if (jsonEntry.Attributes.Image != null)
                     {
+                        _logger.Debug($"[{jsonEntry.Id}] Found image data");
                         if (jsonEntry.Attributes.Image.LargeUrl != null)
                         {
+                            _logger.Debug($"[{jsonEntry.Id}] Found large url");
                             entry.DownloadUrl = jsonEntry.Attributes.Image.LargeUrl;
                             entry.Path = $"{jsonEntry.Id}_post_{ await RetrieveRemoteFileName(jsonEntry.Attributes.Image.LargeUrl) }";
                         }
                         else if (jsonEntry.Attributes.Image.Url != null)
                         {
+                            _logger.Debug($"[{jsonEntry.Id}] Found regular url");
                             entry.DownloadUrl = jsonEntry.Attributes.Image.Url;
                             entry.Path = $"{jsonEntry.Id}_post_{ await RetrieveRemoteFileName(jsonEntry.Attributes.Image.Url) }";
+                        }
+                        else
+                        {
+                            _logger.Debug($"[{jsonEntry.Id}] No valid image data found");
                         }
                     }
                 }
@@ -364,18 +404,18 @@ namespace PatreonDownloader
 
                 if (jsonEntry.Type == "attachment")
                 {
-                    if (!galleryEntries.Any(x => x.DownloadUrl == jsonEntry.Attributes.Url))
+                    if (!skippedIncludesList.Any(x => x == jsonEntry.Id) && !galleryEntries.Any(x => x.DownloadUrl == jsonEntry.Attributes.Url))
                     {
-                        _logger.Fatal($"[{jsonEntry.Id}] Was not parsed!");
+                        _logger.Warn($"[{jsonEntry.Id}] Attachment was not parsed! Attachment not referenced by any post?");
                         continue;
                     }
                 }
 
                 if (jsonEntry.Type == "media")
                 {
-                    if (!galleryEntries.Any(x => x.DownloadUrl == jsonEntry.Attributes.DownloadUrl))
+                    if (!skippedIncludesList.Any(x=>x == jsonEntry.Id) && !galleryEntries.Any(x => x.DownloadUrl == jsonEntry.Attributes.DownloadUrl/* || x.DownloadUrl == jsonEntry.Attributes.ImageUrls.Original || x.DownloadUrl == jsonEntry.Attributes.ImageUrls.Default*/))
                     {
-                        _logger.Fatal($"[{jsonEntry.Id}] Was not parsed!");
+                        _logger.Warn($"[{jsonEntry.Id}] Media was not parsed! Media not referenced by any post?");
                         continue;
                     }
                 }

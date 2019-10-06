@@ -21,6 +21,7 @@ namespace PatreonDownloader.Wrappers.Browser
         public async Task<IWebPage> NewPageAsync()
         {
             IWebPage page = new WebPage(await _browser.NewPageAsync());
+            
             return page;
         }
     }

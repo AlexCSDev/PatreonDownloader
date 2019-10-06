@@ -10,6 +10,7 @@ namespace PatreonDownloader.Models
         Success,
         FileExists,
         HttpError,
+        IOError,
         UnknownError
     }
 }
