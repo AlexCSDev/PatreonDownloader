@@ -1,6 +1,7 @@
 ﻿using PuppeteerSharp;
 using System;
 using System.IO;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -74,20 +75,37 @@ namespace PatreonDownloader
                 _logger.Debug("Creating IWebBrowser");
                 IWebBrowser browserWrapper = new WebBrowser(_browser);
 
+                _logger.Debug("Initializing cookie retriever");
+                ICookieRetriever cookieRetriever = new CookieRetriever(browserWrapper);
+
+                _logger.Debug("Retrieving cookies");
+                CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies(url);
+
+                if (cookieContainer == null)
+                {
+                    _logger.Fatal($"Unable to retrieve cookies for {url}");
+                    return;
+                }
+
                 _logger.Debug("Initializing id retriever");
-                CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(browserWrapper);
+                ICampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(browserWrapper);
 
-                _logger.Debug("Initializing campaign info retriever");
-                CampaignInfoRetriever campaignInfoRetriever = new CampaignInfoRetriever(browserWrapper);
+                _logger.Debug($"Retrieving campaign ID");
+                long campaignId = await campaignIdRetriever.RetrieveCampaignId(url);
 
-                _logger.Debug("Initializing page crawler");
-                PageCrawler pageCrawler = new PageCrawler(_browser);
-
-                PatreonDownloader patreonDownloader = new PatreonDownloader(campaignIdRetriever, campaignInfoRetriever, pageCrawler);
-
-                await patreonDownloader.Download(url);
+                if (campaignId == -1)
+                {
+                    _logger.Fatal($"Unable to retrieve campaign id for {url}");
+                    return;
+                }
 
                 await _browser.CloseAsync();
+
+                _logger.Info($"Campaign ID: {campaignId}");
+
+                IPatreonDownloader patreonDownloader = new PatreonDownloader(campaignId, cookieContainer);
+
+                await patreonDownloader.Download(url);
             }
             catch (PuppeteerSharp.PuppeteerException ex)
             {

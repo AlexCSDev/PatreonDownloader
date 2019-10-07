@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using PatreonDownloader.Models;
+using PatreonDownloader.Wrappers.Browser;
 
 namespace PatreonDownloader
 {
-    internal interface IPageCrawler
+    internal interface ICookieRetriever
     {
-        Task Crawl(CampaignInfo campaignInfo);
+        Task<CookieContainer> RetrieveCookies(string url);
     }
 }

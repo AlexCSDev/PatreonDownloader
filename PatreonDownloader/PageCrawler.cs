@@ -11,46 +11,38 @@ using HtmlAgilityPack;
 using Newtonsoft.Json;
 using NLog;
 using PatreonDownloader.Models;
+using PatreonDownloader.Wrappers.Browser;
 using PuppeteerSharp;
 
 namespace PatreonDownloader
 {
     internal sealed class PageCrawler : IPageCrawler
     {
-        private readonly Browser _browser;
-
+        private readonly IWebDownloader _webDownloader;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private CampaignInfo _campaignInfo;
-        public PageCrawler(Browser browser)
+        private CookieContainer _cookieContainer;
+        public PageCrawler(IWebDownloader webDownloader)
         {
-            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
+            _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
         }
 
         public async Task Crawl(CampaignInfo campaignInfo)
         {
+            _campaignInfo = campaignInfo; //TODO: check if all values are valid
+
             _logger.Info($"Starting crawling campaign {campaignInfo.Name}");
             List<GalleryEntry> galleryEntries = new List<GalleryEntry>();
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
-            _campaignInfo = campaignInfo;
 
-            var page = await _browser.NewPageAsync();
             //TODO: Research possibility of not hardcoding this string
             string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Cuser_defined_tags%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={_campaignInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
-            CookieParam[] browserCookies = null;
 
             while (!string.IsNullOrEmpty(nextPage))
             {
                 _logger.Debug($"New page");
-                Response response = await page.GoToAsync(nextPage);
-
-                if (browserCookies == null)
-                {
-                    _logger.Debug("Retrieving cookies");
-                    browserCookies = await page.GetCookiesAsync();
-                }
-
-                string json = await response.TextAsync();
+                string json = await _webDownloader.DownloadString(nextPage);
 
                 ParsingResult result = await ParsePage(json);
 
@@ -62,31 +54,8 @@ namespace PatreonDownloader
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
             }
 
-            _logger.Debug($"Closing page");
-            await page.CloseAsync();
-
             _logger.Info($"Starting download for #{_campaignInfo.Name}");
 
-            _logger.Debug("Filling cookies");
-            CookieContainer cookieContainer = new CookieContainer();
-
-            //TODO: Check that all required cookies were extracted
-            if (browserCookies != null && browserCookies.Length > 0)
-            {
-                foreach (CookieParam browserCookie in browserCookies)
-                {
-                    _logger.Debug($"Adding cookie: {browserCookie.Name}");
-                    Cookie cookie = new Cookie(browserCookie.Name, browserCookie.Value, browserCookie.Path, browserCookie.Domain);
-                    cookieContainer.Add(cookie);
-                }
-            }
-            else
-            {
-                _logger.Fatal("No cookies were extracted from browser, unable to proceed");
-                return;
-            }
-
-            FileDownloader fileDownloader = new FileDownloader(cookieContainer);
             string downloadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "download", campaignInfo.Name);
             if (!Directory.Exists(downloadDirectory))
             {
@@ -104,10 +73,10 @@ namespace PatreonDownloader
             coverExt = Path.GetExtension(coverExt);
 
             _logger.Debug("Downloading avatar...");
-            await fileDownloader.DownloadFile(campaignInfo.AvatarUrl, Path.Combine(downloadDirectory, $"avatar{avatarExt}"));
+            await _webDownloader.DownloadFile(campaignInfo.AvatarUrl, Path.Combine(downloadDirectory, $"avatar{avatarExt}"));
 
             _logger.Debug("Downloading cover...");
-            await fileDownloader.DownloadFile(campaignInfo.CoverUrl, Path.Combine(downloadDirectory, $"cover{coverExt}"));
+            await _webDownloader.DownloadFile(campaignInfo.CoverUrl, Path.Combine(downloadDirectory, $"cover{coverExt}"));
 
             for (int i = 0; i < galleryEntries.Count; i++)
             {
@@ -123,17 +92,22 @@ namespace PatreonDownloader
                     _logger.Error($"Unable to write description for {entry.Path}: {ex}");
                 }
 
-                await fileDownloader.DownloadFile(entry.DownloadUrl, Path.Combine(downloadDirectory, entry.Path));
+                await _webDownloader.DownloadFile(entry.DownloadUrl, Path.Combine(downloadDirectory, entry.Path));
             }
 
             _logger.Debug($"Finished crawl");
         }
 
+        //TODO: Rewrite this to not recreate httpclient every time this method is called
         private async Task<string> RetrieveRemoteFileName(string url)
         {
             try
             {
-                HttpClient httpClient = new HttpClient();
+                var handler = new HttpClientHandler();
+                handler.UseCookies = true;
+                handler.CookieContainer = _cookieContainer;
+
+                HttpClient httpClient = new HttpClient(handler);
                 var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
 
                 if (response.Content.Headers.ContentDisposition?.FileName != null)

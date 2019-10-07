@@ -11,12 +11,12 @@ using PatreonDownloader.Models;
 
 namespace PatreonDownloader
 {
-    internal sealed class FileDownloader : IFileDownloader
+    internal sealed class WebDownloader : IWebDownloader
     {
         private HttpClient _httpClient;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public FileDownloader(CookieContainer cookieContainer)
+        public WebDownloader(CookieContainer cookieContainer)
         {
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
@@ -64,6 +64,12 @@ namespace PatreonDownloader
             }
 
             return DownloadResult.Success;
+        }
+
+        //TODO: Error handling
+        public async Task<string> DownloadString(string url)
+        {
+            return await _httpClient.GetStringAsync(url);
         }
     }
 }

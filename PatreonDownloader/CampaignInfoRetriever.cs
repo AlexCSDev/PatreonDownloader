@@ -14,11 +14,11 @@ namespace PatreonDownloader
     /// </summary>
     internal sealed class CampaignInfoRetriever : ICampaignInfoRetriever
     {
-        private readonly IWebBrowser _browser;
+        private readonly IWebDownloader _webDownloader;
 
-        public CampaignInfoRetriever(IWebBrowser browser)
+        public CampaignInfoRetriever(IWebDownloader webDownloader)
         {
-            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
+            _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
         }
 
         /// <summary>
@@ -28,13 +28,10 @@ namespace PatreonDownloader
         /// <returns>CampaignInfo object containing retrieved campaign information</returns>
         public async Task<CampaignInfo> RetrieveCampaignInfo(long campaignId)
         {
-            var page = await _browser.NewPageAsync();
-            IWebResponse response = await page.GoToAsync($"https://www.patreon.com/api/campaigns/{campaignId}?include=access_rules.tier.null&fields[access_rule]=access_rule_type%2Camount_cents%2Cpost_count&fields[reward]=title%2Cid%2Camount_cents&json-api-version=1.0");
-            string json = await response.TextAsync();
+            string json = await _webDownloader.DownloadString(
+                $"https://www.patreon.com/api/campaigns/{campaignId}?include=access_rules.tier.null&fields[access_rule]=access_rule_type%2Camount_cents%2Cpost_count&fields[reward]=title%2Cid%2Camount_cents&json-api-version=1.0");
 
             Models.JSONObjects.Campaign.Root root = JsonConvert.DeserializeObject<Models.JSONObjects.Campaign.Root>(json);
-
-            await page.CloseAsync();
 
             return new CampaignInfo
             {

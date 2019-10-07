@@ -14,6 +14,7 @@ namespace PatreonDownloader
     {
         private readonly IWebBrowser _browser;
 
+        //TODO: Research option of parsing creator's page instead of using a browser
         public CampaignIdRetriever(IWebBrowser browser)
         {
             _browser = browser ?? throw new ArgumentNullException(nameof(browser));
@@ -28,7 +29,7 @@ namespace PatreonDownloader
         {
             long id = -1;
 
-            var page = await _browser.NewPageAsync();
+            IWebPage page = await _browser.NewPageAsync();
             page.GoToAsync(url); // Missing await is an intended behavior because we await for a specific request on the next line
             IWebRequest request = await page.WaitForRequestAsync(x => x.Url.Contains("https://www.patreon.com/api/posts"));
 

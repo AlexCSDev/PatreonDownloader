@@ -6,8 +6,10 @@ using PatreonDownloader.Models;
 
 namespace PatreonDownloader
 {
-    internal interface IFileDownloader
+    internal interface IWebDownloader
     {
         Task<DownloadResult> DownloadFile(string url, string path);
+
+        Task<string> DownloadString(string url);
     }
 }

@@ -32,6 +32,11 @@ namespace PatreonDownloader.Wrappers.Browser
             return webRequest;
         }
 
+        public async Task<CookieParam[]> GetCookiesAsync(params string[] urls)
+        {
+            return await _page.GetCookiesAsync(urls);
+        }
+
         public async Task CloseAsync(PageCloseOptions options = null)
         {
             await _page.CloseAsync(options);
