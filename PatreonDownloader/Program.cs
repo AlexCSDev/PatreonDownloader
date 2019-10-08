@@ -17,9 +17,10 @@ namespace PatreonDownloader
 {
     class Program
     {
-        private static Browser _browser;
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private static PatreonDownloader _patreonDownloader;
 
+        //TODO: Trap ctrl+c for a proper shutdown
         static async Task Main(string[] args)
         {
             _logger.Debug("Patreon downloader started");
@@ -42,12 +43,12 @@ namespace PatreonDownloader
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             _logger.Debug("Entered process exit");
-            if (_browser != null && !_browser.IsClosed)
+            if (_patreonDownloader != null)
             {
-                _logger.Debug("Closing browser...");
+                _logger.Debug("Disposing downloader...");
                 try
                 {
-                    _browser.CloseAsync();
+                    _patreonDownloader.Dispose();
                 }
                 catch (PuppeteerSharp.PuppeteerException ex)
                 {
@@ -58,67 +59,13 @@ namespace PatreonDownloader
 
         private static async Task RunPatreonDownloader(string url)
         {
-            try
+            //TODO: exception handling
+            using (_patreonDownloader = new PatreonDownloader(url))
             {
-                _logger.Debug("Downloading browser");
-                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-                _logger.Debug("Launching browser");
-                _browser = await Puppeteer.LaunchAsync(new LaunchOptions
-                {
-                    Devtools = true,
-                    UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
-                });
+                bool result = await _patreonDownloader.Download();
 
-                Page descriptionPage = await _browser.NewPageAsync();
-                await descriptionPage.SetContentAsync("<h1>This is a browser of patreon downloader</h1>");
-
-                _logger.Debug("Creating IWebBrowser");
-                IWebBrowser browserWrapper = new WebBrowser(_browser);
-
-                _logger.Debug("Initializing cookie retriever");
-                ICookieRetriever cookieRetriever = new CookieRetriever(browserWrapper);
-
-                _logger.Debug("Retrieving cookies");
-                CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies(url);
-
-                if (cookieContainer == null)
-                {
-                    _logger.Fatal($"Unable to retrieve cookies for {url}");
-                    return;
-                }
-
-                _logger.Debug("Initializing id retriever");
-                ICampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(browserWrapper);
-
-                _logger.Debug($"Retrieving campaign ID");
-                long campaignId = await campaignIdRetriever.RetrieveCampaignId(url);
-
-                if (campaignId == -1)
-                {
-                    _logger.Fatal($"Unable to retrieve campaign id for {url}");
-                    return;
-                }
-
-                await _browser.CloseAsync();
-
-                _logger.Info($"Campaign ID: {campaignId}");
-
-                IPatreonDownloader patreonDownloader = new PatreonDownloader(campaignId, cookieContainer);
-
-                await patreonDownloader.Download(url);
+                _logger.Info($"{(result ? "Successfully" : "UNSUCCESSFULLY" )} finished downloading {url}");
             }
-            catch (PuppeteerSharp.PuppeteerException ex)
-            {
-                _logger.Fatal($"Browser communication error, application will be closed. Exception: {ex}");
-                return;
-            }
-            catch (TimeoutException ex)
-            {
-                _logger.Fatal($"Internal operation timed out, application will be closed. Exception: {ex}");
-                return;
-            }
-
-            _logger.Info($"Completed downloading {url}");
         }
     }
 }

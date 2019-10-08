@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using PatreonDownloader.Wrappers.Browser;
 using PuppeteerSharp;
@@ -12,12 +13,12 @@ namespace PatreonDownloader
     /// </summary>
     internal sealed class CampaignIdRetriever : ICampaignIdRetriever
     {
-        private readonly IWebBrowser _browser;
+        private readonly IWebDownloader _webDownloader;
 
         //TODO: Research option of parsing creator's page instead of using a browser
-        public CampaignIdRetriever(IWebBrowser browser)
+        public CampaignIdRetriever(IWebDownloader webDownloader)
         {
-            _browser = browser ?? throw new ArgumentNullException(nameof(browser));
+            _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
         }
 
         /// <summary>
@@ -25,26 +26,18 @@ namespace PatreonDownloader
         /// </summary>
         /// <param name="url">Creator's post page url</param>
         /// <returns>Returns creator id</returns>
-        public async Task<long> RetrieveCampaignId(string url) //TODO: CHECK THAT URL IS VALID
+        public async Task<long> RetrieveCampaignId(string url)
         {
-            long id = -1;
+            string pageHtml = await _webDownloader.DownloadString(url);
 
-            IWebPage page = await _browser.NewPageAsync();
-            page.GoToAsync(url); // Missing await is an intended behavior because we await for a specific request on the next line
-            IWebRequest request = await page.WaitForRequestAsync(x => x.Url.Contains("https://www.patreon.com/api/posts"));
-
-            string urlStr = request.Url;
-            int idPos = urlStr.IndexOf("filter[campaign_id]=", StringComparison.Ordinal);
-            if (idPos != -1)
+            Regex regex = new Regex("\"self\": \"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
+            Match match = regex.Match(pageHtml);
+            if (!match.Success)
             {
-                int startPos = idPos + "filter[campaign_id]=".Length;
-                int endPos = urlStr.IndexOf("&", startPos, StringComparison.Ordinal);
-                id = Convert.ToInt64(urlStr.Substring(startPos, endPos - startPos));
+                return -1;
             }
 
-            await page.CloseAsync();
-
-            return id;
+            return Convert.ToInt64(match.Groups[1].Value);
         }
     }
 }

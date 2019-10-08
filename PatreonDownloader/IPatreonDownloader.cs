@@ -7,6 +7,6 @@ namespace PatreonDownloader
 {
     internal interface IPatreonDownloader
     {
-        Task Download(string url);
+        Task<bool> Download();
     }
 }

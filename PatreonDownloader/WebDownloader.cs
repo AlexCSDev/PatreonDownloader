@@ -11,6 +11,7 @@ using PatreonDownloader.Models;
 
 namespace PatreonDownloader
 {
+    //TODO: Make disposable?
     internal sealed class WebDownloader : IWebDownloader
     {
         private HttpClient _httpClient;
