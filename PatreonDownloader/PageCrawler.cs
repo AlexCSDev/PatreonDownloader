@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Newtonsoft.Json;
 using NLog;
+using PatreonDownloader.Helpers;
 using PatreonDownloader.Models;
 using PatreonDownloader.Wrappers.Browser;
 using PuppeteerSharp;
@@ -19,13 +20,17 @@ namespace PatreonDownloader
     internal sealed class PageCrawler : IPageCrawler
     {
         private readonly IWebDownloader _webDownloader;
+        private readonly IRemoteFilenameRetriever _remoteFilenameRetriever;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private CampaignInfo _campaignInfo;
         private CookieContainer _cookieContainer;
-        public PageCrawler(IWebDownloader webDownloader)
+        private string _downloadDirectory;
+
+        public PageCrawler(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
+            _remoteFilenameRetriever = remoteFilenameRetriever ?? throw new ArgumentNullException(nameof(remoteFilenameRetriever));
         }
 
         public async Task Crawl(CampaignInfo campaignInfo)
@@ -35,6 +40,13 @@ namespace PatreonDownloader
             _logger.Info($"Starting crawling campaign {campaignInfo.Name}");
             List<GalleryEntry> galleryEntries = new List<GalleryEntry>();
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
+
+            _logger.Debug("Creating download directory");
+            _downloadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "download", campaignInfo.Name);
+            if (!Directory.Exists(_downloadDirectory))
+            {
+                Directory.CreateDirectory(_downloadDirectory);
+            }
 
             //TODO: Research possibility of not hardcoding this string
             string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Cuser_defined_tags%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={_campaignInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
@@ -56,77 +68,58 @@ namespace PatreonDownloader
 
             _logger.Info($"Starting download for #{_campaignInfo.Name}");
 
-            string downloadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "download", campaignInfo.Name);
-            if (!Directory.Exists(downloadDirectory))
-            {
-                Directory.CreateDirectory(downloadDirectory);
-            }
-
             //TODO: Download avatar and cover
             _logger.Info("Downloading avatar and cover");
             _logger.Debug("Retrieving avatar extension...");
-            string avatarExt = await RetrieveRemoteFileName(campaignInfo.AvatarUrl);
-            avatarExt = Path.GetExtension(avatarExt);
+            string avatarExt = await _remoteFilenameRetriever.RetrieveRemoteFileName(campaignInfo.AvatarUrl);
+            if (avatarExt != null)
+            {
+                avatarExt = Path.GetExtension(avatarExt);
+
+                _logger.Debug("Downloading avatar...");
+                await _webDownloader.DownloadFile(campaignInfo.AvatarUrl, Path.Combine(_downloadDirectory, $"avatar{avatarExt}"));
+            }
+            else
+            {
+                _logger.Error("Unable to retrieve remote filename for avatar!");
+            }
 
             _logger.Debug("Retrieving cover extension...");
-            string coverExt = await RetrieveRemoteFileName(campaignInfo.CoverUrl);
-            coverExt = Path.GetExtension(coverExt);
+            string coverExt = await _remoteFilenameRetriever.RetrieveRemoteFileName(campaignInfo.CoverUrl);
+            if (coverExt != null)
+            {
+                coverExt = Path.GetExtension(coverExt);
 
-            _logger.Debug("Downloading avatar...");
-            await _webDownloader.DownloadFile(campaignInfo.AvatarUrl, Path.Combine(downloadDirectory, $"avatar{avatarExt}"));
-
-            _logger.Debug("Downloading cover...");
-            await _webDownloader.DownloadFile(campaignInfo.CoverUrl, Path.Combine(downloadDirectory, $"cover{coverExt}"));
+                _logger.Debug("Downloading cover...");
+                await _webDownloader.DownloadFile(campaignInfo.CoverUrl, Path.Combine(_downloadDirectory, $"cover{coverExt}"));
+            }
+            else
+            {
+                _logger.Error("Unable to retrieve remote filename for cover!");
+            }
 
             for (int i = 0; i < galleryEntries.Count; i++)
             {
                 GalleryEntry entry = galleryEntries[i];
                 _logger.Info($"Downloading {i+1}/{galleryEntries.Count}: {entry.DownloadUrl}");
-                try
+
+                string filename = entry.Path;
+
+                _logger.Debug($"Sanitizing filename: {filename}");
+                foreach (char c in System.IO.Path.GetInvalidFileNameChars())
                 {
-                    await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"{entry.Path}_desc.txt"),
-                        entry.Description);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Unable to write description for {entry.Path}: {ex}");
+                    filename = filename.Replace(c, '_');
                 }
 
-                await _webDownloader.DownloadFile(entry.DownloadUrl, Path.Combine(downloadDirectory, entry.Path));
+                await _webDownloader.DownloadFile(entry.DownloadUrl, Path.Combine(_downloadDirectory, filename));
             }
 
             _logger.Debug($"Finished crawl");
         }
 
-        //TODO: Rewrite this to not recreate httpclient every time this method is called
-        private async Task<string> RetrieveRemoteFileName(string url)
-        {
-            try
-            {
-                var handler = new HttpClientHandler();
-                handler.UseCookies = true;
-                handler.CookieContainer = _cookieContainer;
-
-                HttpClient httpClient = new HttpClient(handler);
-                var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-
-                if (response.Content.Headers.ContentDisposition?.FileName != null)
-                    return response.Content.Headers.ContentDisposition.FileName.Replace("\"","");
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.Error($"HttpRequestException while trying to retrieve remote file name: {ex}");
-            }
-
-            string[] urlSplit = url.Split('?')[0].Split('/'); //TODO: replace with regex
-            string filename = urlSplit[urlSplit.Length - 1];
-
-            _logger.Debug($"Content-Disposition failed, fallback to url extraction, extracted name: {filename}");
-            return filename;
-        }
-
         private async Task<ParsingResult> ParsePage(string json)
         {
+            //TODO: COMMAND LINE TOGGLE FOR JSON DUMPING (DEBUG PURPOSES)
             List<GalleryEntry> galleryEntries = new List<GalleryEntry>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
 
@@ -156,9 +149,19 @@ namespace PatreonDownloader
                     continue;
                 }
 
+                //TODO: COMMAND LINE TOGGLE FOR THIS
+                try
+                {
+                    await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_description.txt"),
+                        jsonEntry.Attributes.Content);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Unable to write description for {jsonEntry.Id}: {ex}");
+                }
+
                 GalleryEntry entry = new GalleryEntry
                 {
-                    Description = jsonEntry.Attributes.Content,
                     Author = _campaignInfo.Name,
                     PageUrl = jsonEntry.Attributes.Url,
                     Name = jsonEntry.Attributes.Title
@@ -171,19 +174,37 @@ namespace PatreonDownloader
                 }
 
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(entry.Description);
+                doc.LoadHtml(jsonEntry.Attributes.Content);
                 HtmlNodeCollection imgNodeCollection = doc.DocumentNode.SelectNodes("//img");
                 if (imgNodeCollection != null)
                 {
-                    int cnt = 1;
                     foreach (var imgNode in imgNodeCollection)
                     {
-                        GalleryEntry subEntry = entry;
-                        subEntry.DownloadUrl = imgNode.Attributes["src"].Value;
-                        subEntry.Path = $"{jsonEntry.Id}_extimg_{ await RetrieveRemoteFileName(subEntry.DownloadUrl) }"; // RetrieveRemoteFileName?
-                        galleryEntries.Add(subEntry);
-                        _logger.Info($"[{jsonEntry.Id}] New external (image) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
-                        cnt++;
+                        string url = imgNode.Attributes["src"].Value;
+                        if (UrlChecker.IsValidUrl(url))
+                        {
+                            string filename =
+                                await _remoteFilenameRetriever.RetrieveRemoteFileName(url);
+
+                            if (filename != null)
+                            {
+                                GalleryEntry subEntry = entry;
+                                subEntry.DownloadUrl = url;
+                                subEntry.Path =
+                                    $"{jsonEntry.Id}_extimg_{filename}"; // RetrieveRemoteFileName?
+                                galleryEntries.Add(subEntry);
+                                _logger.Info(
+                                    $"[{jsonEntry.Id}] New external (image) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                            }
+                            else
+                            {
+                                _logger.Error($"[{jsonEntry.Id}] Unable to retrieve name for external (image) entry: {url}");
+                            }
+                        }
+                        else
+                        {
+                            _logger.Error($"[{jsonEntry.Id}] Invalid or blacklisted external (image) entry: {url}");
+                        }
                     }
                 }
 
@@ -206,31 +227,68 @@ namespace PatreonDownloader
                                         url = $"{url}?dl=1";
                                 }
 
-                                GalleryEntry subEntry = entry;
-                                subEntry.DownloadUrl = url;
-                                subEntry.Path = $"{jsonEntry.Id}_extdropbox_{ await RetrieveRemoteFileName(url) }";
-                                galleryEntries.Add(subEntry);
-                                _logger.Info($"[{jsonEntry.Id}] New external (dropbox) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                                string filename =
+                                    await _remoteFilenameRetriever.RetrieveRemoteFileName(url);
+
+                                if (filename != null)
+                                {
+                                    GalleryEntry subEntry = entry;
+                                    subEntry.DownloadUrl = url;
+                                    subEntry.Path = $"{jsonEntry.Id}_extdropbox_{ filename }";
+                                    galleryEntries.Add(subEntry);
+                                    _logger.Info($"[{jsonEntry.Id}] New external (dropbox) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                                }
+                                else
+                                {
+                                    _logger.Error($"[{jsonEntry.Id}] Unable to retrieve name for external (dropbox) entry: {url}");
+                                }
+
                             }
                             else if (url.IndexOf("drive.google.com/file/d/", StringComparison.Ordinal) != -1)
                             {
                                 //TODO: GOOGLE DRIVE SUPPORT
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] google drive link found for: {url}");
+                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] Google Drive link found: {url}");
                             }
                             else if (url.StartsWith("https://mega.nz/"))
                             {
                                 //TODO: MEGA SUPPORT
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] MEGA link found for: {url}");
+                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] MEGA link found: {url}");
+                            }
+                            else if (url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 || url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
+                            {
+                                //TODO: YOUTUBE SUPPORT?
+                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] YOUTUBE link found: {url}");
+                            }
+                            else if (url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
+                            {
+                                //TODO: IMGUR SUPPORT
+                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] IMGUR link found: {url}");
                             }
                             else
                             {
                                 _logger.Warn($"[{jsonEntry.Id}] Unknown provider link found for, assuming it's direct url: {url}");
+                                if (UrlChecker.IsValidUrl(url))
+                                {
+                                    string filename =
+                                        await _remoteFilenameRetriever.RetrieveRemoteFileName(url);
 
-                                GalleryEntry subEntry = entry;
-                                subEntry.DownloadUrl = url;
-                                subEntry.Path = $"{jsonEntry.Id}_extfile_{ await RetrieveRemoteFileName(url) }";
-                                galleryEntries.Add(subEntry);
-                                _logger.Info($"[{jsonEntry.Id}] New external (file) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                                    if (filename != null)
+                                    {
+                                        GalleryEntry subEntry = entry;
+                                        subEntry.DownloadUrl = url;
+                                        subEntry.Path = $"{jsonEntry.Id}_direct_{ filename }";
+                                        galleryEntries.Add(subEntry);
+                                        _logger.Info($"[{jsonEntry.Id}] New external (direct) entry: {subEntry.Path} from {subEntry.DownloadUrl}");
+                                    }
+                                    else
+                                    {
+                                        _logger.Error($"[{jsonEntry.Id}] Unable to retrieve name for external (direct) entry: {url}");
+                                    }
+                                }
+                                else
+                                {
+                                    _logger.Error($"[{jsonEntry.Id}] Direct url is invalid or blacklisted, skipping: {url}");
+                                }
                             }
                         }
                         else
@@ -336,15 +394,35 @@ namespace PatreonDownloader
                         _logger.Debug($"[{jsonEntry.Id}] Found image data");
                         if (jsonEntry.Attributes.Image.LargeUrl != null)
                         {
-                            _logger.Debug($"[{jsonEntry.Id}] Found large url");
-                            entry.DownloadUrl = jsonEntry.Attributes.Image.LargeUrl;
-                            entry.Path = $"{jsonEntry.Id}_post_{ await RetrieveRemoteFileName(jsonEntry.Attributes.Image.LargeUrl) }";
+                            string filename =
+                                await _remoteFilenameRetriever.RetrieveRemoteFileName(jsonEntry.Attributes.Image.LargeUrl);
+
+                            if (filename != null)
+                            {
+                                _logger.Debug($"[{jsonEntry.Id}] Found large url");
+                                entry.DownloadUrl = jsonEntry.Attributes.Image.LargeUrl;
+                                entry.Path = $"{jsonEntry.Id}_post_{ filename }";
+                            }
+                            else
+                            {
+                                _logger.Error($"[{jsonEntry.Id}] Unable to retrieve name for large url: {jsonEntry.Attributes.Image.LargeUrl}");
+                            }
                         }
                         else if (jsonEntry.Attributes.Image.Url != null)
                         {
-                            _logger.Debug($"[{jsonEntry.Id}] Found regular url");
-                            entry.DownloadUrl = jsonEntry.Attributes.Image.Url;
-                            entry.Path = $"{jsonEntry.Id}_post_{ await RetrieveRemoteFileName(jsonEntry.Attributes.Image.Url) }";
+                            string filename =
+                                await _remoteFilenameRetriever.RetrieveRemoteFileName(jsonEntry.Attributes.Image.Url);
+
+                            if (filename != null)
+                            {
+                                _logger.Debug($"[{jsonEntry.Id}] Found regular url");
+                                entry.DownloadUrl = jsonEntry.Attributes.Image.Url;
+                                entry.Path = $"{jsonEntry.Id}_post_{ filename }";
+                            }
+                            else
+                            {
+                                _logger.Error($"[{jsonEntry.Id}] Unable to retrieve name for regular url: {jsonEntry.Attributes.Image.Url}");
+                            }
                         }
                         else
                         {

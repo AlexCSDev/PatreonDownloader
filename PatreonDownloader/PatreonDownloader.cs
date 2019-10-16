@@ -5,6 +5,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Helpers;
 using PatreonDownloader.Models;
 using PatreonDownloader.Wrappers.Browser;
 using PuppeteerSharp;
@@ -105,8 +106,11 @@ namespace PatreonDownloader
             CampaignInfo campaignInfo = await campaignInfoRetriever.RetrieveCampaignInfo(campaignId);
             _logger.Info($"Campaign name: {campaignInfo.Name}");
 
+            _logger.Debug("Initializing remote filename retriever");
+            IRemoteFilenameRetriever remoteFilenameRetriever = new RemoteFilenameRetriever(cookieContainer);
+
             _logger.Debug("Initializing page crawler");
-            IPageCrawler pageCrawler = new PageCrawler(webDownloader);
+            IPageCrawler pageCrawler = new PageCrawler(webDownloader, remoteFilenameRetriever);
 
             _logger.Debug("Starting crawler");
             await pageCrawler.Crawl(campaignInfo);
