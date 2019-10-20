@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PatreonDownloader\PatreonDownloader.csproj" />
+    <ProjectReference Include="..\PatreonDownloader\PatreonDownloader.Engine.csproj" />
   </ItemGroup>
 
 </Project>

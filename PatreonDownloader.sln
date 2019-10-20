@@ -3,9 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader", "PatreonDownloader\PatreonDownloader.csproj", "{88D67B58-02E2-4231-BB89-92BB74622560}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Engine", "PatreonDownloader.Engine\PatreonDownloader.Engine.csproj", "{88D67B58-02E2-4231-BB89-92BB74622560}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.Interfaces", "PatreonDownloader.Interfaces\PatreonDownloader.Interfaces.csproj", "{487BE690-3697-476C-ACCD-E66E58A82341}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.PuppeteerCookieRetriever", "PatreonDownloader.CookieRetriever.Puppeteer\PatreonDownloader.PuppeteerCookieRetriever.csproj", "{2894BF59-9EC4-465B-9DBF-2D3C47633E93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.App", "PatreonDownloader.App\PatreonDownloader.App.csproj", "{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +27,18 @@ Global
 		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{487BE690-3697-476C-ACCD-E66E58A82341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{487BE690-3697-476C-ACCD-E66E58A82341}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{487BE690-3697-476C-ACCD-E66E58A82341}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{487BE690-3697-476C-ACCD-E66E58A82341}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
