@@ -11,6 +11,7 @@ using PatreonDownloader.Engine.Models;
 using PatreonDownloader.Engine.Models.JSONObjects;
 using PatreonDownloader.Engine.Models.JSONObjects.Posts;
 using PatreonDownloader.Engine.Stages.Downloading;
+using PatreonDownloader.Interfaces.Models;
 
 namespace PatreonDownloader.Engine.Stages.Crawling
 {
@@ -139,7 +140,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
                         CrawledUrl subEntry = (CrawledUrl)entry.Clone();
                         subEntry.Url = url;
-                        subEntry.UrlType = CrawledUrlType.ExternalImage;
+                        subEntry.UrlType = CrawledUrlType.ExternalUrl;
                         galleryEntries.Add(subEntry);
                         _logger.Info(
                             $"[{jsonEntry.Id}] New external (image) entry: {subEntry.Url}");
@@ -156,52 +157,12 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                         if (linkNode.Attributes["href"] != null)
                         {
                             var url = linkNode.Attributes["href"].Value;
-                            if (url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
-                            {
-                                if (!url.EndsWith("?dl=1"))
-                                {
-                                    if (url.EndsWith("?dl=0"))
-                                        url = url.Replace("?dl=0", "?dl=1");
-                                    else
-                                        url = $"{url}?dl=1";
-                                }
 
-                                CrawledUrl subEntry = (CrawledUrl)entry.Clone();
-                                subEntry.Url = url;
-                                subEntry.UrlType = CrawledUrlType.DropboxUrl;
-                                galleryEntries.Add(subEntry);
-                                _logger.Info($"[{jsonEntry.Id}] New external (dropbox) entry: {subEntry.Url}");
-                            }
-                            else if (url.IndexOf("drive.google.com/file/d/", StringComparison.Ordinal) != -1)
-                            {
-                                //TODO: GOOGLE DRIVE SUPPORT
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] Google Drive link found: {url}");
-                            }
-                            else if (url.StartsWith("https://mega.nz/"))
-                            {
-                                //TODO: MEGA SUPPORT
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] MEGA link found: {url}");
-                            }
-                            else if (url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 || url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
-                            {
-                                //TODO: YOUTUBE SUPPORT?
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] YOUTUBE link found: {url}");
-                            }
-                            else if (url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
-                            {
-                                //TODO: IMGUR SUPPORT
-                                _logger.Fatal($"[{jsonEntry.Id}] [NOT SUPPORTED] IMGUR link found: {url}");
-                            }
-                            else
-                            {
-                                _logger.Warn($"[{jsonEntry.Id}] Unknown provider link found for, assuming it's direct url: {url}");
-
-                                CrawledUrl subEntry = (CrawledUrl)entry.Clone();
-                                subEntry.Url = url;
-                                subEntry.UrlType = CrawledUrlType.DirectUrl;
-                                galleryEntries.Add(subEntry);
-                                _logger.Info($"[{jsonEntry.Id}] New external (direct) entry: {subEntry.Url}");
-                            }
+                            CrawledUrl subEntry = (CrawledUrl)entry.Clone();
+                            subEntry.Url = url;
+                            subEntry.UrlType = CrawledUrlType.ExternalUrl;
+                            galleryEntries.Add(subEntry);
+                            _logger.Info($"[{jsonEntry.Id}] New external (direct) entry: {subEntry.Url}");
                         }
                         else
                         {

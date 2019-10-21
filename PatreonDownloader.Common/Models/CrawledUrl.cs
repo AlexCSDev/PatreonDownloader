@@ -1,27 +1,28 @@
 ﻿using System;
 
-namespace PatreonDownloader.Engine.Models
+namespace PatreonDownloader.Interfaces.Models
 {
-    internal enum CrawledUrlType
+    public enum CrawledUrlType
     {
         Unknown,
         PostFile,
         PostAttachment,
         PostMedia,
-        ExternalImage,
+        ExternalUrl,
+        /*ExternalImage,
         DropboxUrl,
         GoogleDriveUrl,
         MegaUrl,
         YoutubeVideo,
         ImgurUrl,
-        DirectUrl,
+        DirectUrl,*/
         CoverFile,
         AvatarFile
     }
     /// <summary>
     /// Represents single file and all required metadata
     /// </summary>
-    internal sealed class CrawledUrl : ICloneable
+    public sealed class CrawledUrl : ICloneable
     {
         public long PostId { get; set; }
         public string Url { get; set; }

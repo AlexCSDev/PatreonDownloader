@@ -2,6 +2,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Engine.Models;
 using PatreonDownloader.Engine.Stages.Crawling;
@@ -66,8 +67,11 @@ namespace PatreonDownloader.Engine
             _logger.Debug("Initializing remote filename retriever");
             IRemoteFilenameRetriever remoteFilenameRetriever = new RemoteFilenameRetriever(cookieContainer);
 
+            _logger.Debug("Initializing default (direct) downloader");
+            IDownloader directDownloader = new DirectDownloader(webDownloader, remoteFilenameRetriever);
+
             _logger.Debug("Initializing download manager");
-            IDownloadManager downloadManager = new DownloadManager(webDownloader, remoteFilenameRetriever);
+            IDownloadManager downloadManager = new DownloadManager(directDownloader);
 
             _logger.Debug("Initializing page crawler");
             IPageCrawler pageCrawler = new PageCrawler(webDownloader, downloadManager);

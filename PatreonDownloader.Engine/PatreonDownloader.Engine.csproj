@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PatreonDownloader.Common\PatreonDownloader.Common.csproj" />
     <ProjectReference Include="..\PatreonDownloader.CookieRetriever.Puppeteer\PatreonDownloader.PuppeteerCookieRetriever.csproj" />
-    <ProjectReference Include="..\PatreonDownloader.Interfaces\PatreonDownloader.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

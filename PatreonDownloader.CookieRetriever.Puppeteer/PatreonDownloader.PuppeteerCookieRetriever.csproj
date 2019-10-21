@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PatreonDownloader.Interfaces\PatreonDownloader.Interfaces.csproj" />
+    <ProjectReference Include="..\PatreonDownloader.Common\PatreonDownloader.Common.csproj" />
   </ItemGroup>
 
 </Project>

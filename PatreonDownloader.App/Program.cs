@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Interfaces;
 
 //Alow tests to see internal classes

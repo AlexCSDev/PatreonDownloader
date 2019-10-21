@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using PatreonDownloader.Interfaces.Models;
 
 namespace PatreonDownloader.Engine.Models
 {

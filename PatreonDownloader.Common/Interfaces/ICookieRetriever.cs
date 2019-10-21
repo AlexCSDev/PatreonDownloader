@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
+﻿using System.Net;
 using System.Threading.Tasks;
 
-namespace PatreonDownloader.Interfaces
+namespace PatreonDownloader.Common.Interfaces
 {
     /// <summary>
     /// Interface for additional implementations of cookie retrievers

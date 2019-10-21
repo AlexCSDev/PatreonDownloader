@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser;
 using PuppeteerSharp;
