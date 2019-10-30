@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Newtonsoft.Json;
 
 // This file contains all classes used for representing deserialized json response of "posts" api endpoint
@@ -19,6 +20,27 @@ namespace PatreonDownloader.Engine.Models.JSONObjects.Posts
         public string Subject { get; set; }
         [JsonProperty("url")]
         public string Url { get; set; }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append($"Provider: {Provider}, Provider URL: {ProviderUrl}");
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            sb.Append($"Subject: {Subject}");
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            sb.Append($"Url: {Url}");
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            sb.Append($"Description: {Description}");
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            sb.Append($"Html: {Html}");
+            sb.Append(Environment.NewLine);
+            sb.Append(Environment.NewLine);
+            return sb.ToString();
+        }
     }
     public class Image
     {

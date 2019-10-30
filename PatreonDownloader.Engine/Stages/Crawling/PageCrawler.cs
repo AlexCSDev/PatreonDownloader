@@ -123,10 +123,11 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     PostId = Convert.ToInt64((string) jsonEntry.Id)
                 };
 
-                //TODO: EMBED SUPPORT
                 if (jsonEntry.Attributes.Embed != null)
                 {
-                    _logger.Fatal($"[{jsonEntry.Id}] NOT IMPLEMENTED: POST EMBED");
+                    _logger.Debug($"{jsonEntry.Id} Embed found");
+                    await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_embed.txt"),
+                        jsonEntry.Attributes.Embed.ToString());
                 }
 
                 HtmlDocument doc = new HtmlDocument();
