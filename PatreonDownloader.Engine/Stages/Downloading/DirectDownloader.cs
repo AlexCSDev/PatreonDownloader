@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Engine.Exceptions.WebDownloaderExceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
@@ -120,9 +122,22 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 filename = filename.Replace(c, '_');
             }
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
+            try
+            {
+                await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.Error($"HttpRequestException while downloading file ({crawledUrl.Url}): {ex}");
+                return false;
+            }
+            catch (FileAlreadyExistsException ex)
+            {
+                _logger.Warn($"File {ex.Path} already exists, file will not be downloaded");
+                return false;
+            }
 
-            return true; //TODO: Check DownloadFile's return value?
+            return true;
         }
     }
 }

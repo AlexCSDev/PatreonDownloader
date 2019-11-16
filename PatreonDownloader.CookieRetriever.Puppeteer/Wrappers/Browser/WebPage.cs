@@ -16,6 +16,11 @@ namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
             _page = page ?? throw new ArgumentNullException(nameof(page));
         }
 
+        public bool IsClosed
+        {
+            get { return _page.IsClosed; }
+        }
+
         public async Task<IWebResponse> GoToAsync(string url, int? timeout = null, WaitUntilNavigation[] waitUntil = null)
         {
             Response response = await _page.GoToAsync(url, timeout, waitUntil);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using PuppeteerSharp;
 
@@ -15,6 +16,12 @@ namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
         {
             _response = response ?? throw new ArgumentNullException(nameof(response));
         }
+
+        public HttpStatusCode Status
+        {
+            get { return _response.Status; }
+        }
+        
         public async Task<string> TextAsync()
         {
             return await _response.TextAsync();

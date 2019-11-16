@@ -15,6 +15,7 @@ namespace PatreonDownloader.Engine
     {
         private readonly ICookieRetriever _cookieRetriever;
         private readonly string _url;
+        private readonly PatreonDownloaderSettings _settings;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -22,12 +23,25 @@ namespace PatreonDownloader.Engine
         /// Create a new downloader for specified url
         /// </summary>
         /// <param name="cookieRetriever">Cookie retriever object</param>
-        /// <param name="url">Posts page url</param>
-        public PatreonDownloader(ICookieRetriever cookieRetriever, string url)
+        /// <param name="creatorName">Creator name</param>
+        /// <param name="settings">Downloader settings, will be set to default values if not provided</param>
+        public PatreonDownloader(ICookieRetriever cookieRetriever, string creatorName, PatreonDownloaderSettings settings = null)
         {
             //TODO: Check that url is valid
-            _url = url ?? throw new ArgumentNullException(nameof(url));
+            //We only ask for creator name because
+            //we assume that every creator has a friendly url
+            //like https://www.patreon.com/CREATORNAME/posts
+            _url = creatorName ?? throw new ArgumentNullException(nameof(creatorName));
+
+            _url = $"https://www.patreon.com/{_url}/posts"; //Build valid url from creator name
+
             _cookieRetriever = cookieRetriever ?? throw new ArgumentNullException(nameof(cookieRetriever));
+
+            _settings = settings ?? new PatreonDownloaderSettings();
+
+            _settings.Consumed = true;
+
+            _logger.Debug($"Patreon downloader instance created. Creator: {creatorName}, Settings: {_settings}");
         }
 
         public async Task<bool> Download()
@@ -74,7 +88,7 @@ namespace PatreonDownloader.Engine
             IDownloadManager downloadManager = new DownloadManager(directDownloader);
 
             _logger.Debug("Initializing page crawler");
-            IPageCrawler pageCrawler = new PageCrawler(webDownloader, downloadManager);
+            IPageCrawler pageCrawler = new PageCrawler(webDownloader, downloadManager, _settings);
 
             _logger.Debug("Starting crawler");
             await pageCrawler.Crawl(campaignInfo);

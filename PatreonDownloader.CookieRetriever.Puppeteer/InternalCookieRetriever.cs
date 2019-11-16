@@ -22,9 +22,30 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
             _browser = browser ?? throw new ArgumentNullException(nameof(browser));
         }
 
-        public Task Login()
+        private async Task Login()
         {
-            throw new NotImplementedException();
+            IWebPage page = null;
+            bool loggedIn = false;
+            do
+            {
+                if(page == null || page.IsClosed)
+                    page = await _browser.NewPageAsync();
+                _logger.Debug("Checking login status");
+                IWebResponse response = await page.GoToAsync("https://www.patreon.com/api/current_user");
+                if (response.Status == HttpStatusCode.Unauthorized)
+                {
+                    _logger.Debug("We are NOT logged in, opening login page");
+                    await page.GoToAsync("https://www.patreon.com/login");
+                    await page.WaitForRequestAsync(request => request.Url == "https://www.patreon.com/home");
+                }
+                else
+                {
+                    _logger.Debug("We are logged in");
+                    loggedIn = true;
+                }
+            } while (!loggedIn);
+
+            await page.CloseAsync();
         }
 
         /// <summary>
@@ -35,6 +56,10 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
         public async Task<CookieContainer> RetrieveCookies(string url)
         {
             CookieContainer cookieContainer = new CookieContainer();
+
+            _logger.Debug("Calling login check");
+            await Login();
+
             IWebPage page = await _browser.NewPageAsync();
             await page.GoToAsync(url);
 

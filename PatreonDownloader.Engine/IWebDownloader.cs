@@ -5,7 +5,7 @@ namespace PatreonDownloader.Engine
 {
     internal interface IWebDownloader
     {
-        Task<DownloadResult> DownloadFile(string url, string path);
+        Task DownloadFile(string url, string path);
 
         Task<string> DownloadString(string url);
     }

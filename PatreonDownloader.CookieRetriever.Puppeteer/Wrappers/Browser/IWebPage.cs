@@ -10,6 +10,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
     /// </summary>
     internal interface IWebPage
     {
+        bool IsClosed { get; }
         Task<IWebResponse> GoToAsync(string url, int? timeout = null, WaitUntilNavigation[] waitUntil = null);
         Task<IWebRequest> WaitForRequestAsync(Func<Request, bool> predicate, WaitForOptions options = null);
         Task<CookieParam[]> GetCookiesAsync(params string[] urls);

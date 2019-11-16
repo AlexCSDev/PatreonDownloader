@@ -19,16 +19,19 @@ namespace PatreonDownloader.Engine.Stages.Crawling
     {
         private readonly IWebDownloader _webDownloader;
         private readonly IDownloadManager _downloadManager;
+        private readonly PatreonDownloaderSettings _settings;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private CampaignInfo _campaignInfo;
         private CookieContainer _cookieContainer;
         private string _downloadDirectory;
 
-        public PageCrawler(IWebDownloader webDownloader, IDownloadManager downloadManager)
+        public PageCrawler(IWebDownloader webDownloader, IDownloadManager downloadManager, PatreonDownloaderSettings settings)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
             _downloadManager = downloadManager ?? throw new ArgumentNullException(nameof(downloadManager));
+
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public async Task Crawl(CampaignInfo campaignInfo)
@@ -46,17 +49,26 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 Directory.CreateDirectory(_downloadDirectory);
             }
 
-            _logger.Debug("Adding avatar and cover...");
-            crawledUrls.Add(new CrawledUrl { PostId = 0, Url = campaignInfo.AvatarUrl, UrlType = CrawledUrlType.AvatarFile });
-            crawledUrls.Add(new CrawledUrl { PostId = 0, Url = campaignInfo.CoverUrl, UrlType = CrawledUrlType.CoverFile });
+            if (_settings.DownloadAvatarAndCover)
+            {
+                _logger.Debug("Adding avatar and cover...");
+                crawledUrls.Add(new CrawledUrl { PostId = 0, Url = campaignInfo.AvatarUrl, UrlType = CrawledUrlType.AvatarFile });
+                crawledUrls.Add(new CrawledUrl { PostId = 0, Url = campaignInfo.CoverUrl, UrlType = CrawledUrlType.CoverFile });
+            }
 
             //TODO: Research possibility of not hardcoding this string
             string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Cuser_defined_tags%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={_campaignInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
 
+            int page = 0;
             while (!string.IsNullOrEmpty(nextPage))
             {
+                page++;
                 _logger.Debug($"New page");
                 string json = await _webDownloader.DownloadString(nextPage);
+
+                if(_settings.SaveJson)
+                    await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"page_{page}.json"),
+                        json);
 
                 ParsingResult result = await ParsePage(json);
 
@@ -77,7 +89,6 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
         private async Task<ParsingResult> ParsePage(string json)
         {
-            //TODO: COMMAND LINE TOGGLE FOR JSON DUMPING (DEBUG PURPOSES)
             List<CrawledUrl> galleryEntries = new List<CrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
 
@@ -107,15 +118,17 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     continue;
                 }
 
-                //TODO: COMMAND LINE TOGGLE FOR THIS
-                try
+                if (_settings.SaveDescriptions)
                 {
-                    await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_description.txt"),
-                        jsonEntry.Attributes.Content); //TODO: WRITE TITLE, AND OTHER METADATA?
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Unable to write description for {jsonEntry.Id}: {ex}");
+                    try
+                    {
+                        await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_description.txt"),
+                            jsonEntry.Attributes.Content); //TODO: WRITE TITLE, AND OTHER METADATA?
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error($"Unable to write description for {jsonEntry.Id}: {ex}");
+                    }
                 }
 
                 CrawledUrl entry = new CrawledUrl
@@ -123,11 +136,14 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     PostId = Convert.ToInt64((string) jsonEntry.Id)
                 };
 
-                if (jsonEntry.Attributes.Embed != null)
+                if (_settings.SaveEmbeds)
                 {
-                    _logger.Debug($"{jsonEntry.Id} Embed found");
-                    await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_embed.txt"),
-                        jsonEntry.Attributes.Embed.ToString());
+                    if (jsonEntry.Attributes.Embed != null)
+                    {
+                        _logger.Debug($"{jsonEntry.Id} Embed found");
+                        await File.WriteAllTextAsync(Path.Combine(_downloadDirectory, $"{jsonEntry.Id}_embed.txt"),
+                            jsonEntry.Attributes.Embed.ToString());
+                    }
                 }
 
                 HtmlDocument doc = new HtmlDocument();

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Engine.Exceptions.WebDownloaderExceptions;
 using PatreonDownloader.Engine.Models;
 
 namespace PatreonDownloader.Engine
@@ -11,7 +12,7 @@ namespace PatreonDownloader.Engine
     //TODO: Make disposable?
     internal sealed class WebDownloader : IWebDownloader
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public WebDownloader(CookieContainer cookieContainer)
@@ -23,48 +24,27 @@ namespace PatreonDownloader.Engine
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36");
         }
 
-        public async Task<DownloadResult> DownloadFile(string url, string path)
+        public async Task DownloadFile(string url, string path)
         {
             if (File.Exists(path))
             {
-                _logger.Warn($"File {path} already exists, file will not be downloaded");
-                return DownloadResult.FileExists;
+                throw new FileAlreadyExistsException(path);
             }
 
-            try
+            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
-                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                using (Stream contentStream =
+                        await (await _httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
+                    stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
                 {
-                    using (Stream contentStream =
-                            await (await _httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                        stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
-                    {
-                        _logger.Debug($"Starting download: {url}");
-                        await contentStream.CopyToAsync(stream);
-                        _logger.Debug($"Finished download: {url}");
-                    }
+                    _logger.Debug($"Starting download: {url}");
+                    await contentStream.CopyToAsync(stream);
+                    _logger.Debug($"Finished download: {url}");
                 }
             }
-            catch (HttpRequestException ex)
-            {
-                _logger.Error($"HttpRequestException while downloading file ({url}): {ex}");
-                return DownloadResult.HttpError;
-            }
-            catch (System.IO.IOException ex)
-            {
-                _logger.Error($"IOerror while downloading file (not enough disk space?) ({url}): {ex}");
-                return DownloadResult.IOError;
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Unknown error while downloading file ({url}): {ex}");
-                return DownloadResult.UnknownError;
-            }
-
-            return DownloadResult.Success;
         }
 
-        //TODO: Error handling
+
         public async Task<string> DownloadString(string url)
         {
             return await _httpClient.GetStringAsync(url);

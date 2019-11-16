@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Net;
+using System.Threading.Tasks;
 
 namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
 {
@@ -8,6 +9,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
     /// </summary>
     internal interface IWebResponse
     {
+        HttpStatusCode Status { get; }
         Task<string> TextAsync();
     }
 }

@@ -15,11 +15,6 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
         private Browser _browser;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public Task Login()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<CookieContainer> RetrieveCookies(string url)
         {
             try
