@@ -6,11 +6,9 @@ using NLog;
 using PatreonDownloader.App.Models;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Engine;
+using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Interfaces;
 
-//Alow tests to see internal classes
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: InternalsVisibleTo("PatreonDownloader.Tests")]
 namespace PatreonDownloader.App
 {
     class Program
@@ -33,7 +31,7 @@ namespace PatreonDownloader.App
                 creatorName = options.CreatorName;
                 settings = new PatreonDownloaderSettings
                 {
-                    DownloadAvatarAndCover = options.DownloadAvatarAndCover,
+                    SaveAvatarAndCover = options.SaveAvatarAndCover,
                     SaveDescriptions = options.SaveDescriptions,
                     SaveEmbeds = options.SaveEmbeds,
                     SaveJson = options.SaveJson
@@ -43,7 +41,23 @@ namespace PatreonDownloader.App
             if (string.IsNullOrEmpty(creatorName) || settings == null)
                 return;
 
-            await RunPatreonDownloader(creatorName, settings);
+            try
+            {
+                await RunPatreonDownloader(creatorName, settings);
+            }
+            catch (Exception ex)
+            {
+                /*DownloadException downloadException = ex as DownloadException;
+                if (downloadException != null)
+                {
+                    string logMessage = $"Download error: {downloadException.Message}";
+                    if (downloadException.InnerException != null)
+                        logMessage += $". Inner Exception: {downloadException.InnerException}";
+                    _logger.Error($"Download error: {downloadException.Message}. {downloadException.InnerException != null ? "Inner exception: "}");
+                }*/
+                _logger.Fatal($"Fatal error, application will be closed: {ex}");
+                Environment.Exit(0);
+            }
         }
 
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
@@ -68,9 +82,9 @@ namespace PatreonDownloader.App
             //TODO: Pluggable architecture
             ICookieRetriever cookieRetriever = new PuppeteerCookieRetriever.PuppeteerCookieRetriever();
 
-            using (_patreonDownloader = new Engine.PatreonDownloader(cookieRetriever, creatorName, settings))
+            using (_patreonDownloader = new Engine.PatreonDownloader(cookieRetriever))
             {
-                bool result = await _patreonDownloader.Download();
+                bool result = await _patreonDownloader.Download(creatorName, settings);
 
                 _logger.Info($"{(result ? "Successfully" : "UNSUCCESSFULLY" )} finished downloading {creatorName}");
             }

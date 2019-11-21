@@ -10,8 +10,12 @@ namespace PatreonDownloader.Engine
         private bool _saveDescriptions;
         private bool _saveEmbeds;
         private bool _saveJson;
-        private bool _downloadAvatarAndCover;
+        private bool _saveAvatarAndCover;
+        private string _downloadDirectory;
 
+        /// <summary>
+        /// Any attempt to set properties will result in exception if this set to true
+        /// </summary>
         internal bool Consumed { get; set; }
 
         public bool SaveDescriptions
@@ -32,10 +36,19 @@ namespace PatreonDownloader.Engine
             set => ConsumableSetter.Set(Consumed, ref _saveJson, value);
         }
 
-        public bool DownloadAvatarAndCover
+        public bool SaveAvatarAndCover
         {
-            get => _downloadAvatarAndCover;
-            set => ConsumableSetter.Set(Consumed, ref _downloadAvatarAndCover, value);
+            get => _saveAvatarAndCover;
+            set => ConsumableSetter.Set(Consumed, ref _saveAvatarAndCover, value);
+        }
+
+        /// <summary>
+        /// Target directory for downloaded files. If set to null files will be downloaded into #AppDirectory#/downloads/#CreatorName#.
+        /// </summary>
+        public string DownloadDirectory
+        {
+            get => _downloadDirectory;
+            set => ConsumableSetter.Set(Consumed, ref _downloadDirectory, value);
         }
 
         public PatreonDownloaderSettings()
@@ -43,12 +56,13 @@ namespace PatreonDownloader.Engine
             _saveDescriptions = true;
             _saveEmbeds = true;
             _saveJson = true;
-            _downloadAvatarAndCover = true;
+            _saveAvatarAndCover = true;
+            _downloadDirectory = null;
         }
 
         public override string ToString()
         {
-            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},DownloadAvatarAndCover={_downloadAvatarAndCover}";
+            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory}";
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
@@ -13,6 +14,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
     internal sealed class DownloadManager : IDownloadManager
     {
         private IDownloader _defaultDownloader;
+
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public DownloadManager(IDownloader defaultDownloader)
@@ -38,7 +40,19 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 //TODO: CUSTOM DOWNLOADER SUPPORT
                 if (await _defaultDownloader.IsSupportedUrl(entry.Url))
-                    await _defaultDownloader.Download(entry, downloadDirectory);
+                {
+                    try
+                    {
+                        await _defaultDownloader.Download(entry, downloadDirectory);
+                    }
+                    catch (DownloadException ex)
+                    {
+                        string logMessage = $"Download error: {ex.Message}";
+                        if (ex.InnerException != null)
+                            logMessage += $". Inner Exception: {ex.InnerException}";
+                        _logger.Error(logMessage);
+                    }
+                }
             }
         }
     }

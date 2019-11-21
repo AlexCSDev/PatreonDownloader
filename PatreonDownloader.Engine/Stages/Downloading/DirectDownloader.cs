@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
-using PatreonDownloader.Engine.Exceptions.WebDownloaderExceptions;
+using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
@@ -35,7 +35,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
             return await Task.FromResult(true);
         }
 
-        public async Task<bool> Download(CrawledUrl crawledUrl, string downloadDirectory)
+        public async Task Download(CrawledUrl crawledUrl, string downloadDirectory)
         {
             if (crawledUrl.Url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
             {
@@ -103,9 +103,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 if (remoteFilename == null)
                 {
-                    _logger.Error(
-                        $"[{crawledUrl.PostId}] Unable to retrieve name for external entry of type {crawledUrl.UrlType}: {crawledUrl.Url}");
-                    return false;
+                    throw new DownloadException($"[{crawledUrl.PostId}] Unable to retrieve name for external entry of type {crawledUrl.UrlType}: {crawledUrl.Url}");
                 }
 
                 filename += $"_{remoteFilename}";
@@ -126,18 +124,14 @@ namespace PatreonDownloader.Engine.Stages.Downloading
             {
                 await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
             }
-            catch (HttpRequestException ex)
+            catch (DownloadException)
             {
-                _logger.Error($"HttpRequestException while downloading file ({crawledUrl.Url}): {ex}");
-                return false;
+                throw; //Re-throw download exception
             }
-            catch (FileAlreadyExistsException ex)
+            catch (Exception ex)
             {
-                _logger.Warn($"File {ex.Path} already exists, file will not be downloaded");
-                return false;
+                throw new DownloadException($"Unable to download {crawledUrl.Url}", ex);
             }
-
-            return true;
         }
     }
 }

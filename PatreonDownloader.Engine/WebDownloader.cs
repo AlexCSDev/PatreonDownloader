@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NLog;
-using PatreonDownloader.Engine.Exceptions.WebDownloaderExceptions;
+using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Models;
 
 namespace PatreonDownloader.Engine
@@ -28,7 +28,7 @@ namespace PatreonDownloader.Engine
         {
             if (File.Exists(path))
             {
-                throw new FileAlreadyExistsException(path);
+                throw new DownloadException($"File {path} already exists");
             }
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))

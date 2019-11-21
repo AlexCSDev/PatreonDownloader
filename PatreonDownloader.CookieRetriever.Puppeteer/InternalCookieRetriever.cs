@@ -53,7 +53,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
         /// </summary>
         /// <param name="url">Url of page to retrieve cookies from</param>
         /// <returns></returns>
-        public async Task<CookieContainer> RetrieveCookies(string url)
+        public async Task<CookieContainer> RetrieveCookies()
         {
             CookieContainer cookieContainer = new CookieContainer();
 
@@ -61,7 +61,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
             await Login();
 
             IWebPage page = await _browser.NewPageAsync();
-            await page.GoToAsync(url);
+            await page.GoToAsync("https://www.patreon.com/home");
 
             CookieParam[] browserCookies = await page.GetCookiesAsync();
 

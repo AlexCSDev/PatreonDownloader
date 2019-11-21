@@ -15,7 +15,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
         private Browser _browser;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public async Task<CookieContainer> RetrieveCookies(string url)
+        public async Task<CookieContainer> RetrieveCookies()
         {
             try
             {
@@ -24,7 +24,8 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
                 _logger.Debug("Launching browser");
                 _browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new LaunchOptions
                 {
-                    Devtools = true,
+                    //Devtools = true,
+                    Headless = false,
                     UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
                 });
 
@@ -39,7 +40,7 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
                 ICookieRetriever cookieRetriever = new InternalCookieRetriever(browserWrapper);
 
                 _logger.Debug("Retrieving cookies");
-                CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies(url);
+                CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies();
 
                 _logger.Debug("Closing browser");
                 await _browser.CloseAsync();

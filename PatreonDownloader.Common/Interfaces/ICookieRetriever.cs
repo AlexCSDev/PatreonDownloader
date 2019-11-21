@@ -8,6 +8,6 @@ namespace PatreonDownloader.Common.Interfaces
     /// </summary>
     public interface ICookieRetriever
     {
-        Task<CookieContainer> RetrieveCookies(string url);
+        Task<CookieContainer> RetrieveCookies();
     }
 }
