@@ -13,12 +13,14 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 {
     internal sealed class DownloadManager : IDownloadManager
     {
-        private IDownloader _defaultDownloader;
+        private readonly IDownloader _defaultDownloader;
+        private readonly IPluginManager _pluginManager;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public DownloadManager(IDownloader defaultDownloader)
+        public DownloadManager(IPluginManager pluginManager, IDownloader defaultDownloader)
         {
+            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
             _defaultDownloader = defaultDownloader ?? throw new ArgumentNullException(nameof(defaultDownloader));
         }
 
@@ -38,20 +40,18 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 _logger.Debug($"{entry.Url} is {entry.UrlType}");
 
-                //TODO: CUSTOM DOWNLOADER SUPPORT
-                if (await _defaultDownloader.IsSupportedUrl(entry.Url))
+                IDownloader downloader = await _pluginManager.GetDownloader(entry.Url) ?? _defaultDownloader;
+
+                try
                 {
-                    try
-                    {
-                        await _defaultDownloader.Download(entry, downloadDirectory);
-                    }
-                    catch (DownloadException ex)
-                    {
-                        string logMessage = $"Download error: {ex.Message}";
-                        if (ex.InnerException != null)
-                            logMessage += $". Inner Exception: {ex.InnerException}";
-                        _logger.Error(logMessage);
-                    }
+                    await downloader.Download(entry, downloadDirectory);
+                }
+                catch (DownloadException ex)
+                {
+                    string logMessage = $"Download error: {ex.Message}";
+                    if (ex.InnerException != null)
+                        logMessage += $". Inner Exception: {ex.InnerException}";
+                    _logger.Error(logMessage);
                 }
             }
         }

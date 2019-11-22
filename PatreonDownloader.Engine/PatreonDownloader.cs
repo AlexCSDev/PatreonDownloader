@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Common.Interfaces.Plugins;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Engine.Models;
@@ -28,6 +30,10 @@ namespace PatreonDownloader.Engine
         private IDownloader _directDownloader;
         private IDownloadManager _downloadManager;
         private IPageCrawler _pageCrawler;
+        private IPluginManager _pluginManager;
+
+        private SemaphoreSlim _initializationSemaphore;
+        private bool _isInitialized;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -38,6 +44,9 @@ namespace PatreonDownloader.Engine
         public PatreonDownloader(ICookieRetriever cookieRetriever)
         {
             _cookieRetriever = cookieRetriever ?? throw new ArgumentNullException(nameof(cookieRetriever));
+
+            _initializationSemaphore = new SemaphoreSlim(1,1);
+            _isInitialized = false;
         }
 
         /// <summary>
@@ -59,6 +68,15 @@ namespace PatreonDownloader.Engine
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
 
+            // Initialize all required classes if required
+            // Make sure several threads cannot access initialization code at once
+            await _initializationSemaphore.WaitAsync();
+            if (!_isInitialized)
+            {
+                await Initialize();
+            }
+            _initializationSemaphore.Release();
+
             try
             {
                 if (!Directory.Exists(settings.DownloadDirectory))
@@ -76,37 +94,6 @@ namespace PatreonDownloader.Engine
             //we assume that every creator has a friendly url
             //like https://www.patreon.com/CREATORNAME/posts
             string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
-
-            if (_cookieContainer == null)
-            {
-                _logger.Debug("PatreonDownloader needs initialization...");
-                _cookieContainer = await _cookieRetriever.RetrieveCookies();
-                if (_cookieContainer == null)
-                {
-                    throw new PatreonDownloaderException("Unable to retrieve cookies");
-                }
-
-                _logger.Debug("Initializing file downloader");
-                _webDownloader = new WebDownloader(_cookieContainer);
-
-                _logger.Debug("Initializing id retriever");
-                _campaignIdRetriever = new CampaignIdRetriever(_webDownloader);
-
-                _logger.Debug("Initializing campaign info retriever");
-                _campaignInfoRetriever = new CampaignInfoRetriever(_webDownloader);
-
-                _logger.Debug("Initializing remote filename retriever");
-                _remoteFilenameRetriever = new RemoteFilenameRetriever(_cookieContainer);
-
-                _logger.Debug("Initializing default (direct) downloader");
-                _directDownloader = new DirectDownloader(_webDownloader, _remoteFilenameRetriever);
-
-                _logger.Debug("Initializing download manager");
-                _downloadManager = new DownloadManager(_directDownloader);
-
-                _logger.Debug("Initializing page crawler");
-                _pageCrawler = new PageCrawler(_webDownloader);
-            }
 
             _logger.Debug("Retrieving campaign ID");
             long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
@@ -132,10 +119,50 @@ namespace PatreonDownloader.Engine
             return true;
         }
 
+        private async Task Initialize()
+        {
+            if (_isInitialized)
+                return;
+
+            _logger.Debug("Initializing PatreonDownloader...");
+            _cookieContainer = await _cookieRetriever.RetrieveCookies();
+            if (_cookieContainer == null)
+            {
+                throw new PatreonDownloaderException("Unable to retrieve cookies");
+            }
+
+            _logger.Debug("Initializing plugin manager");
+            _pluginManager = new PluginManager();
+
+            _logger.Debug("Initializing file downloader");
+            _webDownloader = new WebDownloader(_cookieContainer);
+
+            _logger.Debug("Initializing id retriever");
+            _campaignIdRetriever = new CampaignIdRetriever(_webDownloader);
+
+            _logger.Debug("Initializing campaign info retriever");
+            _campaignInfoRetriever = new CampaignInfoRetriever(_webDownloader);
+
+            _logger.Debug("Initializing remote filename retriever");
+            _remoteFilenameRetriever = new RemoteFilenameRetriever(_cookieContainer);
+
+            _logger.Debug("Initializing default (direct) downloader");
+            _directDownloader = new DirectDownloader(_webDownloader, _remoteFilenameRetriever);
+
+            _logger.Debug("Initializing download manager");
+            _downloadManager = new DownloadManager(_pluginManager, _directDownloader);
+
+            _logger.Debug("Initializing page crawler");
+            _pageCrawler = new PageCrawler(_webDownloader);
+
+            _isInitialized = true;
+        }
+
         public void Dispose()
         {
             IDisposable cookieRetrieverDisposable = _cookieRetriever as IDisposable;
             cookieRetrieverDisposable?.Dispose();
+            _initializationSemaphore?.Dispose();
         }
     }
 }
