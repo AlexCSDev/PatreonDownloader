@@ -15,13 +15,17 @@ namespace PatreonDownloader.Engine
 {
     internal sealed class PluginManager : IPluginManager
     {
+        private static string _pluginsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private readonly List<IDownloader> _downloaders;
         public PluginManager()
         {
+            if (!Directory.Exists(_pluginsDirectory))
+                Directory.CreateDirectory(_pluginsDirectory);
+
             _downloaders = new List<IDownloader>();
-            IEnumerable<string> files = Directory.EnumerateFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins"));
+            IEnumerable<string> files = Directory.EnumerateFiles(_pluginsDirectory);
             foreach (string file in files)
             {
                 try

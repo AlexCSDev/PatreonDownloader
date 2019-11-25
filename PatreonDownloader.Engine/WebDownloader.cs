@@ -31,23 +31,36 @@ namespace PatreonDownloader.Engine
                 throw new DownloadException($"File {path} already exists");
             }
 
-            using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+            try
             {
-                using (Stream contentStream =
-                        await (await _httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
-                    stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
                 {
-                    _logger.Debug($"Starting download: {url}");
-                    await contentStream.CopyToAsync(stream);
-                    _logger.Debug($"Finished download: {url}");
+                    using (Stream contentStream =
+                            await (await _httpClient.SendAsync(request)).Content.ReadAsStreamAsync(),
+                        stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true))
+                    {
+                        _logger.Debug($"Starting download: {url}");
+                        await contentStream.CopyToAsync(stream);
+                        _logger.Debug($"Finished download: {url}");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new DownloadException($"Unable to download from {url}: {ex.Message}", ex);
             }
         }
 
-
         public async Task<string> DownloadString(string url)
         {
-            return await _httpClient.GetStringAsync(url);
+            try
+            {
+                return await _httpClient.GetStringAsync(url);
+            }
+            catch (Exception ex)
+            {
+                throw new DownloadException($"Unable to download from {url}: {ex.Message}", ex);
+            }
         }
     }
 }

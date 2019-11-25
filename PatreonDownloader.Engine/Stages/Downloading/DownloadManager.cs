@@ -48,10 +48,14 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 }
                 catch (DownloadException ex)
                 {
-                    string logMessage = $"Download error: {ex.Message}";
+                    string logMessage = $"Error while downloading {entry.Url}: {ex.Message}";
                     if (ex.InnerException != null)
                         logMessage += $". Inner Exception: {ex.InnerException}";
                     _logger.Error(logMessage);
+                }
+                catch (Exception ex)
+                {
+                    throw new PatreonDownloaderException($"Error while downloading {entry.Url}: {ex.Message}", ex);
                 }
             }
         }

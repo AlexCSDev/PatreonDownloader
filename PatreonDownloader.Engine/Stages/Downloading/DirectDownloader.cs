@@ -46,6 +46,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                     else
                         crawledUrl.Url = $"{crawledUrl.Url}?dl=1";
                 }
+
                 _logger.Info($"[{crawledUrl.PostId}] This is a dropbox entry: {crawledUrl.Url}");
             }
             else if (crawledUrl.Url.IndexOf("drive.google.com/file/d/", StringComparison.Ordinal) != -1)
@@ -58,7 +59,8 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 //TODO: MEGA SUPPORT
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] MEGA link found: {crawledUrl.Url}");
             }
-            else if (crawledUrl.Url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 || crawledUrl.Url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
+            else if (crawledUrl.Url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 ||
+                     crawledUrl.Url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
             {
                 //TODO: YOUTUBE SUPPORT?
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] YOUTUBE link found: {crawledUrl.Url}");
@@ -103,7 +105,8 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 if (remoteFilename == null)
                 {
-                    throw new DownloadException($"[{crawledUrl.PostId}] Unable to retrieve name for external entry of type {crawledUrl.UrlType}: {crawledUrl.Url}");
+                    throw new DownloadException(
+                        $"[{crawledUrl.PostId}] Unable to retrieve name for external entry of type {crawledUrl.UrlType}: {crawledUrl.Url}");
                 }
 
                 filename += $"_{remoteFilename}";
@@ -120,18 +123,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 filename = filename.Replace(c, '_');
             }
 
-            try
-            {
-                await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
-            }
-            catch (DownloadException)
-            {
-                throw; //Re-throw download exception
-            }
-            catch (Exception ex)
-            {
-                throw new DownloadException($"Unable to download {crawledUrl.Url}", ex);
-            }
+            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
         }
     }
 }

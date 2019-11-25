@@ -36,6 +36,8 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
                 {
                     _logger.Debug("We are NOT logged in, opening login page");
                     await page.GoToAsync("https://www.patreon.com/login");
+
+                    //todo: use another page? home page loading is pretty slow
                     await page.WaitForRequestAsync(request => request.Url == "https://www.patreon.com/home");
                 }
                 else

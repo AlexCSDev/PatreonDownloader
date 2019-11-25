@@ -34,7 +34,8 @@ namespace PatreonDownloader.App
                     SaveAvatarAndCover = options.SaveAvatarAndCover,
                     SaveDescriptions = options.SaveDescriptions,
                     SaveEmbeds = options.SaveEmbeds,
-                    SaveJson = options.SaveJson
+                    SaveJson = options.SaveJson,
+                    DownloadDirectory = options.DownloadDirectory
                 };
             });
 
@@ -47,14 +48,6 @@ namespace PatreonDownloader.App
             }
             catch (Exception ex)
             {
-                /*DownloadException downloadException = ex as DownloadException;
-                if (downloadException != null)
-                {
-                    string logMessage = $"Download error: {downloadException.Message}";
-                    if (downloadException.InnerException != null)
-                        logMessage += $". Inner Exception: {downloadException.InnerException}";
-                    _logger.Error($"Download error: {downloadException.Message}. {downloadException.InnerException != null ? "Inner exception: "}");
-                }*/
                 _logger.Fatal($"Fatal error, application will be closed: {ex}");
                 Environment.Exit(0);
             }

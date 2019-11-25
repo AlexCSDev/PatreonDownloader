@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using PatreonDownloader.Engine.Exceptions;
 
 namespace PatreonDownloader.Engine.Stages.Crawling
 {
@@ -24,16 +25,26 @@ namespace PatreonDownloader.Engine.Stages.Crawling
         /// <returns>Returns creator id</returns>
         public async Task<long> RetrieveCampaignId(string url)
         {
-            string pageHtml = await _webDownloader.DownloadString(url);
+            if(string.IsNullOrEmpty(url))
+                throw new ArgumentNullException(nameof(url));
 
-            Regex regex = new Regex("\"self\": \"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
-            Match match = regex.Match(pageHtml);
-            if (!match.Success)
+            try
             {
-                return -1;
-            }
+                string pageHtml = await _webDownloader.DownloadString(url);
 
-            return Convert.ToInt64(match.Groups[1].Value);
+                Regex regex = new Regex("\"self\": \"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
+                Match match = regex.Match(pageHtml);
+                if (!match.Success)
+                {
+                    return -1;
+                }
+
+                return Convert.ToInt64(match.Groups[1].Value);
+            }
+            catch (Exception ex)
+            {
+                throw new PatreonDownloaderException($"Unable to retrieve campaign id: {ex.Message}", ex);
+            }
         }
     }
 }

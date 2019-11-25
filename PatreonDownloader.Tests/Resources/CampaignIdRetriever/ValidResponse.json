@@ -1,0 +1,159 @@
+﻿{
+  "data": {
+    "attributes": {
+      "avatar_photo_url": "https://c10.patreonusercontent.com/3/test.jpg",
+      "creation_name": "Tests",
+      "has_community": true,
+      "is_nsfw": false,
+      "name": "PatreonDownloader",
+      "url": "https://www.patreon.com/patreondownloader"
+    },
+    "id": "3216549870",
+    "relationships": {
+      "access_rules": {
+        "data": [
+          {
+            "id": "123456",
+            "type": "access-rule"
+          },
+          {
+            "id": "234567",
+            "type": "access-rule"
+          },
+          {
+            "id": "345678",
+            "type": "access-rule"
+          },
+          {
+            "id": "456789",
+            "type": "access-rule"
+          }
+        ]
+      },
+      "creator": {
+        "data": {
+          "id": "123456",
+          "type": "user"
+        },
+        "links": { "related": "https://www.patreon.com/api/user/123456" }
+      }
+    },
+    "type": "campaign"
+  },
+  "included": [
+    {
+      "attributes": {
+        "about": "",
+        "created": "2015-01-01T01:27:05.000+00:00",
+        "default_country_code": null,
+        "facebook": null,
+        "first_name": "PatreonDownloader",
+        "full_name": "PatreonDownloader",
+        "gender": 0,
+        "image_url": "https://c10.patreonusercontent.com/3/test.jpg",
+        "last_name": null,
+        "social_connections": {
+          "deviantart": null,
+          "discord": null,
+          "facebook": null,
+          "google": null,
+          "instagram": null,
+          "spotify": null,
+          "twitch": null,
+          "twitter": null,
+          "youtube": null
+        },
+        "thumb_url": "https://c10.patreonusercontent.com/3/test.jpg",
+        "twitch": null,
+        "twitter": "",
+        "url": "https://www.patreon.com/patreondownloader",
+        "vanity": "patreondownloader",
+        "youtube": null
+      },
+      "id": "123456",
+      "relationships": { "pledges": { "data": [] } },
+      "type": "user"
+    },
+    {
+      "attributes": {
+        "access_rule_type": "min_cents_pledged",
+        "amount_cents": 100,
+        "currency": "USD",
+        "post_count": 45
+      },
+      "id": "123456",
+      "relationships": { "tier": { "data": null } },
+      "type": "access-rule"
+    },
+    {
+      "attributes": {
+        "access_rule_type": "patrons",
+        "amount_cents": null,
+        "currency": "USD",
+        "post_count": 200
+      },
+      "id": "234567",
+      "relationships": { "tier": { "data": null } },
+      "type": "access-rule"
+    },
+    {
+      "attributes": {
+        "access_rule_type": "min_cents_pledged",
+        "amount_cents": 500,
+        "currency": "USD",
+        "post_count": 16
+      },
+      "id": "345678",
+      "relationships": { "tier": { "data": null } },
+      "type": "access-rule"
+    },
+    {
+      "attributes": {
+        "access_rule_type": "tier",
+        "amount_cents": null,
+        "currency": "USD",
+        "post_count": 0
+      },
+      "id": "456789",
+      "relationships": {
+        "tier": {
+          "data": {
+            "id": "123456",
+            "type": "reward"
+          },
+          "links": { "related": "https://www.patreon.com/api/rewards/123456" }
+        }
+      },
+      "type": "access-rule"
+    },
+    {
+      "attributes": {
+        "amount": 100,
+        "amount_cents": 100,
+        "created_at": "2016-10-17T22:10:43.000+00:00",
+        "currency": "USD",
+        "description": "<ul><li>This is the test</li><li>Testing 123.</li></ul>",
+        "discord_role_ids": null,
+        "edited_at": "2016-10-17T22:10:43.000+00:00",
+        "image_url": null,
+        "patron_count": 22,
+        "post_count": 45,
+        "published": true,
+        "published_at": "2016-10-17T22:10:43.000+00:00",
+        "remaining": null,
+        "requires_shipping": false,
+        "title": "Test Tier",
+        "unpublished_at": null,
+        "url": "/join/patreondownloader/checkout?rid=123456",
+        "user_limit": null,
+        "welcome_message": null,
+        "welcome_message_unsafe": null,
+        "welcome_video_embed": null,
+        "welcome_video_url": null
+      },
+      "id": "123456",
+      "type": "reward"
+    }
+  ],
+  "links": { "self": "https://www.patreon.com/api/campaigns/3216549870" }
+}
