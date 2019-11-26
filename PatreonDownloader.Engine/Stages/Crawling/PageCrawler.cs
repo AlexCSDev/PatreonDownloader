@@ -205,7 +205,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                         subEntry.Filename = attachmentData.Attributes.Name;
                         subEntry.UrlType = CrawledUrlType.PostAttachment;
                         galleryEntries.Add(subEntry);
-                        _logger.Info($"[{jsonEntry.Id} A-{attachment.Id}] New attachment entry: {subEntry.Filename} from {subEntry.Url}");
+                        _logger.Info($"[{jsonEntry.Id} A-{attachment.Id}] New attachment entry: {subEntry.Url}");
                     }
                 }
 
@@ -240,7 +240,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                         subEntry.Filename = imageData.Attributes.FileName;
                         subEntry.UrlType = CrawledUrlType.PostMedia;
                         galleryEntries.Add(subEntry);
-                        _logger.Info($"[{jsonEntry.Id} M-{image.Id}] New media entry: {subEntry.Filename} from {subEntry.Url}");
+                        _logger.Info($"[{jsonEntry.Id} M-{image.Id}] New media entry from {subEntry.Url}");
                     }
                 }
 
@@ -279,7 +279,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 if (!string.IsNullOrEmpty(entry.Url))
                 {
                     entry.UrlType = CrawledUrlType.PostFile;
-                    _logger.Info($"[{jsonEntry.Id}] New entry: {entry.Filename} from {entry.Url}");
+                    _logger.Info($"[{jsonEntry.Id}] New entry: {entry.Url}");
                     galleryEntries.Add(entry);
                 }
                 else

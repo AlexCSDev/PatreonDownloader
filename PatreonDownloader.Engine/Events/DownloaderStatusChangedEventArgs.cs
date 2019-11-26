@@ -5,7 +5,7 @@ using PatreonDownloader.Engine.Enums;
 
 namespace PatreonDownloader.Engine.Events
 {
-    public sealed class DownloaderStatusChangedEventArgs
+    public sealed class DownloaderStatusChangedEventArgs : EventArgs
     {
         private readonly DownloaderStatus _status;
 

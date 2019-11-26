@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Interfaces;
@@ -17,6 +18,8 @@ namespace PatreonDownloader.Engine.Stages.Downloading
         private readonly IPluginManager _pluginManager;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
+        public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
         public DownloadManager(IPluginManager pluginManager, IDownloader defaultDownloader)
         {
@@ -36,8 +39,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                     continue;
                 }
 
-                //TODO: Replace with event
-                _logger.Info($"Downloading {i + 1}/{crawledUrls.Count}: {entry.Url}");
+                _logger.Debug($"Downloading {i + 1}/{crawledUrls.Count}: {entry.Url}");
 
                 _logger.Debug($"{entry.Url} is {entry.UrlType}");
 
@@ -46,6 +48,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 try
                 {
                     await downloader.Download(entry, downloadDirectory);
+                    OnFileDownloaded(new FileDownloadedEventArgs(entry.Url, crawledUrls.Count));
                 }
                 catch (DownloadException ex)
                 {
@@ -53,12 +56,20 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                     if (ex.InnerException != null)
                         logMessage += $". Inner Exception: {ex.InnerException}";
                     _logger.Error(logMessage);
+                    OnFileDownloaded(new FileDownloadedEventArgs(entry.Url, crawledUrls.Count, false, logMessage));
                 }
                 catch (Exception ex)
                 {
                     throw new PatreonDownloaderException($"Error while downloading {entry.Url}: {ex.Message}", ex);
                 }
             }
+        }
+
+        private void OnFileDownloaded(FileDownloadedEventArgs e)
+        {
+            EventHandler<FileDownloadedEventArgs> handler = FileDownloaded;
+
+            handler?.Invoke(this, e);
         }
     }
 }

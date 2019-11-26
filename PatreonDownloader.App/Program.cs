@@ -17,6 +17,7 @@ namespace PatreonDownloader.App
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static Engine.PatreonDownloader _patreonDownloader;
+        private static int _filesDownloaded;
 
         //TODO: Trap ctrl+c for a proper shutdown
         //TODO: Configure logging via command line
@@ -82,9 +83,21 @@ namespace PatreonDownloader.App
 
             using (_patreonDownloader = new Engine.PatreonDownloader(cookieRetriever))
             {
+                _filesDownloaded = 0;
+
                 _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
+                _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
                 await _patreonDownloader.Download(creatorName, settings);
             }
+        }
+
+        private static void PatreonDownloaderOnFileDownloaded(object sender, FileDownloadedEventArgs e)
+        {
+            _filesDownloaded++;
+            if(e.Success)
+                _logger.Info($"Downloaded {_filesDownloaded}/{e.TotalFiles}: {e.Url}");
+            else
+                _logger.Error($"Failed to download {e.Url}: {e.ErrorMessage}");
         }
 
         private static void PatreonDownloaderOnStatusChanged(object sender, DownloaderStatusChangedEventArgs e)

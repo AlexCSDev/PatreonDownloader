@@ -39,7 +39,8 @@ namespace PatreonDownloader.Engine
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public event EventHandler<DownloaderStatusChangedEventArgs> StatusChanged; 
+        public event EventHandler<DownloaderStatusChangedEventArgs> StatusChanged;
+        public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
         /// <summary>
         /// Create a new downloader for specified url
@@ -52,7 +53,7 @@ namespace PatreonDownloader.Engine
             _initializationSemaphore = new SemaphoreSlim(1,1);
             _isInitialized = false;
 
-            OnStatusChanged(DownloaderStatus.Ready);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
         }
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace PatreonDownloader.Engine
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
 
-            OnStatusChanged(DownloaderStatus.Initialization);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
 
             // Initialize all required classes if required
             // Make sure several threads cannot access initialization code at once
@@ -104,7 +105,7 @@ namespace PatreonDownloader.Engine
             string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
 
             _logger.Debug("Retrieving campaign ID");
-            OnStatusChanged(DownloaderStatus.RetrievingCampaignInformation);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.RetrievingCampaignInformation));
             long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
 
             if (campaignId == -1)
@@ -118,16 +119,16 @@ namespace PatreonDownloader.Engine
             _logger.Debug($"Campaign name: {campaignInfo.Name}");
 
             _logger.Debug("Starting crawler");
-            OnStatusChanged(DownloaderStatus.Crawling);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Crawling));
             List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
 
             _logger.Debug("Starting downloader");
-            OnStatusChanged(DownloaderStatus.Downloading);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Downloading));
             await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
 
             _logger.Debug("Finished downloading");
-            OnStatusChanged(DownloaderStatus.Done);
-            OnStatusChanged(DownloaderStatus.Ready);
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Done));
+            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
         }
 
         private async Task Initialize()
@@ -162,6 +163,7 @@ namespace PatreonDownloader.Engine
 
             _logger.Debug("Initializing download manager");
             _downloadManager = new DownloadManager(_pluginManager, _directDownloader);
+            _downloadManager.FileDownloaded += DownloadManagerOnFileDownloaded;
 
             _logger.Debug("Initializing page crawler");
             _pageCrawler = new PageCrawler(_webDownloader);
@@ -169,10 +171,16 @@ namespace PatreonDownloader.Engine
             _isInitialized = true;
         }
 
-        private void OnStatusChanged(DownloaderStatus status)
+        private void DownloadManagerOnFileDownloaded(object sender, FileDownloadedEventArgs e)
+        {
+            EventHandler<FileDownloadedEventArgs> handler = FileDownloaded;
+            handler?.Invoke(this, e);
+        }
+
+        private void OnStatusChanged(DownloaderStatusChangedEventArgs e)
         {
             EventHandler<DownloaderStatusChangedEventArgs> handler = StatusChanged;
-            handler?.Invoke(this, new DownloaderStatusChangedEventArgs(status));
+            handler?.Invoke(this, e);
         }
 
         public void Dispose()

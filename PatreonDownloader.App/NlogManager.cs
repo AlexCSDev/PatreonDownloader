@@ -25,7 +25,7 @@ namespace PatreonDownloader.App
             };
             configuration.AddTarget(fileTarget);
 
-            configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget);
+            configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.App.*");
             configuration.AddRuleForAllLevels(fileTarget);
 
             LogManager.Configuration = configuration;
