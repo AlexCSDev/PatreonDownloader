@@ -16,13 +16,13 @@ namespace PatreonDownloader.App.Models
         [Option("campaign-images", Required = false, HelpText = "Download campaign's avatar and cover images", Default = false)]
         public bool SaveAvatarAndCover { get; set; }
 
-        [Option("download-directory", Required = false, HelpText = "Directory to save all downloaded files in, default: #AppDirectory#/downloads/#CreatorName#.", Default = false)]
+        [Option("download-directory", Required = false, HelpText = "Directory to save all downloaded files in, default: #AppDirectory#/downloads/#CreatorName#.")]
         public string DownloadDirectory { get; set; }
 
-        /*[Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
+        [Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
         public bool Verbose { get; set; }
 
-        [Option("cookie-retriever", Required = false, HelpText = "Cookie retriever plugin to use", Default = "PuppeteerCookieRetriever")]
+        /*[Option("cookie-retriever", Required = false, HelpText = "Cookie retriever plugin to use", Default = "PuppeteerCookieRetriever")]
         public string CookieRetriever { get; set; }*/
     }
 }

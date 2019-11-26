@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Common.Interfaces.Plugins;
+using PatreonDownloader.Engine.Enums;
+using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Engine.Models;
@@ -37,6 +39,8 @@ namespace PatreonDownloader.Engine
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
+        public event EventHandler<DownloaderStatusChangedEventArgs> StatusChanged; 
+
         /// <summary>
         /// Create a new downloader for specified url
         /// </summary>
@@ -47,6 +51,8 @@ namespace PatreonDownloader.Engine
 
             _initializationSemaphore = new SemaphoreSlim(1,1);
             _isInitialized = false;
+
+            OnStatusChanged(DownloaderStatus.Ready);
         }
 
         /// <summary>
@@ -55,7 +61,7 @@ namespace PatreonDownloader.Engine
         /// <param name="creatorName"></param>
         /// <param name="settings">Downloader settings, will be set to default values if not provided</param>
         /// <returns></returns>
-        public async Task<bool> Download(string creatorName, PatreonDownloaderSettings settings = null)
+        public async Task Download(string creatorName, PatreonDownloaderSettings settings = null)
         {
             if(string.IsNullOrEmpty(creatorName))
                 throw new ArgumentException("Argument cannot be null or empty", nameof(creatorName));
@@ -67,6 +73,8 @@ namespace PatreonDownloader.Engine
 
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
+
+            OnStatusChanged(DownloaderStatus.Initialization);
 
             // Initialize all required classes if required
             // Make sure several threads cannot access initialization code at once
@@ -96,27 +104,30 @@ namespace PatreonDownloader.Engine
             string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
 
             _logger.Debug("Retrieving campaign ID");
+            OnStatusChanged(DownloaderStatus.RetrievingCampaignInformation);
             long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
 
             if (campaignId == -1)
             {
                 throw new PatreonDownloaderException("Unable to retrieve campaign id");
             }
-            _logger.Info($"Campaign ID: {campaignId}");
+            _logger.Debug($"Campaign ID: {campaignId}");
 
             _logger.Debug($"Retrieving campaign info");
             CampaignInfo campaignInfo = await _campaignInfoRetriever.RetrieveCampaignInfo(campaignId);
-            _logger.Info($"Campaign name: {campaignInfo.Name}");
+            _logger.Debug($"Campaign name: {campaignInfo.Name}");
 
             _logger.Debug("Starting crawler");
+            OnStatusChanged(DownloaderStatus.Crawling);
             List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
 
             _logger.Debug("Starting downloader");
-
+            OnStatusChanged(DownloaderStatus.Downloading);
             await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
 
             _logger.Debug("Finished downloading");
-            return true;
+            OnStatusChanged(DownloaderStatus.Done);
+            OnStatusChanged(DownloaderStatus.Ready);
         }
 
         private async Task Initialize()
@@ -156,6 +167,12 @@ namespace PatreonDownloader.Engine
             _pageCrawler = new PageCrawler(_webDownloader);
 
             _isInitialized = true;
+        }
+
+        private void OnStatusChanged(DownloaderStatus status)
+        {
+            EventHandler<DownloaderStatusChangedEventArgs> handler = StatusChanged;
+            handler?.Invoke(this, new DownloaderStatusChangedEventArgs(status));
         }
 
         public void Dispose()

@@ -30,7 +30,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
             if(settings == null)
                 throw new ArgumentNullException(nameof(settings));
 
-            _logger.Info($"Starting crawling campaign {campaignInfo.Name}");
+            _logger.Debug($"Starting crawling campaign {campaignInfo.Name}");
             List<CrawledUrl> crawledUrls = new List<CrawledUrl>();
             Random rnd = new Random(Guid.NewGuid().GetHashCode());
 
@@ -65,7 +65,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
             }
 
-            _logger.Info("Finished crawl");
+            _logger.Debug("Finished crawl");
 
             return crawledUrls;
         }
@@ -77,20 +77,20 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
             Models.JSONObjects.Posts.Root jsonRoot = JsonConvert.DeserializeObject<Models.JSONObjects.Posts.Root>(json);
 
-            _logger.Info("Parsing data entries...");
+            _logger.Debug("Parsing data entries...");
             foreach (var jsonEntry in jsonRoot.Data)
             {
-                _logger.Info($"Entry {jsonEntry.Id}");
+                _logger.Info($"-> {jsonEntry.Id}");
                 if (jsonEntry.Type != "post")
                 {
                     _logger.Error($"[{jsonEntry.Id}] Invalid type for \"data\": {jsonEntry.Type}, skipping");
                     continue;
                 }
 
-                _logger.Info($"[{jsonEntry.Id}] Is a post");
+                _logger.Debug($"[{jsonEntry.Id}] Is a post");
                 if (!jsonEntry.Attributes.CurrentUserCanView)
                 {
-                    _logger.Warn($"[{jsonEntry.Id}] Current user cannot view selected post");
+                    _logger.Warn($"[{jsonEntry.Id}] Current user cannot view this post");
 
                     string[] skippedAttachments = jsonEntry.Relationships.Attachments?.Data.Select(x => x.Id).ToArray() ?? new string[0];
                     string[] skippedMedia = jsonEntry.Relationships.Images?.Data.Select(x => x.Id).ToArray() ?? new string[0];
@@ -110,7 +110,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error($"Unable to write description for {jsonEntry.Id}: {ex}");
+                        _logger.Error($"[{jsonEntry.Id}] Unable to save description: {ex}");
                     }
                 }
 
@@ -123,9 +123,17 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 {
                     if (jsonEntry.Attributes.Embed != null)
                     {
-                        _logger.Debug($"{jsonEntry.Id} Embed found");
-                        await File.WriteAllTextAsync(Path.Combine(settings.DownloadDirectory, $"{jsonEntry.Id}_embed.txt"),
-                            jsonEntry.Attributes.Embed.ToString());
+                        _logger.Debug($"[{jsonEntry.Id}] Embed found");
+                        try
+                        {
+                            await File.WriteAllTextAsync(
+                                Path.Combine(settings.DownloadDirectory, $"{jsonEntry.Id}_embed.txt"),
+                                jsonEntry.Attributes.Embed.ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error($"[{jsonEntry.Id}] Unable to save embed: {ex}");
+                        }
                     }
                 }
 
@@ -180,7 +188,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                         _logger.Debug($"[{jsonEntry.Id} A-{attachment.Id}] Scanning attachment");
                         if (attachment.Type != "attachment") //sanity check 
                         {
-                            _logger.Fatal($"[{jsonEntry.Id} A-{attachment.Id}] invalid attachment type for!!!");
+                            _logger.Fatal($"[{jsonEntry.Id} A-{attachment.Id}] invalid attachment type!!!");
                             continue;
                         }
 
@@ -280,23 +288,23 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 }
             }
 
-            _logger.Info("Checking if all included entries were added...");
+            _logger.Debug("Checking if all included entries were added...");
             foreach (var jsonEntry in jsonRoot.Included)
             {
-                _logger.Info($"Entry {jsonEntry.Id}");
+                _logger.Debug($"[{jsonEntry.Id}] Verification: Started");
                 if (jsonEntry.Type != "attachment" && jsonEntry.Type != "media")
                 {
-                    _logger.Error($"[{jsonEntry.Id}] Invalid type for \"included\": {jsonEntry.Type}, skipping");
+                    _logger.Error($"[{jsonEntry.Id}] Verification: Invalid type for \"included\": {jsonEntry.Type}, skipping");
                     continue;
                 }
 
-                _logger.Info($"[{jsonEntry.Id}] Is a {jsonEntry.Type}");
+                _logger.Debug($"[{jsonEntry.Id}] Is a {jsonEntry.Type}");
 
                 if (jsonEntry.Type == "attachment")
                 {
                     if (!skippedIncludesList.Any(x => x == jsonEntry.Id) && !galleryEntries.Any(x => x.Url == jsonEntry.Attributes.Url))
                     {
-                        _logger.Warn($"[{jsonEntry.Id}] Attachment was not parsed! Attachment not referenced by any post?");
+                        _logger.Warn($"[{jsonEntry.Id}] Verification: Parsing verification failure! Attachment with this id might not referenced by any post.");
                         continue;
                     }
                 }
@@ -305,12 +313,12 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 {
                     if (!skippedIncludesList.Any(x=>x == jsonEntry.Id) && !galleryEntries.Any(x => x.Url == jsonEntry.Attributes.DownloadUrl/* || x.DownloadUrl == jsonEntry.Attributes.ImageUrls.Original || x.DownloadUrl == jsonEntry.Attributes.ImageUrls.Default*/))
                     {
-                        _logger.Warn($"[{jsonEntry.Id}] Media was not parsed! Media not referenced by any post?");
+                        _logger.Warn($"[{jsonEntry.Id}] Verification: Parsing verification failure! Media with this id might not be referenced by any post.");
                         continue;
                     }
                 }
 
-                _logger.Info($"[{jsonEntry.Id}] OK");
+                _logger.Debug($"[{jsonEntry.Id}] Verification: OK");
             }
 
             return new ParsingResult {Entries = galleryEntries, NextPage = jsonRoot.Links?.Next};

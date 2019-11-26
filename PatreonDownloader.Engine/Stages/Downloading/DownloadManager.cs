@@ -36,6 +36,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                     continue;
                 }
 
+                //TODO: Replace with event
                 _logger.Info($"Downloading {i + 1}/{crawledUrls.Count}: {entry.Url}");
 
                 _logger.Debug($"{entry.Url} is {entry.UrlType}");

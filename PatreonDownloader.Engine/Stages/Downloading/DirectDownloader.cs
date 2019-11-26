@@ -47,7 +47,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                         crawledUrl.Url = $"{crawledUrl.Url}?dl=1";
                 }
 
-                _logger.Info($"[{crawledUrl.PostId}] This is a dropbox entry: {crawledUrl.Url}");
+                _logger.Debug($"[{crawledUrl.PostId}] This is a dropbox entry: {crawledUrl.Url}");
             }
             else if (crawledUrl.Url.IndexOf("drive.google.com/file/d/", StringComparison.Ordinal) != -1)
             {

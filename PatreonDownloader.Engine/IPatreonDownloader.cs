@@ -4,6 +4,6 @@ namespace PatreonDownloader.Engine
 {
     internal interface IPatreonDownloader
     {
-        Task<bool> Download(string creatorName, PatreonDownloaderSettings settings);
+        Task Download(string creatorName, PatreonDownloaderSettings settings);
     }
 }

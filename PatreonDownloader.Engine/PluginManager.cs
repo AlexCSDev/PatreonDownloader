@@ -63,7 +63,7 @@ namespace PatreonDownloader.Engine
                     }
 
                     _logger.Info(
-                        $"Loaded plugin: {plugin.Name} {assembly.GetName().Version} by {plugin.Author} ({plugin.ContactInformation})");
+                        $"Loaded plugin: {plugin.Name}"); // {assembly.GetName().Version} by {plugin.Author} ({plugin.ContactInformation})
                 }
                 catch (Exception ex)
                 {

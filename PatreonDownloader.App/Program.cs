@@ -6,6 +6,8 @@ using NLog;
 using PatreonDownloader.App.Models;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Engine;
+using PatreonDownloader.Engine.Enums;
+using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Interfaces;
 
@@ -20,6 +22,8 @@ namespace PatreonDownloader.App
         //TODO: Configure logging via command line
         static async Task Main(string[] args)
         {
+            NLogManager.ReconfigureNLog();
+
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
             ParserResult<CommandLineOptions> parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
@@ -37,6 +41,7 @@ namespace PatreonDownloader.App
                     SaveJson = options.SaveJson,
                     DownloadDirectory = options.DownloadDirectory
                 };
+                NLogManager.ReconfigureNLog(options.Verbose);
             });
 
             if (string.IsNullOrEmpty(creatorName) || settings == null)
@@ -77,9 +82,34 @@ namespace PatreonDownloader.App
 
             using (_patreonDownloader = new Engine.PatreonDownloader(cookieRetriever))
             {
-                bool result = await _patreonDownloader.Download(creatorName, settings);
+                _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
+                await _patreonDownloader.Download(creatorName, settings);
+            }
+        }
 
-                _logger.Info($"{(result ? "Successfully" : "UNSUCCESSFULLY" )} finished downloading {creatorName}");
+        private static void PatreonDownloaderOnStatusChanged(object sender, DownloaderStatusChangedEventArgs e)
+        {
+            switch (e.Status)
+            {
+                case DownloaderStatus.Ready:
+                    break;
+                case DownloaderStatus.Initialization:
+                    _logger.Info("Preparing to download...");
+                    break;
+                case DownloaderStatus.RetrievingCampaignInformation:
+                    _logger.Info("Retrieving campaign information...");
+                    break;
+                case DownloaderStatus.Crawling:
+                    _logger.Info("Crawling...");
+                    break;
+                case DownloaderStatus.Downloading:
+                    _logger.Info("Downloading...");
+                    break;
+                case DownloaderStatus.Done:
+                    _logger.Info("Finished");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }
