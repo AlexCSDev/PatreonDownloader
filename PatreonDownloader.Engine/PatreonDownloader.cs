@@ -22,7 +22,6 @@ namespace PatreonDownloader.Engine
 {
     public sealed class PatreonDownloader : IPatreonDownloader, IDisposable
     {
-        private readonly ICookieRetriever _cookieRetriever;
         private CookieContainer _cookieContainer;
 
         private IWebDownloader _webDownloader;
@@ -35,7 +34,9 @@ namespace PatreonDownloader.Engine
         private IPluginManager _pluginManager;
 
         private SemaphoreSlim _initializationSemaphore;
-        private bool _isInitialized;
+        // We don't want those variables to be optimized by compiler
+        private volatile bool _isInitialized;
+        private volatile bool _isRunning;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -46,13 +47,20 @@ namespace PatreonDownloader.Engine
         public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
+        public bool IsRunning
+        {
+            get => _isRunning;
+        }
+
+        // TODO: Implement cancellation token
         /// <summary>
         /// Create a new downloader for specified url
         /// </summary>
-        /// <param name="cookieRetriever">Cookie retriever object</param>
-        public PatreonDownloader(ICookieRetriever cookieRetriever)
+        /// <param name="cookieContainer">Cookie container containing all required cookies (TODO:LIST COOKIES)</param>
+        public PatreonDownloader(CookieContainer cookieContainer)
         {
-            _cookieRetriever = cookieRetriever ?? throw new ArgumentNullException(nameof(cookieRetriever));
+            //TODO: Check if cookie container is valid
+            _cookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
 
             _initializationSemaphore = new SemaphoreSlim(1,1);
             _isInitialized = false;
@@ -74,16 +82,24 @@ namespace PatreonDownloader.Engine
             settings = settings ?? new PatreonDownloaderSettings();
 
             if (string.IsNullOrEmpty(settings.DownloadDirectory))
-                settings.DownloadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "download", creatorName.ToLower(CultureInfo.InvariantCulture));
+                settings.DownloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "download", creatorName.ToLower(CultureInfo.InvariantCulture));
 
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
 
+            // Make sure several threads cannot access initialization code at once
+            await _initializationSemaphore.WaitAsync();
+            if (_isRunning)
+            {
+                // Release the lock and throw exception
+                _initializationSemaphore.Release();
+                throw new DownloaderAlreadyRunningException("Unable to start new download while another one is in progress");
+            }
+
+            _isRunning = true;
             OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
 
             // Initialize all required classes if required
-            // Make sure several threads cannot access initialization code at once
-            await _initializationSemaphore.WaitAsync();
             if (!_isInitialized)
             {
                 await Initialize();
@@ -132,6 +148,8 @@ namespace PatreonDownloader.Engine
 
             _logger.Debug("Finished downloading");
             OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Done));
+
+            _isRunning = false;
             OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
         }
 
@@ -141,11 +159,6 @@ namespace PatreonDownloader.Engine
                 return;
 
             _logger.Debug("Initializing PatreonDownloader...");
-            _cookieContainer = await _cookieRetriever.RetrieveCookies();
-            if (_cookieContainer == null)
-            {
-                throw new PatreonDownloaderException("Unable to retrieve cookies");
-            }
 
             _logger.Debug("Initializing plugin manager");
             _pluginManager = new PluginManager();
@@ -217,8 +230,6 @@ namespace PatreonDownloader.Engine
 
         public void Dispose()
         {
-            IDisposable cookieRetrieverDisposable = _cookieRetriever as IDisposable;
-            cookieRetrieverDisposable?.Dispose();
             _initializationSemaphore?.Dispose();
         }
     }
