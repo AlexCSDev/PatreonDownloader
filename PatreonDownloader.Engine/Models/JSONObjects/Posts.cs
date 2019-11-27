@@ -138,6 +138,8 @@ namespace PatreonDownloader.Engine.Models.JSONObjects.Posts
         public string Id { get; set; }
         [JsonProperty("type")]
         public string Type { get; set; }
+
+        public long IdInt64 => Convert.ToInt64(Id); //todo: map property directly to int64?
     }
 
     public class CampaignLinks
@@ -216,6 +218,8 @@ namespace PatreonDownloader.Engine.Models.JSONObjects.Posts
         public RootDataRelationships Relationships { get; set; }
         [JsonProperty("type")]
         public string Type { get; set; }
+
+        public long IdInt64 => Convert.ToInt64(Id); //todo: map property directly to int64?
     }
 
     public class ImageUrls
@@ -300,6 +304,8 @@ namespace PatreonDownloader.Engine.Models.JSONObjects.Posts
         public string Type { get; set; }
         [JsonProperty("relationships")]
         public IncludedRelationships Relationships { get; set; }
+
+        public long IdInt64 => Convert.ToInt64(Id); //todo: map property directly to int64?
     }
 
     public class RootLinks

@@ -7,7 +7,11 @@ namespace PatreonDownloader.Engine
     internal interface IPatreonDownloader
     {
         event EventHandler<DownloaderStatusChangedEventArgs> StatusChanged;
-
+        event EventHandler<PostCrawlEventArgs> PostCrawlStart;
+        event EventHandler<PostCrawlEventArgs> PostCrawlEnd;
+        event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
+        event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
+        event EventHandler<FileDownloadedEventArgs> FileDownloaded;
         Task Download(string creatorName, PatreonDownloaderSettings settings);
     }
 }

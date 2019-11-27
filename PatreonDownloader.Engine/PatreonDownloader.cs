@@ -40,6 +40,10 @@ namespace PatreonDownloader.Engine
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public event EventHandler<DownloaderStatusChangedEventArgs> StatusChanged;
+        public event EventHandler<PostCrawlEventArgs> PostCrawlStart;
+        public event EventHandler<PostCrawlEventArgs> PostCrawlEnd;
+        public event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
+        public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
         /// <summary>
@@ -167,8 +171,36 @@ namespace PatreonDownloader.Engine
 
             _logger.Debug("Initializing page crawler");
             _pageCrawler = new PageCrawler(_webDownloader);
+            _pageCrawler.PostCrawlStart += PageCrawlerOnPostCrawlStart;
+            _pageCrawler.PostCrawlEnd += PageCrawlerOnPostCrawlEnd;
+            _pageCrawler.NewCrawledUrl += PageCrawlerOnNewCrawledUrl;
+            _pageCrawler.CrawlerMessage += PageCrawlerOnCrawlerMessage;
 
             _isInitialized = true;
+        }
+
+        private void PageCrawlerOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)
+        {
+            EventHandler<CrawlerMessageEventArgs> handler = CrawlerMessage;
+            handler?.Invoke(this, e);
+        }
+
+        private void PageCrawlerOnNewCrawledUrl(object sender, NewCrawledUrlEventArgs e)
+        {
+            EventHandler<NewCrawledUrlEventArgs> handler = NewCrawledUrl;
+            handler?.Invoke(this, e);
+        }
+
+        private void PageCrawlerOnPostCrawlEnd(object sender, PostCrawlEventArgs e)
+        {
+            EventHandler<PostCrawlEventArgs> handler = PostCrawlEnd;
+            handler?.Invoke(this, e);
+        }
+
+        private void PageCrawlerOnPostCrawlStart(object sender, PostCrawlEventArgs e)
+        {
+            EventHandler<PostCrawlEventArgs> handler = PostCrawlStart;
+            handler?.Invoke(this, e);
         }
 
         private void DownloadManagerOnFileDownloaded(object sender, FileDownloadedEventArgs e)

@@ -86,9 +86,48 @@ namespace PatreonDownloader.App
                 _filesDownloaded = 0;
 
                 _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
+                _patreonDownloader.PostCrawlStart += PatreonDownloaderOnPostCrawlStart;
+                //_patreonDownloader.PostCrawlEnd += PatreonDownloaderOnPostCrawlEnd;
+                _patreonDownloader.NewCrawledUrl += PatreonDownloaderOnNewCrawledUrl;
+                _patreonDownloader.CrawlerMessage += PatreonDownloaderOnCrawlerMessage;
                 _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
                 await _patreonDownloader.Download(creatorName, settings);
             }
+        }
+
+        private static void PatreonDownloaderOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)
+        {
+            switch (e.MessageType)
+            {
+                case CrawlerMessageType.Info:
+                    _logger.Info(e.Message);
+                    break;
+                case CrawlerMessageType.Warning:
+                    _logger.Warn(e.Message);
+                    break;
+                case CrawlerMessageType.Error:
+                    _logger.Error(e.Message);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private static void PatreonDownloaderOnNewCrawledUrl(object sender, NewCrawledUrlEventArgs e)
+        {
+            _logger.Info($"  + {e.CrawledUrl.UrlTypeAsFriendlyString}: {e.CrawledUrl.Url}");
+        }
+
+        private static void PatreonDownloaderOnPostCrawlEnd(object sender, PostCrawlEventArgs e)
+        {
+            /*if(!e.Success)
+                _logger.Error($"Post cannot be parsed: {e.ErrorMessage}");*/
+            //_logger.Info(e.Success ? "✓" : "✗");
+        }
+
+        private static void PatreonDownloaderOnPostCrawlStart(object sender, PostCrawlEventArgs e)
+        {
+            _logger.Info($"-> {e.PostId}");
         }
 
         private static void PatreonDownloaderOnFileDownloaded(object sender, FileDownloadedEventArgs e)
