@@ -15,6 +15,7 @@ using PatreonDownloader.Engine.Helpers;
 using PatreonDownloader.Engine.Models;
 using PatreonDownloader.Engine.Stages.Crawling;
 using PatreonDownloader.Engine.Stages.Downloading;
+using PatreonDownloader.Engine.Stages.Initialization;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
 
@@ -32,6 +33,7 @@ namespace PatreonDownloader.Engine
         private IDownloadManager _downloadManager;
         private IPageCrawler _pageCrawler;
         private IPluginManager _pluginManager;
+        private ICookieValidator _cookieValidator;
 
         private SemaphoreSlim _initializationSemaphore;
         // We don't want those variables to be optimized by compiler
@@ -89,33 +91,50 @@ namespace PatreonDownloader.Engine
 
             // Make sure several threads cannot access initialization code at once
             await _initializationSemaphore.WaitAsync();
-            if (_isRunning)
-            {
-                // Release the lock and throw exception
-                _initializationSemaphore.Release();
-                throw new DownloaderAlreadyRunningException("Unable to start new download while another one is in progress");
-            }
-
-            _isRunning = true;
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
-
-            // Initialize all required classes if required
-            if (!_isInitialized)
-            {
-                await Initialize();
-            }
-            _initializationSemaphore.Release();
-
             try
             {
-                if (!Directory.Exists(settings.DownloadDirectory))
+                if (_isRunning)
                 {
-                    Directory.CreateDirectory(settings.DownloadDirectory);
+                    throw new DownloaderAlreadyRunningException(
+                        "Unable to start new download while another one is in progress");
+                }
+
+                _isRunning = true;
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
+
+                // Initialize all required classes if required
+                if (!_isInitialized)
+                {
+                    await Initialize();
+                }
+
+                try
+                {
+                    await _cookieValidator.ValidateCookies(_cookieContainer);
+                }
+                catch (CookieValidationException ex)
+                {
+                    _logger.Fatal($"Cookie validation failed: {ex}");
+                    throw;
+                }
+
+                try
+                {
+                    if (!Directory.Exists(settings.DownloadDirectory))
+                    {
+                        Directory.CreateDirectory(settings.DownloadDirectory);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Fatal($"Unable to create download directory: {ex}");
+                    throw new PatreonDownloaderException("Unable to create download directory", ex);
                 }
             }
-            catch (Exception ex)
+            finally
             {
-                throw new PatreonDownloaderException("Unable to create download directory", ex);
+                // Release the lock after all required initialization code has finished execution
+                _initializationSemaphore.Release();
             }
 
             //TODO: Check that url is valid
@@ -165,6 +184,9 @@ namespace PatreonDownloader.Engine
 
             _logger.Debug("Initializing file downloader");
             _webDownloader = new WebDownloader(_cookieContainer);
+
+            _logger.Debug("Initializing cookie validator");
+            _cookieValidator = new CookieValidator(_webDownloader);
 
             _logger.Debug("Initializing id retriever");
             _campaignIdRetriever = new CampaignIdRetriever(_webDownloader);

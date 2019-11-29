@@ -67,7 +67,6 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
 
             CookieParam[] browserCookies = await page.GetCookiesAsync();
 
-            //TODO: Check that all required cookies were extracted
             if (browserCookies != null && browserCookies.Length > 0)
             {
                 foreach (CookieParam browserCookie in browserCookies)

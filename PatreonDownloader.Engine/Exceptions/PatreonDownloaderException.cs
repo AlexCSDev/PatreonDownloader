@@ -4,6 +4,10 @@ using System.Text;
 
 namespace PatreonDownloader.Engine.Exceptions
 {
+    /// <summary>
+    /// Base class for all PatreonDownloader exceptions
+    /// Thrown when there are no more specific exception is available
+    /// </summary>
     public class PatreonDownloaderException : Exception
     {
         public PatreonDownloaderException() { }

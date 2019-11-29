@@ -8,7 +8,7 @@ namespace PatreonDownloader.Engine.Exceptions
     /// Thrown when there is an attempt to start download on instance of
     /// PatreonDownloader which is already downloading something
     /// </summary>
-    public class DownloaderAlreadyRunningException : PatreonDownloaderException
+    public sealed class DownloaderAlreadyRunningException : PatreonDownloaderException
     {
         public DownloaderAlreadyRunningException() { }
         public DownloaderAlreadyRunningException(string message) : base(message) { }
