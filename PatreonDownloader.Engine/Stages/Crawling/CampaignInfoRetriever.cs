@@ -24,7 +24,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
         /// <returns>CampaignInfo object containing retrieved campaign information</returns>
         public async Task<CampaignInfo> RetrieveCampaignInfo(long campaignId)
         {
-            if(campaignId <= 0)
+            if(campaignId < 1)
                 throw new ArgumentOutOfRangeException(nameof(campaignId), "Campaign id cannot be less than 1");
 
             string json = await _webDownloader.DownloadString(

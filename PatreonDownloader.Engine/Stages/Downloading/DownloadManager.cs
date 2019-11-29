@@ -29,6 +29,11 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
         public async Task Download(List<CrawledUrl> crawledUrls, string downloadDirectory)
         {
+            if(crawledUrls == null)
+                throw new ArgumentNullException(nameof(crawledUrls));
+            if(string.IsNullOrEmpty(downloadDirectory))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(downloadDirectory));
+
             for (int i = 0; i < crawledUrls.Count; i++)
             {
                 CrawledUrl entry = crawledUrls[i];

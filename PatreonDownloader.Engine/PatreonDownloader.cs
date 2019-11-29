@@ -58,10 +58,9 @@ namespace PatreonDownloader.Engine
         /// <summary>
         /// Create a new downloader for specified url
         /// </summary>
-        /// <param name="cookieContainer">Cookie container containing all required cookies (TODO:LIST COOKIES)</param>
+        /// <param name="cookieContainer">Cookie container containing patreon and cloudflare session cookies</param>
         public PatreonDownloader(CookieContainer cookieContainer)
         {
-            //TODO: Check if cookie container is valid
             _cookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
 
             _initializationSemaphore = new SemaphoreSlim(1,1);
@@ -71,11 +70,10 @@ namespace PatreonDownloader.Engine
         }
 
         /// <summary>
-        /// 
+        /// Download specified creator
         /// </summary>
         /// <param name="creatorName"></param>
         /// <param name="settings">Downloader settings, will be set to default values if not provided</param>
-        /// <returns></returns>
         public async Task Download(string creatorName, PatreonDownloaderSettings settings = null)
         {
             if(string.IsNullOrEmpty(creatorName))

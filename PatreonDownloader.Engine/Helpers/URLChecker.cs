@@ -13,6 +13,9 @@ namespace PatreonDownloader.Engine.Helpers
         /// <returns></returns>
         public static bool IsValidUrl(string url, bool useBlackList = true)
         {
+            if (string.IsNullOrEmpty(url))
+                return false;
+
             Uri uriResult;
             bool validationResult = Uri.TryCreate(url, UriKind.Absolute, out uriResult) &&
                                     (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);

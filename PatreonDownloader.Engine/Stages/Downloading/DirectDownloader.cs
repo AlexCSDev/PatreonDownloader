@@ -32,11 +32,19 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
         public async Task<bool> IsSupportedUrl(string url)
         {
+            if (string.IsNullOrEmpty(url))
+                return false;
+
             return await Task.FromResult(true);
         }
 
         public async Task Download(CrawledUrl crawledUrl, string downloadDirectory)
         {
+            if(crawledUrl == null)
+                throw new ArgumentNullException(nameof(crawledUrl));
+            if(string.IsNullOrEmpty(downloadDirectory))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(downloadDirectory));
+
             if (crawledUrl.Url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
             {
                 if (!crawledUrl.Url.EndsWith("?dl=1"))

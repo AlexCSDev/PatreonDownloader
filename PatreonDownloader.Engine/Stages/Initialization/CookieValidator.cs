@@ -22,6 +22,9 @@ namespace PatreonDownloader.Engine.Stages.Initialization
 
         public async Task ValidateCookies(CookieContainer cookieContainer)
         {
+            if(cookieContainer == null)
+                throw new ArgumentNullException(nameof(cookieContainer));
+
             CookieCollection cookies = cookieContainer.GetCookies(new Uri("https://patreon.com"));
 
             if (cookies["__cf_bm"] == null)

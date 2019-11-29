@@ -24,8 +24,18 @@ namespace PatreonDownloader.Engine
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36");
         }
 
+        /// <summary>
+        /// Download file
+        /// </summary>
+        /// <param name="url">File url</param>
+        /// <param name="path">Path where the file should be saved</param>
         public async Task DownloadFile(string url, string path)
         {
+            if(string.IsNullOrEmpty(url))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(url));
+            if(string.IsNullOrEmpty(path))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(path));
+
             if (File.Exists(path))
             {
                 throw new DownloadException($"File {path} already exists");
@@ -51,8 +61,15 @@ namespace PatreonDownloader.Engine
             }
         }
 
+        /// <summary>
+        /// Download url as string data
+        /// </summary>
+        /// <param name="url">Url to download</param>
+        /// <returns>String</returns>
         public async Task<string> DownloadString(string url)
         {
+            if(string.IsNullOrEmpty(url))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(url));
             try
             {
                 return await _httpClient.GetStringAsync(url);

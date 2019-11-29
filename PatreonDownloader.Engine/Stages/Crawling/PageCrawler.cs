@@ -33,7 +33,15 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
         public async Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings)
         {
-            if(settings == null)
+            if(campaignInfo.Id < 1)
+                throw new ArgumentException("Campaign ID cannot be less than 1");
+            if (string.IsNullOrEmpty(campaignInfo.Name))
+                throw new ArgumentException("Campaign name cannot be null or empty");
+            if (string.IsNullOrEmpty(campaignInfo.CoverUrl))
+                throw new ArgumentException("Campaign cover url cannot be null or empty");
+            if (string.IsNullOrEmpty(campaignInfo.AvatarUrl))
+                throw new ArgumentException("Campaign name cannot be null or empty");
+            if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
 
             _logger.Debug($"Starting crawling campaign {campaignInfo.Name}");

@@ -73,12 +73,15 @@ namespace PatreonDownloader.Engine
         }
 
         /// <summary>
-        /// Get downloader for supplied url
+        /// Get downloader for url
         /// </summary>
         /// <param name="url">File url</param>
         /// <returns>IDownloader if downloader is found, null if not.</returns>
         public async Task<IDownloader> GetDownloader(string url)
         {
+            if (string.IsNullOrEmpty(url))
+                return null;
+
             foreach (IDownloader downloader in _downloaders)
             {
                 if (await downloader.IsSupportedUrl(url))

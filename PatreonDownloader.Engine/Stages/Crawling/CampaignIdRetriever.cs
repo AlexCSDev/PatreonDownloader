@@ -26,7 +26,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
         public async Task<long> RetrieveCampaignId(string url)
         {
             if(string.IsNullOrEmpty(url))
-                throw new ArgumentNullException(nameof(url));
+                throw new ArgumentException("Argument cannot be null or empty", nameof(url));
 
             try
             {

@@ -35,6 +35,9 @@ namespace PatreonDownloader.Engine.Helpers
         /// <returns>File name if url is valid, null if url is invalid</returns>
         public async Task<string> RetrieveRemoteFileName(string url)
         {
+            if (string.IsNullOrEmpty(url))
+                return null;
+
             string filename = null;
             try
             {
