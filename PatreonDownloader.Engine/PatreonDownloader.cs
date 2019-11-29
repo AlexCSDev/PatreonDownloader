@@ -89,87 +89,93 @@ namespace PatreonDownloader.Engine
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
 
-            // Make sure several threads cannot access initialization code at once
-            await _initializationSemaphore.WaitAsync();
             try
             {
-                if (_isRunning)
-                {
-                    throw new DownloaderAlreadyRunningException(
-                        "Unable to start new download while another one is in progress");
-                }
-
-                _isRunning = true;
-                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
-
-                // Initialize all required classes if required
-                if (!_isInitialized)
-                {
-                    await Initialize();
-                }
-
+                // Make sure several threads cannot access initialization code at once
+                await _initializationSemaphore.WaitAsync();
                 try
                 {
-                    await _cookieValidator.ValidateCookies(_cookieContainer);
-                }
-                catch (CookieValidationException ex)
-                {
-                    _logger.Fatal($"Cookie validation failed: {ex}");
-                    throw;
-                }
-
-                try
-                {
-                    if (!Directory.Exists(settings.DownloadDirectory))
+                    if (_isRunning)
                     {
-                        Directory.CreateDirectory(settings.DownloadDirectory);
+                        throw new DownloaderAlreadyRunningException(
+                            "Unable to start new download while another one is in progress");
+                    }
+
+                    _isRunning = true;
+                    OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
+
+                    // Initialize all required classes if required
+                    if (!_isInitialized)
+                    {
+                        await Initialize();
+                    }
+
+                    try
+                    {
+                        await _cookieValidator.ValidateCookies(_cookieContainer);
+                    }
+                    catch (CookieValidationException ex)
+                    {
+                        _logger.Fatal($"Cookie validation failed: {ex}");
+                        throw;
+                    }
+
+                    try
+                    {
+                        if (!Directory.Exists(settings.DownloadDirectory))
+                        {
+                            Directory.CreateDirectory(settings.DownloadDirectory);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Fatal($"Unable to create download directory: {ex}");
+                        throw new PatreonDownloaderException("Unable to create download directory", ex);
                     }
                 }
-                catch (Exception ex)
+                finally
                 {
-                    _logger.Fatal($"Unable to create download directory: {ex}");
-                    throw new PatreonDownloaderException("Unable to create download directory", ex);
+                    // Release the lock after all required initialization code has finished execution
+                    _initializationSemaphore.Release();
                 }
+
+                //TODO: Check that url is valid
+                //We only ask for creator name because
+                //we assume that every creator has a friendly url
+                //like https://www.patreon.com/CREATORNAME/posts
+                string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
+
+                _logger.Debug("Retrieving campaign ID");
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.RetrievingCampaignInformation));
+                long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
+
+                if (campaignId == -1)
+                {
+                    throw new PatreonDownloaderException("Unable to retrieve campaign id");
+                }
+
+                _logger.Debug($"Campaign ID: {campaignId}");
+
+                _logger.Debug($"Retrieving campaign info");
+                CampaignInfo campaignInfo = await _campaignInfoRetriever.RetrieveCampaignInfo(campaignId);
+                _logger.Debug($"Campaign name: {campaignInfo.Name}");
+
+                _logger.Debug("Starting crawler");
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Crawling));
+                List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
+
+                _logger.Debug("Starting downloader");
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Downloading));
+                await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
+
+                _logger.Debug("Finished downloading");
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Done));
             }
             finally
             {
-                // Release the lock after all required initialization code has finished execution
-                _initializationSemaphore.Release();
+                _isRunning = false;
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
             }
-
-            //TODO: Check that url is valid
-            //We only ask for creator name because
-            //we assume that every creator has a friendly url
-            //like https://www.patreon.com/CREATORNAME/posts
-            string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
-
-            _logger.Debug("Retrieving campaign ID");
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.RetrievingCampaignInformation));
-            long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
-
-            if (campaignId == -1)
-            {
-                throw new PatreonDownloaderException("Unable to retrieve campaign id");
-            }
-            _logger.Debug($"Campaign ID: {campaignId}");
-
-            _logger.Debug($"Retrieving campaign info");
-            CampaignInfo campaignInfo = await _campaignInfoRetriever.RetrieveCampaignInfo(campaignId);
-            _logger.Debug($"Campaign name: {campaignInfo.Name}");
-
-            _logger.Debug("Starting crawler");
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Crawling));
-            List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
-
-            _logger.Debug("Starting downloader");
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Downloading));
-            await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
-
-            _logger.Debug("Finished downloading");
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Done));
-
-            _isRunning = false;
-            OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
         }
 
         private async Task Initialize()
