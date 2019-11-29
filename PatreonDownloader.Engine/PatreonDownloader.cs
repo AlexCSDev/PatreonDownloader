@@ -107,7 +107,8 @@ namespace PatreonDownloader.Engine
                     // Initialize all required classes if required
                     if (!_isInitialized)
                     {
-                        await Initialize();
+                        _logger.Debug("Initiaization required");
+                        Initialize();
                     }
 
                     try
@@ -178,7 +179,7 @@ namespace PatreonDownloader.Engine
             }
         }
 
-        private async Task Initialize()
+        private void Initialize()
         {
             if (_isInitialized)
                 return;
