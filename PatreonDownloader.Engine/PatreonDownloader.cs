@@ -18,6 +18,7 @@ using PatreonDownloader.Engine.Stages.Downloading;
 using PatreonDownloader.Engine.Stages.Initialization;
 using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
+using PatreonDownloader.PuppeteerEngine;
 
 namespace PatreonDownloader.Engine
 {
@@ -34,11 +35,14 @@ namespace PatreonDownloader.Engine
         private IPageCrawler _pageCrawler;
         private IPluginManager _pluginManager;
         private ICookieValidator _cookieValidator;
+        private IPuppeteerEngine _puppeteerEngine;
 
         private SemaphoreSlim _initializationSemaphore;
         // We don't want those variables to be optimized by compiler
         private volatile bool _isInitialized;
         private volatile bool _isRunning;
+
+        private bool _headlessBrowser;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -59,9 +63,11 @@ namespace PatreonDownloader.Engine
         /// Create a new downloader for specified url
         /// </summary>
         /// <param name="cookieContainer">Cookie container containing patreon and cloudflare session cookies</param>
-        public PatreonDownloader(CookieContainer cookieContainer)
+        /// <param name="headlessBrowser">If set to false then the internal browser window will be visible</param>
+        public PatreonDownloader(CookieContainer cookieContainer, bool headlessBrowser = true)
         {
             _cookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
+            _headlessBrowser = headlessBrowser;
 
             _initializationSemaphore = new SemaphoreSlim(1,1);
             _isInitialized = false;
@@ -163,6 +169,9 @@ namespace PatreonDownloader.Engine
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Crawling));
                 List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
 
+                _logger.Debug("Closing puppeteer browser");
+                await _puppeteerEngine.CloseBrowser();
+
                 _logger.Debug("Starting downloader");
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Downloading));
                 await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
@@ -187,8 +196,11 @@ namespace PatreonDownloader.Engine
             _logger.Debug("Initializing plugin manager");
             _pluginManager = new PluginManager();
 
+            _logger.Debug("Initializing puppeteer engine");
+            _puppeteerEngine = new PuppeteerEngine.PuppeteerEngine(_headlessBrowser);
+
             _logger.Debug("Initializing file downloader");
-            _webDownloader = new WebDownloader(_cookieContainer);
+            _webDownloader = new WebDownloader(_cookieContainer, _puppeteerEngine);
 
             _logger.Debug("Initializing cookie validator");
             _cookieValidator = new CookieValidator(_webDownloader);
@@ -258,6 +270,7 @@ namespace PatreonDownloader.Engine
         public void Dispose()
         {
             _initializationSemaphore?.Dispose();
+            ((IDisposable)_puppeteerEngine)?.Dispose();
         }
     }
 }

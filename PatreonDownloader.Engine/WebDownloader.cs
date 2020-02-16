@@ -2,10 +2,14 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Web;
 using NLog;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Models;
+using PatreonDownloader.PuppeteerEngine;
+using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
 
 namespace PatreonDownloader.Engine
 {
@@ -13,15 +17,18 @@ namespace PatreonDownloader.Engine
     internal sealed class WebDownloader : IWebDownloader
     {
         private readonly HttpClient _httpClient;
+        private readonly IPuppeteerEngine _puppeteerEngine;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public WebDownloader(CookieContainer cookieContainer)
+        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine)
         {
+            _puppeteerEngine = puppeteerEngine ?? throw new ArgumentNullException(nameof(puppeteerEngine));
+
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
             handler.CookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
             _httpClient = new HttpClient(handler);
-            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36");
+            _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586");
         }
 
         /// <summary>
@@ -65,6 +72,7 @@ namespace PatreonDownloader.Engine
         /// Download url as string data
         /// </summary>
         /// <param name="url">Url to download</param>
+        /// <param name="referer">Referer url</param>
         /// <returns>String</returns>
         public async Task<string> DownloadString(string url)
         {
@@ -72,7 +80,17 @@ namespace PatreonDownloader.Engine
                 throw new ArgumentException("Argument cannot be null or empty", nameof(url));
             try
             {
-                return await _httpClient.GetStringAsync(url);
+                IWebBrowser browser = await _puppeteerEngine.GetBrowser();
+                IWebPage page = await browser.NewPageAsync();
+                await page.GoToAsync(url);
+
+                string content = await page.GetContentAsync();
+                await page.CloseAsync();
+
+                content = content
+                    .Replace("<html><head></head><body><pre style=\"word-wrap: break-word; white-space: pre-wrap;\">", "")
+                    .Replace("</pre></body></html>", "");
+                return HttpUtility.HtmlDecode(content);
             }
             catch (Exception ex)
             {

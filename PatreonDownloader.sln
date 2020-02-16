@@ -7,13 +7,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Engine", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerCookieRetriever", "PatreonDownloader.CookieRetriever.Puppeteer\PatreonDownloader.PuppeteerCookieRetriever.csproj", "{2894BF59-9EC4-465B-9DBF-2D3C47633E93}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{2894BF59-9EC4-465B-9DBF-2D3C47633E93}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.App", "PatreonDownloader.App\PatreonDownloader.App.csproj", "{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", "PatreonDownloader.Common\PatreonDownloader.Common.csproj", "{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.TestDownloader", "PatreonDownloader.TestDownloader\PatreonDownloader.TestDownloader.csproj", "{4A40BD25-6D53-47D1-AA41-672FA1FD4141}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.TestDownloader", "PatreonDownloader.TestDownloader\PatreonDownloader.TestDownloader.csproj", "{4A40BD25-6D53-47D1-AA41-672FA1FD4141}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

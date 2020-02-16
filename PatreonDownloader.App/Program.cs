@@ -19,7 +19,7 @@ namespace PatreonDownloader.App
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static Engine.PatreonDownloader _patreonDownloader;
-        private static PuppeteerCookieRetriever.PuppeteerCookieRetriever _cookieRetriever;
+        private static PuppeteerEngine.PuppeteerCookieRetriever _cookieRetriever;
         private static int _filesDownloaded;
 
         static async Task Main(string[] args)
@@ -32,10 +32,13 @@ namespace PatreonDownloader.App
             ParserResult<CommandLineOptions> parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
 
             string creatorName = null;
+            bool headlessBrowser = true;
+
             PatreonDownloaderSettings settings = null;
             parserResult.WithParsed(options =>
             {
                 creatorName = options.CreatorName;
+                headlessBrowser = !options.NoHeadless;
                 settings = new PatreonDownloaderSettings
                 {
                     SaveAvatarAndCover = options.SaveAvatarAndCover,
@@ -52,7 +55,7 @@ namespace PatreonDownloader.App
 
             try
             {
-                await RunPatreonDownloader(creatorName, settings);
+                await RunPatreonDownloader(creatorName, headlessBrowser, settings);
             }
             catch (Exception ex)
             {
@@ -105,10 +108,10 @@ namespace PatreonDownloader.App
             }
         }
 
-        private static async Task RunPatreonDownloader(string creatorName, PatreonDownloaderSettings settings)
+        private static async Task RunPatreonDownloader(string creatorName, bool headlessBrowser, PatreonDownloaderSettings settings)
         {
             CookieContainer cookieContainer = null;
-            using (_cookieRetriever = new PuppeteerCookieRetriever.PuppeteerCookieRetriever())
+            using (_cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(headlessBrowser))
             {
                 _logger.Info("Retrieving cookies...");
                 cookieContainer = await _cookieRetriever.RetrieveCookies();
@@ -118,7 +121,9 @@ namespace PatreonDownloader.App
                 }
             }
 
-            using (_patreonDownloader = new Engine.PatreonDownloader(cookieContainer))
+            await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
+
+            using (_patreonDownloader = new Engine.PatreonDownloader(cookieContainer, headlessBrowser))
             {
                 _filesDownloaded = 0;
 

@@ -22,6 +22,9 @@ namespace PatreonDownloader.App.Models
         [Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
         public bool Verbose { get; set; }
 
+        [Option("no-headless", Required = false, HelpText = "Show internal browser window (disable headless mode)", Default = false)]
+        public bool NoHeadless { get; set; }
+
         /*[Option("cookie-retriever", Required = false, HelpText = "Cookie retriever plugin to use", Default = "PuppeteerCookieRetriever")]
         public string CookieRetriever { get; set; }*/
     }

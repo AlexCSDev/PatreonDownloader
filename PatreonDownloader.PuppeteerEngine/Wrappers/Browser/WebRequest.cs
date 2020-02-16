@@ -1,13 +1,13 @@
 ﻿using System;
 using PuppeteerSharp;
 
-namespace PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser
+namespace PatreonDownloader.PuppeteerEngine.Wrappers.Browser
 {
     /// <summary>
     /// This class is a wrapper around a Puppeteer Sharp's request object used to implement proper dependency injection mechanism
     /// It should copy any used puppeteer sharp's method definitions for ease of code maintenance
     /// </summary>
-    internal sealed class WebRequest : IWebRequest
+    public sealed class WebRequest : IWebRequest
     {
         private readonly Request _request;
 

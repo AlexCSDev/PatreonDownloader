@@ -26,7 +26,7 @@ namespace PatreonDownloader.App
             configuration.AddTarget(fileTarget);
 
             configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.App.*");
-            configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.PuppeteerCookieRetriever.*");
+            //configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.PuppeteerEngine.*");
             configuration.AddRuleForAllLevels(fileTarget);
 
             LogManager.Configuration = configuration;

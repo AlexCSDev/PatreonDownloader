@@ -1,24 +1,38 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
-using PatreonDownloader.Interfaces;
-using PatreonDownloader.PuppeteerCookieRetriever.Wrappers.Browser;
+using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
 using PuppeteerSharp;
 
-namespace PatreonDownloader.PuppeteerCookieRetriever
+namespace PatreonDownloader.PuppeteerEngine
 {
-    public class PuppeteerCookieRetriever : ICookieRetriever, IDisposable
+    public class PuppeteerEngine : IPuppeteerEngine, IDisposable
     {
         private Browser _browser;
+        private IWebBrowser _browserWrapper;
+
+        private readonly bool _headless;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public PuppeteerCookieRetriever()
+        public bool IsHeadless
         {
+            get { return _headless; }
+        }
+
+        /// <summary>
+        /// Create a new instance of PuppeteerEngine
+        /// </summary>
+        /// <param name="headless">If set to false then the browser window will be visible</param>
+        public PuppeteerEngine(bool headless = true)
+        {
+            _headless = headless;
             KillChromeIfRunning();
         }
 
@@ -54,7 +68,8 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
 
                     if (failed)
                     {
-                        _logger.Error("Unable to close some or all PatreonDownloader's Chrome instances. Please close them manually via process manager if you encounter any problems running this application.");
+                        _logger.Error(
+                            "Unable to close some or all PatreonDownloader's Chrome instances. Please close them manually via process manager if you encounter any problems running this application.");
                     }
                     else
                     {
@@ -64,8 +79,11 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
             }
         }
 
-        public async Task<CookieContainer> RetrieveCookies()
+        public async Task<IWebBrowser> GetBrowser()
         {
+            if (_browser != null && !_browser.IsClosed)
+                return _browserWrapper;
+
             try
             {
                 _logger.Debug("Downloading browser");
@@ -74,8 +92,9 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
                 _browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     //Devtools = true,
-                    Headless = false,
-                    UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata")
+                    Headless = _headless,
+                    UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata"),
+                    Args = new []{ "--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3882.0 Safari/537.36\"" }
                 });
 
                 _logger.Debug("Opening new page");
@@ -83,28 +102,24 @@ namespace PatreonDownloader.PuppeteerCookieRetriever
                 await descriptionPage.SetContentAsync("<h1>This is a browser of patreon downloader</h1>");
 
                 _logger.Debug("Creating IWebBrowser");
-                IWebBrowser browserWrapper = new WebBrowser(_browser);
+                _browserWrapper = new WebBrowser(_browser);
 
-                _logger.Debug("Initializing cookie retriever");
-                ICookieRetriever cookieRetriever = new InternalCookieRetriever(browserWrapper);
-
-                _logger.Debug("Retrieving cookies");
-                CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies();
-
-                _logger.Debug("Closing browser");
-                await _browser.CloseAsync();
-
-                return cookieContainer;
+                return _browserWrapper;
             }
             catch (PuppeteerSharp.PuppeteerException ex)
             {
                 _logger.Fatal($"Browser communication error. Exception: {ex}");
                 return null;
             }
-            catch (TimeoutException ex)
+        }
+
+        public async Task CloseBrowser()
+        {
+            if (_browser != null && !_browser.IsClosed)
             {
-                _logger.Fatal($"Internal operation timed out. Exception: {ex}");
-                return null;
+                await _browser.CloseAsync();
+                _browser.Dispose();
+                _browser = null;
             }
         }
 

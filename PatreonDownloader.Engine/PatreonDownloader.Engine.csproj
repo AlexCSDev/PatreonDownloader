@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <ApplicationIcon />
     <StartupObject />
@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PatreonDownloader.Common\PatreonDownloader.Common.csproj" />
-    <ProjectReference Include="..\PatreonDownloader.CookieRetriever.Puppeteer\PatreonDownloader.PuppeteerCookieRetriever.csproj" />
+    <ProjectReference Include="..\PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj" />
   </ItemGroup>
 
 </Project>

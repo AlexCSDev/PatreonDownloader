@@ -10,7 +10,7 @@ namespace PatreonDownloader.Engine.Helpers
         {
             //Init config
             Configuration = new ConfigurationBuilder()
-                .AddJsonFile("settings.json", true, true)
+                .AddJsonFile("settings.json", true, false)
                 .Build();
         }
     }
