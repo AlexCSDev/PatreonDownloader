@@ -12,7 +12,7 @@ PatreonDownloader.exe --creator #creatorname# --download-directory c:\downloads 
 PatreonDownloader.exe --help
 
 ## Build instructions
-See BUILDING.md
+See docs\BUILDING.md
 
 ## Supported features
 * Downloading files from posts
