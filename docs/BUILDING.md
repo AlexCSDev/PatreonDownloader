@@ -45,3 +45,9 @@ The application will be published as self-contained application and will not nee
 Application will be compiled and published in folder specified by the **-o** parameter.
 
 The application will be published as self-contained application and will not need .NET Core Runtime to function. To run the application use **PatreonDownloader.App(.exe)** executable.
+
+## Putting additional files into PatreonDownloader folder
+PatreonDownloader comes with additional plugins which needs to be placed into appropriate folders in order to work correctly.
+
+Google drive:
+After building plugin binaries go to the output folder and copy **Google.Apis.Auth.dll, Google.Apis.Auth.PlatformServices.dll, Google.Apis.Core.dll, Google.Apis.dll, Google.Apis.Drive.v3.dll and PatreonDownloader.GoogleDriveDownloader.dll** files into the **plugins** folder inside of PatreonDownloader folder.

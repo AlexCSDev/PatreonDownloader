@@ -142,11 +142,11 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     PostId = jsonEntry.IdInt64
                 };
 
-                if (settings.SaveEmbeds)
+                if (jsonEntry.Attributes.Embed != null)
                 {
-                    if (jsonEntry.Attributes.Embed != null)
+                    if (settings.SaveEmbeds)
                     {
-                        _logger.Debug($"[{jsonEntry.Id}] Embed found");
+                        _logger.Debug($"[{jsonEntry.Id}] Embed found, metadata will be saved");
                         try
                         {
                             await File.WriteAllTextAsync(
@@ -155,13 +155,23 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                         }
                         catch (Exception ex)
                         {
-                            string msg = $"Unable to save embed: {ex}";
+                            string msg = $"Unable to save embed metadata: {ex}";
                             _logger.Error($"[{jsonEntry.Id}] {msg}");
-                            OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Error, msg, jsonEntry.IdInt64));
+                            OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Error, msg,
+                                jsonEntry.IdInt64));
                         }
                     }
-                }
 
+                    CrawledUrl subEntry = (CrawledUrl)entry.Clone();
+                    subEntry.Url = jsonEntry.Attributes.Embed.Url;
+                    subEntry.UrlType = CrawledUrlType.ExternalUrl;
+                    galleryEntries.Add(subEntry);
+                    _logger.Info(
+                        $"[{jsonEntry.Id}] New embed entry: {subEntry.Url}");
+
+                    OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
+                }
+                
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml(jsonEntry.Attributes.Content);
                 HtmlNodeCollection imgNodeCollection = doc.DocumentNode.SelectNodes("//img");

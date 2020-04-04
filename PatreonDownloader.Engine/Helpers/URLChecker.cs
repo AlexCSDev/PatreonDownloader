@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using NLog;
 
 namespace PatreonDownloader.Engine.Helpers
 {
@@ -23,6 +24,10 @@ namespace PatreonDownloader.Engine.Helpers
             string[] blackList = (ConfigurationManager.Configuration["UrlBlackList"] ?? "").Split("|");
             string lowerUrl = url.ToLower();
             bool blackListResult = useBlackList && blackList.Any(x => lowerUrl.Contains(x));
+
+            if(blackListResult)
+                LogManager.GetCurrentClassLogger().Debug($"{url} is blacklisted");
+
             return validationResult && !blackListResult;
         }
     }

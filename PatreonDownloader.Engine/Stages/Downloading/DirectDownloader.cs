@@ -57,11 +57,6 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 _logger.Debug($"[{crawledUrl.PostId}] This is a dropbox entry: {crawledUrl.Url}");
             }
-            else if (crawledUrl.Url.IndexOf("drive.google.com/file/d/", StringComparison.Ordinal) != -1)
-            {
-                //TODO: GOOGLE DRIVE SUPPORT
-                _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] Google Drive link found: {crawledUrl.Url}");
-            }
             else if (crawledUrl.Url.StartsWith("https://mega.nz/"))
             {
                 //TODO: MEGA SUPPORT

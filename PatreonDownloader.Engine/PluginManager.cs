@@ -30,6 +30,11 @@ namespace PatreonDownloader.Engine
             {
                 try
                 {
+                    if (!file.EndsWith(".dll"))
+                        continue;
+
+                    string filename = Path.GetFileName(file);
+
                     Assembly assembly = Assembly.LoadFrom(file);
 
                     Type[] types = assembly.GetTypes();
@@ -38,12 +43,12 @@ namespace PatreonDownloader.Engine
                     if (pluginType == null)
                         continue;
 
-                    _logger.Debug($"New plugin found: {file}");
+                    _logger.Debug($"New plugin found: {filename}");
 
                     IPlugin plugin = Activator.CreateInstance(pluginType) as IPlugin;
                     if (plugin == null)
                     {
-                        _logger.Error($"Invalid plugin {file}: IPlugin interface could not be created");
+                        _logger.Error($"Invalid plugin {filename}: IPlugin interface could not be created");
                         continue;
                     }
 
@@ -54,7 +59,7 @@ namespace PatreonDownloader.Engine
                         if (downloaderType == null)
                         {
                             _logger.Error(
-                                $"Invalid plugin {file}: Plugin type is downloader but no class implementing IDownloader found");
+                                $"Invalid plugin {filename}: Plugin type is downloader but no class implementing IDownloader found");
                             continue;
                         }
 

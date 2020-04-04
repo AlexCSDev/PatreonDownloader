@@ -27,6 +27,7 @@ See BUILDING.md
 	* Blacklist (configured in settings.json)
 * Plugins (via C#)
 	* Custom downloaders for adding download support for websites which need custom download logic
+	* PatreonDownloader comes with the following plugins by default: Google Drive
 	
 ## Needs further testing
 * Gallery posts
@@ -34,7 +35,6 @@ See BUILDING.md
 ## Known not implemented or not tested features 
 * Audio files
 * Vimeo embedded videos
-* Google drive external links
 * Mega.nz external links
 * YouTube external links
 * imgur external links
