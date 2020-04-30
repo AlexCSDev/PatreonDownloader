@@ -15,6 +15,7 @@ PatreonDownloader.exe --help
 See docs\BUILDING.md
 
 ## Supported features
+* Tested under Windows and Linux. Should work on any platform supported by .NET Core and Chromium browser.
 * Downloading files from posts
 * Downloading files from attachments
 * Saving html contents of posts
@@ -38,7 +39,6 @@ See docs\BUILDING.md
 * Mega.nz external links
 * YouTube external links
 * imgur external links
-* Running under operating systems other than Windows is not tested
 
 ## License
 All files in this repository are licensed under the license listed in LICENSE.md file unless stated otherwise.
