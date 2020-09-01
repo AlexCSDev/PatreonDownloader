@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Engine.Exceptions;
@@ -75,6 +76,27 @@ namespace PatreonDownloader.Engine.Stages.Downloading
             }
 
             string filename = $"{crawledUrl.PostId}_";
+
+            // regular expression for parsing media ID
+            Regex rx = new Regex($"/{crawledUrl.PostId}/([a-f0-9]+)/", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+            // find matches
+            MatchCollection matches = rx.Matches(crawledUrl.Url);
+
+            if (matches.Count == 0)
+            {
+			    // not a media
+            }
+            else if (matches.Count == 1)
+            {
+		        string mediaId = matches[0].Groups[1].Value;
+
+			    filename += mediaId + "_";
+            }
+            else
+            {
+			    throw new DownloadException($"[{crawledUrl.PostId}] More than 1 media found in URL {crawledUrl.Url}");
+            }
 
             switch (crawledUrl.UrlType)
             {
