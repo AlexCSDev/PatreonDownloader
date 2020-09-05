@@ -115,6 +115,12 @@ namespace PatreonDownloader.Engine
                         Initialize();
                     }
 
+                    //Call initialization code in all plugins
+                    await _pluginManager.BeforeStart();
+
+                    //Call initialization code in direct downloader
+                    await _directDownloader.BeforeStart();
+
                     try
                     {
                         await _cookieValidator.ValidateCookies(_cookieContainer);

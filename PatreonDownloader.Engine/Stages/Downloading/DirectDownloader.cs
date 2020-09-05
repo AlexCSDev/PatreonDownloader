@@ -22,6 +22,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
         private IWebDownloader _webDownloader;
         private IRemoteFilenameRetriever _remoteFilenameRetriever;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
 
         public DirectDownloader(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
         {
@@ -126,7 +127,24 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 filename = filename.Replace(c, '_');
             }
 
+            string key = $"{crawledUrl.PostId}_{filename.ToLowerInvariant()}";
+            if (!_fileCountDict.ContainsKey(key))
+                _fileCountDict.Add(key, 0);
+
+            _fileCountDict[key]++;
+
+            if (_fileCountDict[key] > 1)
+            {
+                _logger.Warn($"Found more than a single file with the name {filename} in post {crawledUrl.PostId}, a number will be appended to its name.");
+                filename = $"{Path.GetFileNameWithoutExtension(filename)}_{_fileCountDict[key]}{Path.GetExtension(filename)}";
+            }
+
             await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
+        }
+
+        public async Task BeforeStart()
+        {
+            _fileCountDict = new Dictionary<string, int>();
         }
     }
 }

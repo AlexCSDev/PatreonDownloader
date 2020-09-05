@@ -20,6 +20,10 @@ namespace PatreonDownloader.GoogleDriveDownloader
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static readonly GoogleDriveEngine _engine = new GoogleDriveEngine();
 
+        public async Task BeforeStart()
+        {
+            //Not used
+        }
 
         public async Task<bool> IsSupportedUrl(string url)
         {
