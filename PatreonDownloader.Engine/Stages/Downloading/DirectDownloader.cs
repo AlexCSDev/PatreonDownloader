@@ -25,15 +25,21 @@ namespace PatreonDownloader.Engine.Stages.Downloading
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
 
-        private readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
+        private static readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
+
+        static DirectDownloader()
+        {
+            _fileIdRegex =
+                new Regex(
+                    "https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)",
+                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        }
 
         public DirectDownloader(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
             _remoteFilenameRetriever = remoteFilenameRetriever ??
                                        throw new ArgumentNullException(nameof(remoteFilenameRetriever));
-
-            _fileIdRegex = new Regex("https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
         public async Task<bool> IsSupportedUrl(string url)
