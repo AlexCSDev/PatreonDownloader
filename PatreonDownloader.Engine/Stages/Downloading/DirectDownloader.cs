@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
@@ -22,6 +23,17 @@ namespace PatreonDownloader.Engine.Stages.Downloading
         private IWebDownloader _webDownloader;
         private IRemoteFilenameRetriever _remoteFilenameRetriever;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
+
+        private static readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
+
+        static DirectDownloader()
+        {
+            _fileIdRegex =
+                new Regex(
+                    "https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)",
+                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        }
 
         public DirectDownloader(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
         {
@@ -126,7 +138,39 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 filename = filename.Replace(c, '_');
             }
 
+            string key = $"{crawledUrl.PostId}_{filename.ToLowerInvariant()}";
+            if (!_fileCountDict.ContainsKey(key))
+                _fileCountDict.Add(key, 0);
+
+            _fileCountDict[key]++;
+
+            if (_fileCountDict[key] > 1)
+            {
+                _logger.Warn($"Found more than a single file with the name {filename} in post {crawledUrl.PostId}, file id/sequential number will be appended to its name.");
+
+                string appendStr = _fileCountDict[key].ToString();
+
+                if (crawledUrl.UrlType != CrawledUrlType.ExternalUrl)
+                {
+                    MatchCollection matches = _fileIdRegex.Matches(crawledUrl.Url);
+
+                    if (matches.Count == 0)
+                        throw new DownloadException($"[{crawledUrl.PostId}] Unable to retrieve file id for {crawledUrl.Url}, contact developer!");
+                    if (matches.Count > 1)
+                        throw new DownloadException($"[{crawledUrl.PostId}] More than 1 media found in URL {crawledUrl.Url}");
+
+                    appendStr = matches[0].Groups[5].Value;
+                }
+
+                filename = $"{Path.GetFileNameWithoutExtension(filename)}_{appendStr}{Path.GetExtension(filename)}";
+            }
+
             await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
+        }
+
+        public async Task BeforeStart()
+        {
+            _fileCountDict = new Dictionary<string, int>();
         }
     }
 }

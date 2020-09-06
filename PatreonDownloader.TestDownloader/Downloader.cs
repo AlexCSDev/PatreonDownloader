@@ -9,6 +9,11 @@ namespace PatreonDownloader.TestDownloader
 {
     public sealed class Downloader : IDownloader
     {
+        public async Task BeforeStart()
+        {
+            Console.WriteLine($"Test downloader's BeforeStart called");
+        }
+
         public async Task<bool> IsSupportedUrl(string url)
         {
             Console.WriteLine($"Test downloader's IsSupportedUrl called with url {url}");

@@ -95,5 +95,13 @@ namespace PatreonDownloader.Engine
 
             return null;
         }
+
+        public async Task BeforeStart()
+        {
+            foreach (IDownloader downloader in _downloaders)
+            {
+                await downloader.BeforeStart();
+            }
+        }
     }
 }

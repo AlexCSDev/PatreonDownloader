@@ -45,7 +45,8 @@ namespace PatreonDownloader.App
                     SaveDescriptions = options.SaveDescriptions,
                     SaveEmbeds = options.SaveEmbeds,
                     SaveJson = options.SaveJson,
-                    DownloadDirectory = options.DownloadDirectory
+                    DownloadDirectory = options.DownloadDirectory,
+                    OverwriteFiles = options.OverwriteFiles
                 };
                 NLogManager.ReconfigureNLog(options.Verbose);
             });

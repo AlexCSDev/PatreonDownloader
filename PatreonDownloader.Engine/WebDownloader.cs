@@ -19,10 +19,12 @@ namespace PatreonDownloader.Engine
         private readonly HttpClient _httpClient;
         private readonly IPuppeteerEngine _puppeteerEngine;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly bool _overwriteFiles;
 
-        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine)
+        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine, bool overwriteFiles = false)
         {
             _puppeteerEngine = puppeteerEngine ?? throw new ArgumentNullException(nameof(puppeteerEngine));
+            _overwriteFiles = overwriteFiles;
 
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
@@ -45,7 +47,10 @@ namespace PatreonDownloader.Engine
 
             if (File.Exists(path))
             {
-                throw new DownloadException($"File {path} already exists");
+                if(!_overwriteFiles)
+                    throw new DownloadException($"File {path} already exists");
+
+                _logger.Warn($"File {path} already exists, will be overwriten!");
             }
 
             try

@@ -25,6 +25,9 @@ namespace PatreonDownloader.App.Models
         [Option("no-headless", Required = false, HelpText = "Show internal browser window (disable headless mode)", Default = false)]
         public bool NoHeadless { get; set; }
 
+        [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
+        public bool OverwriteFiles { get; set; }
+
         /*[Option("cookie-retriever", Required = false, HelpText = "Cookie retriever plugin to use", Default = "PuppeteerCookieRetriever")]
         public string CookieRetriever { get; set; }*/
     }

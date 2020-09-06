@@ -12,6 +12,7 @@ namespace PatreonDownloader.Engine
         private bool _saveJson;
         private bool _saveAvatarAndCover;
         private string _downloadDirectory;
+        private bool _overwriteFiles;
 
         /// <summary>
         /// Any attempt to set properties will result in exception if this set to true
@@ -51,6 +52,15 @@ namespace PatreonDownloader.Engine
             set => ConsumableSetter.Set(Consumed, ref _downloadDirectory, value);
         }
 
+        /// <summary>
+        /// Overwrite already existing files
+        /// </summary>
+        public bool OverwriteFiles
+        {
+            get => _overwriteFiles;
+            set => ConsumableSetter.Set(Consumed, ref _overwriteFiles, value);
+        }
+
         public PatreonDownloaderSettings()
         {
             _saveDescriptions = true;
@@ -58,11 +68,12 @@ namespace PatreonDownloader.Engine
             _saveJson = true;
             _saveAvatarAndCover = true;
             _downloadDirectory = null;
+            _overwriteFiles = false;
         }
 
         public override string ToString()
         {
-            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory}";
+            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory},OverwriteFiles={_overwriteFiles}";
         }
     }
 }
