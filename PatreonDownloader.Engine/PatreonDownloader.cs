@@ -112,7 +112,7 @@ namespace PatreonDownloader.Engine
                     if (!_isInitialized)
                     {
                         _logger.Debug("Initiaization required");
-                        Initialize();
+                        Initialize(settings);
                     }
 
                     //Call initialization code in all plugins
@@ -192,7 +192,7 @@ namespace PatreonDownloader.Engine
             }
         }
 
-        private void Initialize()
+        private void Initialize(PatreonDownloaderSettings settings)
         {
             if (_isInitialized)
                 return;
@@ -206,7 +206,7 @@ namespace PatreonDownloader.Engine
             _puppeteerEngine = new PuppeteerEngine.PuppeteerEngine(_headlessBrowser);
 
             _logger.Debug("Initializing file downloader");
-            _webDownloader = new WebDownloader(_cookieContainer, _puppeteerEngine);
+            _webDownloader = new WebDownloader(_cookieContainer, _puppeteerEngine, settings.OverwriteFiles);
 
             _logger.Debug("Initializing cookie validator");
             _cookieValidator = new CookieValidator(_webDownloader);
