@@ -56,13 +56,13 @@ namespace PatreonDownloader.Tests
         }
 
         [Fact]
-        public async void RetrieveCampaignId_UrlIsNull_ThrowsArgumentNullException()
+        public async void RetrieveCampaignId_UrlIsNull_ThrowsArgumentException()
         {
             Mock<IWebDownloader> webDownloaderMock = new Mock<IWebDownloader>(MockBehavior.Strict);
 
             CampaignIdRetriever campaignIdRetriever = new CampaignIdRetriever(webDownloaderMock.Object);
 
-            await Assert.ThrowsAsync<ArgumentNullException>(async () => await campaignIdRetriever.RetrieveCampaignId(null));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await campaignIdRetriever.RetrieveCampaignId(null));
         }
     }
 }
