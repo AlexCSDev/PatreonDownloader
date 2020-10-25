@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Patreon Downloader Engine Library")]
+[assembly: AssemblyTitle("Patreon Downloader Google Drive Plugin")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("733001b2-a3ad-4e99-b657-c7edf7e64427")]
+[assembly: Guid("0f883da3-d59b-4f79-a380-07f8a13eadcd")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,7 +31,3 @@ using System.Runtime.InteropServices;
 //
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-//Alow tests to see internal classes
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: InternalsVisibleTo("PatreonDownloader.Tests")]
