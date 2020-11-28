@@ -12,6 +12,6 @@ namespace PatreonDownloader.Engine
         event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
         event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
         event EventHandler<FileDownloadedEventArgs> FileDownloaded;
-        Task Download(string creatorName, PatreonDownloaderSettings settings);
+        Task Download(string url, PatreonDownloaderSettings settings);
     }
 }

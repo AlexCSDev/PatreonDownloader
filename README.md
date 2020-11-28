@@ -5,11 +5,15 @@ IMPORTANT: You need a valid patreon account to download both free and paid conte
 
 ## Usage
 #### Download all available files from creator
-PatreonDownloader.exe --creator #creatorname#. Creator name can be obtained by looking at their page url: https://www.patreon.com/#creator_name_here#/posts
+PatreonDownloader.App.exe --url #page url#. Page url should follow one of the following patterns:
+* https://www.patreon.com/m/#numbers#/posts
+* https://www.patreon.com/user?u=#numbers#
+* https://www.patreon.com/user/posts?u=#numbers#
+* https://www.patreon.com/#creator name#/posts
 #### Download all available files from creator into custom directory and save all possible data (post contents, embed metadata, cover and avatar, json responses)
-PatreonDownloader.exe --creator #creatorname# --download-directory c:\downloads --descriptions --embeds --campaign-images --json
+PatreonDownloader.App.exe --url #page url# --download-directory c:\downloads --descriptions --embeds --campaign-images --json
 #### Show available commands and their descriptions
-PatreonDownloader.exe --help
+PatreonDownloader.App.exe --help
 
 ## Build instructions
 See docs\BUILDING.md

@@ -4,8 +4,8 @@ namespace PatreonDownloader.App.Models
 {
     class CommandLineOptions
     {
-        [Option("creator", Required = true, HelpText = "Name of the creator to download from")]
-        public string CreatorName { get; set; }
+        [Option("url", Required = true, HelpText = "Url of the creator's page")]
+        public string Url { get; set; }
         [Option("descriptions", Required = false, HelpText = "Save post descriptions", Default = false)]
         public bool SaveDescriptions { get; set; }
         [Option("embeds", Required = false, HelpText = "Save embedded content metadata", Default = false)]
