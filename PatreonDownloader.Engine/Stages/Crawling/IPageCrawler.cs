@@ -13,6 +13,6 @@ namespace PatreonDownloader.Engine.Stages.Crawling
         event EventHandler<PostCrawlEventArgs> PostCrawlEnd;
         event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
         event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
-        Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings);
+        Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings, string downloadDirectory);
     }
 }

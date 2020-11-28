@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NLog;
@@ -78,17 +79,36 @@ namespace PatreonDownloader.Engine
         /// <summary>
         /// Download specified creator
         /// </summary>
-        /// <param name="creatorName"></param>
+        /// <param name="url">Url of the creator's page</param>
         /// <param name="settings">Downloader settings, will be set to default values if not provided</param>
-        public async Task Download(string creatorName, PatreonDownloaderSettings settings = null)
+        public async Task Download(string url, PatreonDownloaderSettings settings = null)
         {
-            if(string.IsNullOrEmpty(creatorName))
-                throw new ArgumentException("Argument cannot be null or empty", nameof(creatorName));
+            if(string.IsNullOrEmpty(url))
+                throw new ArgumentException("Argument cannot be null or empty", nameof(url));
+
+            url = url.ToLower(CultureInfo.InvariantCulture);
+
+            if (!url.StartsWith("https://www.patreon.com/"))
+                throw new PatreonDownloaderException("Download url should start with \"https://www.patreon.com/\"");
+
+            if (!url.StartsWith("https://www.patreon.com/m/")
+                && !url.StartsWith("https://www.patreon.com/user")
+                && !url.EndsWith("/posts"))
+            {
+                StringBuilder errorStringBuilder = new StringBuilder();
+                errorStringBuilder.AppendLine("Invalid download url. Make sure it follows one of the following patterns:");
+                errorStringBuilder.AppendLine("https://www.patreon.com/m/#numbers#/posts");
+                errorStringBuilder.AppendLine("https://www.patreon.com/user?u=#numbers#");
+                errorStringBuilder.AppendLine("https://www.patreon.com/user/posts?u=#numbers#");
+                errorStringBuilder.AppendLine("https://www.patreon.com/#creator name#/posts");
+                errorStringBuilder.AppendLine("If you think this is an error, feel free to create a new issue on GitHub.");
+                throw new PatreonDownloaderException(errorStringBuilder.ToString());
+            }
+
 
             settings = settings ?? new PatreonDownloaderSettings();
 
-            if (string.IsNullOrEmpty(settings.DownloadDirectory))
-                settings.DownloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "download", creatorName.ToLower(CultureInfo.InvariantCulture));
+            string downloadDirectory = settings.DownloadDirectory;
 
             settings.Consumed = true;
             _logger.Debug($"Patreon downloader settings: {settings}");
@@ -130,19 +150,6 @@ namespace PatreonDownloader.Engine
                         _logger.Fatal($"Cookie validation failed: {ex}");
                         throw;
                     }
-
-                    try
-                    {
-                        if (!Directory.Exists(settings.DownloadDirectory))
-                        {
-                            Directory.CreateDirectory(settings.DownloadDirectory);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Fatal($"Unable to create download directory: {ex}");
-                        throw new PatreonDownloaderException("Unable to create download directory", ex);
-                    }
                 }
                 finally
                 {
@@ -150,19 +157,13 @@ namespace PatreonDownloader.Engine
                     _initializationSemaphore.Release();
                 }
 
-                //TODO: Check that url is valid
-                //We only ask for creator name because
-                //we assume that every creator has a friendly url
-                //like https://www.patreon.com/CREATORNAME/posts
-                string url = $"https://www.patreon.com/{creatorName}/posts"; //Build valid url from creator name
-
                 _logger.Debug("Retrieving campaign ID");
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.RetrievingCampaignInformation));
                 long campaignId = await _campaignIdRetriever.RetrieveCampaignId(url);
 
                 if (campaignId == -1)
                 {
-                    throw new PatreonDownloaderException("Unable to retrieve campaign id");
+                    throw new PatreonDownloaderException("Unable to retrieve campaign id.");
                 }
 
                 _logger.Debug($"Campaign ID: {campaignId}");
@@ -171,16 +172,36 @@ namespace PatreonDownloader.Engine
                 CampaignInfo campaignInfo = await _campaignInfoRetriever.RetrieveCampaignInfo(campaignId);
                 _logger.Debug($"Campaign name: {campaignInfo.Name}");
 
+                try
+                {
+
+                    if (string.IsNullOrEmpty(downloadDirectory))
+                    {
+                        //Download directory is creator's campaign name with invalid path characters removed
+                        string creatorNameDirectory = String.Concat(campaignInfo.Name.Split(Path.GetInvalidFileNameChars())).ToLower(CultureInfo.InvariantCulture);
+                        downloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "download", creatorNameDirectory);
+                    }
+                    if (!Directory.Exists(downloadDirectory))
+                    {
+                        Directory.CreateDirectory(downloadDirectory);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.Fatal($"Unable to create download directory: {ex}");
+                    throw new PatreonDownloaderException("Unable to create download directory", ex);
+                }
+
                 _logger.Debug("Starting crawler");
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Crawling));
-                List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings);
+                List<CrawledUrl> crawledUrls = await _pageCrawler.Crawl(campaignInfo, settings, downloadDirectory);
 
                 _logger.Debug("Closing puppeteer browser");
                 await _puppeteerEngine.CloseBrowser();
 
                 _logger.Debug("Starting downloader");
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Downloading));
-                await _downloadManager.Download(crawledUrls, settings.DownloadDirectory);
+                await _downloadManager.Download(crawledUrls, downloadDirectory);
 
                 _logger.Debug("Finished downloading");
                 OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Done));

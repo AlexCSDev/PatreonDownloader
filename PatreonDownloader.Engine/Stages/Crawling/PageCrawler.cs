@@ -31,7 +31,8 @@ namespace PatreonDownloader.Engine.Stages.Crawling
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
         }
 
-        public async Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings)
+        public async Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings,
+            string downloadDirectory)
         {
             if(campaignInfo.Id < 1)
                 throw new ArgumentException("Campaign ID cannot be less than 1");
@@ -43,6 +44,8 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 throw new ArgumentException("Campaign name cannot be null or empty");
             if (settings == null)
                 throw new ArgumentNullException(nameof(settings));
+            if(string.IsNullOrWhiteSpace(downloadDirectory))
+                throw new ArgumentException("Download directory cannot be empty");
 
             _logger.Debug($"Starting crawling campaign {campaignInfo.Name}");
             List<CrawledUrl> crawledUrls = new List<CrawledUrl>();
@@ -56,7 +59,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
             }
 
             //TODO: Research possibility of not hardcoding this string
-            string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Cuser_defined_tags%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={campaignInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
+            string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={campaignInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
 
             int page = 0;
             while (!string.IsNullOrEmpty(nextPage))
@@ -66,10 +69,10 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 string json = await _webDownloader.DownloadString(nextPage);
 
                 if(settings.SaveJson)
-                    await File.WriteAllTextAsync(Path.Combine(settings.DownloadDirectory, $"page_{page}.json"),
+                    await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"page_{page}.json"),
                         json);
 
-                ParsingResult result = await ParsePage(json, settings);
+                ParsingResult result = await ParsePage(json, settings.SaveDescriptions, settings.SaveEmbeds, downloadDirectory);
 
                 if(result.Entries.Count > 0)
                     crawledUrls.AddRange(result.Entries);
@@ -84,7 +87,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
             return crawledUrls;
         }
 
-        private async Task<ParsingResult> ParsePage(string json, PatreonDownloaderSettings settings)
+        private async Task<ParsingResult> ParsePage(string json, bool saveDescriptions, bool saveEmbeds, string downloadDirectory)
         {
             List<CrawledUrl> galleryEntries = new List<CrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
@@ -122,11 +125,11 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                     continue;
                 }
 
-                if (settings.SaveDescriptions)
+                if (saveDescriptions)
                 {
                     try
                     {
-                        await File.WriteAllTextAsync(Path.Combine(settings.DownloadDirectory, $"{jsonEntry.Id}_description.txt"),
+                        await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"{jsonEntry.Id}_description.txt"),
                             jsonEntry.Attributes.Content); //TODO: WRITE TITLE, AND OTHER METADATA?
                     }
                     catch (Exception ex)
@@ -144,13 +147,13 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
                 if (jsonEntry.Attributes.Embed != null)
                 {
-                    if (settings.SaveEmbeds)
+                    if (saveEmbeds)
                     {
                         _logger.Debug($"[{jsonEntry.Id}] Embed found, metadata will be saved");
                         try
                         {
                             await File.WriteAllTextAsync(
-                                Path.Combine(settings.DownloadDirectory, $"{jsonEntry.Id}_embed.txt"),
+                                Path.Combine(downloadDirectory, $"{jsonEntry.Id}_embed.txt"),
                                 jsonEntry.Attributes.Embed.ToString());
                         }
                         catch (Exception ex)

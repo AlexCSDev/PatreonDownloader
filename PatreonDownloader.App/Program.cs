@@ -31,13 +31,13 @@ namespace PatreonDownloader.App
 
             ParserResult<CommandLineOptions> parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
 
-            string creatorName = null;
+            string url = null;
             bool headlessBrowser = true;
 
             PatreonDownloaderSettings settings = null;
             parserResult.WithParsed(options =>
             {
-                creatorName = options.CreatorName;
+                url = options.Url;
                 headlessBrowser = !options.NoHeadless;
                 settings = new PatreonDownloaderSettings
                 {
@@ -51,12 +51,12 @@ namespace PatreonDownloader.App
                 NLogManager.ReconfigureNLog(options.Verbose);
             });
 
-            if (string.IsNullOrEmpty(creatorName) || settings == null)
+            if (string.IsNullOrEmpty(url) || settings == null)
                 return;
 
             try
             {
-                await RunPatreonDownloader(creatorName, headlessBrowser, settings);
+                await RunPatreonDownloader(url, headlessBrowser, settings);
             }
             catch (Exception ex)
             {
@@ -109,7 +109,7 @@ namespace PatreonDownloader.App
             }
         }
 
-        private static async Task RunPatreonDownloader(string creatorName, bool headlessBrowser, PatreonDownloaderSettings settings)
+        private static async Task RunPatreonDownloader(string url, bool headlessBrowser, PatreonDownloaderSettings settings)
         {
             CookieContainer cookieContainer = null;
             using (_cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(headlessBrowser))
@@ -134,7 +134,7 @@ namespace PatreonDownloader.App
                 _patreonDownloader.NewCrawledUrl += PatreonDownloaderOnNewCrawledUrl;
                 _patreonDownloader.CrawlerMessage += PatreonDownloaderOnCrawlerMessage;
                 _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
-                await _patreonDownloader.Download(creatorName, settings);
+                await _patreonDownloader.Download(url, settings);
             }
         }
 
