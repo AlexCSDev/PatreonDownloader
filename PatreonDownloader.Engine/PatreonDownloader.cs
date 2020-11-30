@@ -178,7 +178,8 @@ namespace PatreonDownloader.Engine
                     if (string.IsNullOrEmpty(downloadDirectory))
                     {
                         //Download directory is creator's campaign name with invalid path characters removed
-                        string creatorNameDirectory = String.Concat(campaignInfo.Name.Split(Path.GetInvalidFileNameChars())).ToLower(CultureInfo.InvariantCulture);
+                        string creatorNameDirectory = String.Concat(campaignInfo.Name.Split(Path.GetInvalidFileNameChars()))
+                            .ToLower(CultureInfo.InvariantCulture).Trim();
                         downloadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "download", creatorNameDirectory);
                     }
                     if (!Directory.Exists(downloadDirectory))
