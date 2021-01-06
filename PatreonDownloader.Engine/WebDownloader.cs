@@ -6,10 +6,12 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using NLog;
+using PatreonDownloader.Engine.DependencyInjection;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Models;
 using PatreonDownloader.PuppeteerEngine;
 using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
+using PatreonDownloader.Common.Models;
 
 namespace PatreonDownloader.Engine
 {
@@ -20,13 +22,13 @@ namespace PatreonDownloader.Engine
         private readonly IPuppeteerEngine _puppeteerEngine;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine)
+        public WebDownloader(DIParameters diParameters, IPuppeteerEngine puppeteerEngine)
         {
             _puppeteerEngine = puppeteerEngine ?? throw new ArgumentNullException(nameof(puppeteerEngine));
 
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
-            handler.CookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
+            handler.CookieContainer = diParameters.CookieContainer ?? throw new ArgumentNullException(nameof(diParameters.CookieContainer));
             _httpClient = new HttpClient(handler);
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586");
         }

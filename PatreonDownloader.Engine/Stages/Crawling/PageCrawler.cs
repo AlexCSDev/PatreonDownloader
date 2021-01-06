@@ -317,7 +317,12 @@ namespace PatreonDownloader.Engine.Stages.Crawling
                 _logger.Debug($"[{jsonEntry.Id}] Verification: Started");
                 if (jsonEntry.Type != "attachment" && jsonEntry.Type != "media")
                 {
-                    if (jsonEntry.Type != "user" && jsonEntry.Type != "campaign" && jsonEntry.Type != "access-rule")
+                    if (jsonEntry.Type != "user" && 
+                        jsonEntry.Type != "campaign" && 
+                        jsonEntry.Type != "access-rule" && 
+                        jsonEntry.Type != "reward" && 
+                        jsonEntry.Type != "poll_choice" &&
+                        jsonEntry.Type != "poll_response")
                     {
                         string msg = $"Verification for {jsonEntry.Id}: Unknown type for \"included\": {jsonEntry.Type}";
                         _logger.Error(msg);

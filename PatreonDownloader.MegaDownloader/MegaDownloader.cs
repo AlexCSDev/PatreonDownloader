@@ -56,7 +56,7 @@ namespace PatreonDownloader.MegaDownloader
             }
         }
 
-        public MegaDownloadResult DownloadUrl(CrawledUrl crawledUrl, string downloadPath)
+        public MegaDownloadResult DownloadUrl(CrawledUrl crawledUrl, string downloadPath, bool overwriteFiles = false)
         {
             var folders = new List<KeyValuePair<string, MegaFolder>>();
             Uri uri = new Uri(crawledUrl.Url);
@@ -118,8 +118,15 @@ namespace PatreonDownloader.MegaDownloader
 
                     if (File.Exists(path))
                     {
-                        _logger.Warn($"[MEGA] FILE EXISTS: {crawledUrl.Url} - {path}");
-                        continue;
+                        if (!overwriteFiles)
+                        {
+                            _logger.Warn($"[MEGA] FILE EXISTS: {crawledUrl.Url} - {path}");
+                            continue;
+                        }
+                        else
+                        {
+                            File.Delete(path);
+                        }
                     }
 
                     _client.DownloadFile(node, path);
@@ -132,8 +139,15 @@ namespace PatreonDownloader.MegaDownloader
 
                 if (File.Exists(path))
                 {
-                    _logger.Warn($"[MEGA] FILE EXISTS: {crawledUrl.Url} - {path}");
-                    return MegaDownloadResult.FileExists;
+                    if (!overwriteFiles)
+                    {
+                        _logger.Warn($"[MEGA] FILE EXISTS: {crawledUrl.Url} - {path}");
+                        return MegaDownloadResult.FileExists;
+                    }
+                    else
+                    {
+                        File.Delete(path);
+                    }
                 }
                 _client.DownloadFile(uri, path);
 

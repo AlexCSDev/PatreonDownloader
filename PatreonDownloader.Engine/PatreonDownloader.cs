@@ -10,6 +10,7 @@ using Ninject;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Common.Interfaces.Plugins;
+using PatreonDownloader.Common.Models;
 using PatreonDownloader.Engine.DependencyInjection;
 using PatreonDownloader.Engine.Enums;
 using PatreonDownloader.Engine.Events;
@@ -75,10 +76,10 @@ namespace PatreonDownloader.Engine
 
             _logger.Debug("Initializing ninject kernel");
             _kernel = new StandardKernel(new MainModule());
+            _kernel.Bind<DIParameters>().ToConstant(new DIParameters(cookieContainer, headlessBrowser));
 
             _logger.Debug("Initializing puppeteer engine");
-            _puppeteerEngine =
-                _kernel.Get<IPuppeteerEngine>(new Ninject.Parameters.ConstructorArgument("headless", _headlessBrowser));
+            _puppeteerEngine = _kernel.Get<IPuppeteerEngine>();
 
             _logger.Debug("Initializing plugin manager");
             _pluginManager = _kernel.Get<IPluginManager>();
@@ -274,8 +275,8 @@ namespace PatreonDownloader.Engine
         public void Dispose()
         {
             _initializationSemaphore?.Dispose();
+            ((IDisposable)_puppeteerEngine)?.Dispose();
             _kernel?.Dispose();
-            //((IDisposable)_puppeteerEngine)?.Dispose();
         }
     }
 }
