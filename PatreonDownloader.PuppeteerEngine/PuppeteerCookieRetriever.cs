@@ -14,11 +14,11 @@ namespace PatreonDownloader.PuppeteerEngine
     public class PuppeteerCookieRetriever : ICookieRetriever, IDisposable
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private PuppeteerEngine _puppeteerEngine;
+        private IPuppeteerEngine _puppeteerEngine;
         private bool _headlessBrowser;
 
         /// <summary>
-        /// Create new instance of PuppeteerCookieRetriever
+        /// Create new instance of PuppeteerCookieRetriever (THIS CLASS IS NOT A PART OF NINJECT DI)
         /// </summary>
         /// <param name="headlessBrowser">If set to false then the internal browser will be visible</param>
         public PuppeteerCookieRetriever(bool headlessBrowser = true)

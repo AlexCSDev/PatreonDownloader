@@ -6,7 +6,7 @@ using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
 
 namespace PatreonDownloader.PuppeteerEngine
 {
-    public interface IPuppeteerEngine
+    public interface IPuppeteerEngine : IDisposable
     {
         bool IsHeadless { get; }
         Task<IWebBrowser> GetBrowser();

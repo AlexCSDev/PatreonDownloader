@@ -19,6 +19,7 @@ namespace PatreonDownloader.Engine.Stages.Crawling
     internal sealed class PageCrawler : IPageCrawler
     {
         private readonly IWebDownloader _webDownloader;
+        private readonly IPluginManager _pluginManager;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public event EventHandler<PostCrawlEventArgs> PostCrawlStart;
@@ -26,9 +27,10 @@ namespace PatreonDownloader.Engine.Stages.Crawling
         public event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
         public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage; 
 
-        public PageCrawler(IWebDownloader webDownloader)
+        public PageCrawler(IWebDownloader webDownloader, IPluginManager pluginManager)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
+            _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
         }
 
         public async Task<List<CrawledUrl>> Crawl(CampaignInfo campaignInfo, PatreonDownloaderSettings settings,
@@ -174,51 +176,17 @@ namespace PatreonDownloader.Engine.Stages.Crawling
 
                     OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
                 }
-                
-                HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(jsonEntry.Attributes.Content);
-                HtmlNodeCollection imgNodeCollection = doc.DocumentNode.SelectNodes("//img");
-                if (imgNodeCollection != null)
+
+                //External urls via plugins (including direct via default plugin)
+                List<string> pluginUrls = await _pluginManager.ExtractSupportedUrls(jsonEntry.Attributes.Content);
+                foreach (string url in pluginUrls)
                 {
-                    foreach (var imgNode in imgNodeCollection)
-                    {
-                        string url = imgNode.Attributes["src"].Value;
-
-                        CrawledUrl subEntry = (CrawledUrl)entry.Clone();
-                        subEntry.Url = url;
-                        subEntry.UrlType = CrawledUrlType.ExternalUrl;
-                        galleryEntries.Add(subEntry);
-                        _logger.Info(
-                            $"[{jsonEntry.Id}] New external (image) entry: {subEntry.Url}");
-
-                        OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
-                    }
-                }
-
-                //TODO: Implement link parsing as plugins?
-                HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a");
-                if (linkNodeCollection != null)
-                {
-                    int cnt = 1;
-                    foreach (var linkNode in linkNodeCollection)
-                    {
-                        if (linkNode.Attributes["href"] != null)
-                        {
-                            var url = linkNode.Attributes["href"].Value;
-
-                            CrawledUrl subEntry = (CrawledUrl)entry.Clone();
-                            subEntry.Url = url;
-                            subEntry.UrlType = CrawledUrlType.ExternalUrl;
-                            galleryEntries.Add(subEntry);
-                            _logger.Info($"[{jsonEntry.Id}] New external (direct) entry: {subEntry.Url}");
-                            OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
-                        }
-                        else
-                        {
-                            _logger.Warn($"[{jsonEntry.Id}] link with invalid href found, ignoring...");
-                            OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Warning, "link with invalid href found, ignoring...", jsonEntry.IdInt64));
-                        }
-                    }
+                    CrawledUrl subEntry = (CrawledUrl)entry.Clone();
+                    subEntry.Url = url;
+                    subEntry.UrlType = CrawledUrlType.ExternalUrl;
+                    galleryEntries.Add(subEntry);
+                    _logger.Info($"[{jsonEntry.Id}] New external entry: {subEntry.Url}");
+                    OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
                 }
 
                 _logger.Debug($"[{jsonEntry.Id}] Scanning attachment data");

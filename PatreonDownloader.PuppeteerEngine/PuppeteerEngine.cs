@@ -126,6 +126,7 @@ namespace PatreonDownloader.PuppeteerEngine
 
         public void Dispose()
         {
+            _logger.Debug("Disposing puppeteer engine");
             _browser?.Dispose();
         }
     }

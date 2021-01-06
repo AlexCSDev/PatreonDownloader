@@ -19,12 +19,10 @@ namespace PatreonDownloader.Engine
         private readonly HttpClient _httpClient;
         private readonly IPuppeteerEngine _puppeteerEngine;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private readonly bool _overwriteFiles;
 
-        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine, bool overwriteFiles = false)
+        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine)
         {
             _puppeteerEngine = puppeteerEngine ?? throw new ArgumentNullException(nameof(puppeteerEngine));
-            _overwriteFiles = overwriteFiles;
 
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
@@ -38,7 +36,7 @@ namespace PatreonDownloader.Engine
         /// </summary>
         /// <param name="url">File url</param>
         /// <param name="path">Path where the file should be saved</param>
-        public async Task DownloadFile(string url, string path)
+        public async Task DownloadFile(string url, string path, bool overwrite = false)
         {
             if(string.IsNullOrEmpty(url))
                 throw new ArgumentException("Argument cannot be null or empty", nameof(url));
@@ -47,7 +45,7 @@ namespace PatreonDownloader.Engine
 
             if (File.Exists(path))
             {
-                if(!_overwriteFiles)
+                if(!overwrite)
                     throw new DownloadException($"File {path} already exists");
 
                 _logger.Warn($"File {path} already exists, will be overwriten!");

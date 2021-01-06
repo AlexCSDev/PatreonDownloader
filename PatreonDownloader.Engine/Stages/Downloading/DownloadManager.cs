@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Common.Interfaces.Plugins;
 using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
@@ -14,17 +15,15 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 {
     internal sealed class DownloadManager : IDownloadManager
     {
-        private readonly IDownloader _defaultDownloader;
         private readonly IPluginManager _pluginManager;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public event EventHandler<FileDownloadedEventArgs> FileDownloaded;
 
-        public DownloadManager(IPluginManager pluginManager, IDownloader defaultDownloader)
+        public DownloadManager(IPluginManager pluginManager)
         {
             _pluginManager = pluginManager ?? throw new ArgumentNullException(nameof(pluginManager));
-            _defaultDownloader = defaultDownloader ?? throw new ArgumentNullException(nameof(defaultDownloader));
         }
 
         public async Task Download(List<CrawledUrl> crawledUrls, string downloadDirectory)
@@ -48,11 +47,9 @@ namespace PatreonDownloader.Engine.Stages.Downloading
 
                 _logger.Debug($"{entry.Url} is {entry.UrlType}");
 
-                IDownloader downloader = await _pluginManager.GetDownloader(entry.Url) ?? _defaultDownloader;
-
                 try
                 {
-                    await downloader.Download(entry, downloadDirectory);
+                    await _pluginManager.DownloadCrawledUrl(entry, downloadDirectory);
                     OnFileDownloaded(new FileDownloadedEventArgs(entry.Url, crawledUrls.Count));
                 }
                 catch (DownloadException ex)

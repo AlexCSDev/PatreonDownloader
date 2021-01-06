@@ -6,9 +6,11 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Ninject;
 using NLog;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Common.Interfaces.Plugins;
+using PatreonDownloader.Engine.DependencyInjection;
 using PatreonDownloader.Engine.Enums;
 using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
@@ -27,20 +29,17 @@ namespace PatreonDownloader.Engine
     {
         private CookieContainer _cookieContainer;
 
-        private IWebDownloader _webDownloader;
-        private ICampaignIdRetriever _campaignIdRetriever;
-        private ICampaignInfoRetriever _campaignInfoRetriever;
-        private IRemoteFilenameRetriever _remoteFilenameRetriever;
-        private IDownloader _directDownloader;
-        private IDownloadManager _downloadManager;
-        private IPageCrawler _pageCrawler;
         private IPluginManager _pluginManager;
         private ICookieValidator _cookieValidator;
+        private ICampaignIdRetriever _campaignIdRetriever;
+        private ICampaignInfoRetriever _campaignInfoRetriever;
         private IPuppeteerEngine _puppeteerEngine;
+        private IDownloadManager _downloadManager;
+        private IPageCrawler _pageCrawler;
+        private IKernel _kernel;
 
         private SemaphoreSlim _initializationSemaphore;
-        // We don't want those variables to be optimized by compiler
-        private volatile bool _isInitialized;
+        //We don't want those variables to be optimized by compiler
         private volatile bool _isRunning;
 
         private bool _headlessBrowser;
@@ -70,8 +69,39 @@ namespace PatreonDownloader.Engine
             _cookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
             _headlessBrowser = headlessBrowser;
 
-            _initializationSemaphore = new SemaphoreSlim(1,1);
-            _isInitialized = false;
+            _initializationSemaphore = new SemaphoreSlim(1, 1);
+
+            _logger.Debug("Initializing PatreonDownloader...");
+
+            _logger.Debug("Initializing ninject kernel");
+            _kernel = new StandardKernel(new MainModule());
+
+            _logger.Debug("Initializing puppeteer engine");
+            _puppeteerEngine =
+                _kernel.Get<IPuppeteerEngine>(new Ninject.Parameters.ConstructorArgument("headless", _headlessBrowser));
+
+            _logger.Debug("Initializing plugin manager");
+            _pluginManager = _kernel.Get<IPluginManager>();
+
+            _logger.Debug("Initializing cookie validator");
+            _cookieValidator = _kernel.Get<ICookieValidator>();
+
+            _logger.Debug("Initializing id retriever");
+            _campaignIdRetriever = _kernel.Get<ICampaignIdRetriever>();
+
+            _logger.Debug("Initializing campaign info retriever");
+            _campaignInfoRetriever = _kernel.Get<ICampaignInfoRetriever>();
+
+            _logger.Debug("Initializing download manager");
+            _downloadManager = _kernel.Get<IDownloadManager>();
+            _downloadManager.FileDownloaded += DownloadManagerOnFileDownloaded;
+
+            _logger.Debug("Initializing page crawler");
+            _pageCrawler = _kernel.Get<IPageCrawler>();
+            _pageCrawler.PostCrawlStart += PageCrawlerOnPostCrawlStart;
+            _pageCrawler.PostCrawlEnd += PageCrawlerOnPostCrawlEnd;
+            _pageCrawler.NewCrawledUrl += PageCrawlerOnNewCrawledUrl;
+            _pageCrawler.CrawlerMessage += PageCrawlerOnCrawlerMessage;
 
             OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Ready));
         }
@@ -126,35 +156,26 @@ namespace PatreonDownloader.Engine
                     }
 
                     _isRunning = true;
-                    OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
-
-                    // Initialize all required classes if required
-                    if (!_isInitialized)
-                    {
-                        _logger.Debug("Initiaization required");
-                        Initialize(settings);
-                    }
-
-                    //Call initialization code in all plugins
-                    await _pluginManager.BeforeStart();
-
-                    //Call initialization code in direct downloader
-                    await _directDownloader.BeforeStart();
-
-                    try
-                    {
-                        await _cookieValidator.ValidateCookies(_cookieContainer);
-                    }
-                    catch (CookieValidationException ex)
-                    {
-                        _logger.Fatal($"Cookie validation failed: {ex}");
-                        throw;
-                    }
                 }
                 finally
                 {
                     // Release the lock after all required initialization code has finished execution
                     _initializationSemaphore.Release();
+                }
+
+                OnStatusChanged(new DownloaderStatusChangedEventArgs(DownloaderStatus.Initialization));
+
+                //Call initialization code in all plugins
+                await _pluginManager.BeforeStart(settings);
+
+                try
+                {
+                    await _cookieValidator.ValidateCookies(_cookieContainer);
+                }
+                catch (CookieValidationException ex)
+                {
+                    _logger.Fatal($"Cookie validation failed: {ex}");
+                    throw;
                 }
 
                 _logger.Debug("Retrieving campaign ID");
@@ -214,51 +235,6 @@ namespace PatreonDownloader.Engine
             }
         }
 
-        private void Initialize(PatreonDownloaderSettings settings)
-        {
-            if (_isInitialized)
-                return;
-
-            _logger.Debug("Initializing PatreonDownloader...");
-
-            _logger.Debug("Initializing plugin manager");
-            _pluginManager = new PluginManager();
-
-            _logger.Debug("Initializing puppeteer engine");
-            _puppeteerEngine = new PuppeteerEngine.PuppeteerEngine(_headlessBrowser);
-
-            _logger.Debug("Initializing file downloader");
-            _webDownloader = new WebDownloader(_cookieContainer, _puppeteerEngine, settings.OverwriteFiles);
-
-            _logger.Debug("Initializing cookie validator");
-            _cookieValidator = new CookieValidator(_webDownloader);
-
-            _logger.Debug("Initializing id retriever");
-            _campaignIdRetriever = new CampaignIdRetriever(_webDownloader);
-
-            _logger.Debug("Initializing campaign info retriever");
-            _campaignInfoRetriever = new CampaignInfoRetriever(_webDownloader);
-
-            _logger.Debug("Initializing remote filename retriever");
-            _remoteFilenameRetriever = new RemoteFilenameRetriever(_cookieContainer);
-
-            _logger.Debug("Initializing default (direct) downloader");
-            _directDownloader = new DirectDownloader(_webDownloader, _remoteFilenameRetriever);
-
-            _logger.Debug("Initializing download manager");
-            _downloadManager = new DownloadManager(_pluginManager, _directDownloader);
-            _downloadManager.FileDownloaded += DownloadManagerOnFileDownloaded;
-
-            _logger.Debug("Initializing page crawler");
-            _pageCrawler = new PageCrawler(_webDownloader);
-            _pageCrawler.PostCrawlStart += PageCrawlerOnPostCrawlStart;
-            _pageCrawler.PostCrawlEnd += PageCrawlerOnPostCrawlEnd;
-            _pageCrawler.NewCrawledUrl += PageCrawlerOnNewCrawledUrl;
-            _pageCrawler.CrawlerMessage += PageCrawlerOnCrawlerMessage;
-
-            _isInitialized = true;
-        }
-
         private void PageCrawlerOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)
         {
             EventHandler<CrawlerMessageEventArgs> handler = CrawlerMessage;
@@ -298,7 +274,8 @@ namespace PatreonDownloader.Engine
         public void Dispose()
         {
             _initializationSemaphore?.Dispose();
-            ((IDisposable)_puppeteerEngine)?.Dispose();
+            _kernel?.Dispose();
+            //((IDisposable)_puppeteerEngine)?.Dispose();
         }
     }
 }
