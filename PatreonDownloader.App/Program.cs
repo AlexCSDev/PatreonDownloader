@@ -33,12 +33,14 @@ namespace PatreonDownloader.App
 
             string url = null;
             bool headlessBrowser = true;
+            string remoteBrowserAddress = null;
 
             PatreonDownloaderSettings settings = null;
             parserResult.WithParsed(options =>
             {
                 url = options.Url;
                 headlessBrowser = !options.NoHeadless;
+                remoteBrowserAddress = options.RemoteBrowserAddress;
                 settings = new PatreonDownloaderSettings
                 {
                     SaveAvatarAndCover = options.SaveAvatarAndCover,
@@ -54,9 +56,22 @@ namespace PatreonDownloader.App
             if (string.IsNullOrEmpty(url) || settings == null)
                 return;
 
+            Uri remoteBrowserUri = null;
             try
             {
-                await RunPatreonDownloader(url, headlessBrowser, settings);
+                if (!string.IsNullOrWhiteSpace(remoteBrowserAddress))
+                    remoteBrowserUri = new Uri(remoteBrowserAddress);
+            }
+            catch (Exception ex)
+            {
+                _logger.Fatal($"Invalid remote browser address: {remoteBrowserAddress}");
+                Environment.Exit(0);
+                return;
+            }
+
+            try
+            {
+                await RunPatreonDownloader(url, headlessBrowser, remoteBrowserUri, settings);
             }
             catch (Exception ex)
             {
@@ -109,33 +124,42 @@ namespace PatreonDownloader.App
             }
         }
 
-        private static async Task RunPatreonDownloader(string url, bool headlessBrowser, PatreonDownloaderSettings settings)
+        private static async Task RunPatreonDownloader(string url, bool headlessBrowser, Uri remoteBrowserAddress, PatreonDownloaderSettings settings)
         {
-            CookieContainer cookieContainer = null;
-            using (_cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(headlessBrowser))
+            if (remoteBrowserAddress == null)
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(headlessBrowser);
+            else
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(remoteBrowserAddress);
+
+            _logger.Info("Retrieving cookies...");
+            CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
+            if (cookieContainer == null)
             {
-                _logger.Info("Retrieving cookies...");
-                cookieContainer = await _cookieRetriever.RetrieveCookies();
-                if (cookieContainer == null)
-                {
-                    throw new Exception("Unable to retrieve cookies");
-                }
+                throw new Exception("Unable to retrieve cookies");
             }
+
+            _cookieRetriever.Dispose();
+            _cookieRetriever = null;
 
             await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
 
-            using (_patreonDownloader = new Engine.PatreonDownloader(cookieContainer, headlessBrowser))
-            {
-                _filesDownloaded = 0;
+            if (remoteBrowserAddress == null)
+                _patreonDownloader = new Engine.PatreonDownloader(cookieContainer, headlessBrowser);
+            else
+                _patreonDownloader = new Engine.PatreonDownloader(cookieContainer, remoteBrowserAddress);
 
-                _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
-                _patreonDownloader.PostCrawlStart += PatreonDownloaderOnPostCrawlStart;
-                //_patreonDownloader.PostCrawlEnd += PatreonDownloaderOnPostCrawlEnd;
-                _patreonDownloader.NewCrawledUrl += PatreonDownloaderOnNewCrawledUrl;
-                _patreonDownloader.CrawlerMessage += PatreonDownloaderOnCrawlerMessage;
-                _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
-                await _patreonDownloader.Download(url, settings);
-            }
+            _filesDownloaded = 0;
+
+            _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
+            _patreonDownloader.PostCrawlStart += PatreonDownloaderOnPostCrawlStart;
+            //_patreonDownloader.PostCrawlEnd += PatreonDownloaderOnPostCrawlEnd;
+            _patreonDownloader.NewCrawledUrl += PatreonDownloaderOnNewCrawledUrl;
+            _patreonDownloader.CrawlerMessage += PatreonDownloaderOnCrawlerMessage;
+            _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
+            await _patreonDownloader.Download(url, settings);
+
+            _patreonDownloader.Dispose();
+            _patreonDownloader = null;
         }
 
         private static void PatreonDownloaderOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)

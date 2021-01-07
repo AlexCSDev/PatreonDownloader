@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 
 namespace PatreonDownloader.Common.Models
 {
@@ -11,15 +12,22 @@ namespace PatreonDownloader.Common.Models
         /// Patreon/Cloudlfare cookies
         /// </summary>
         public CookieContainer CookieContainer { get; private set; }
+
         /// <summary>
         /// Should browser be started in headless mode
         /// </summary>
         public bool IsHeadless { get; private set; }
 
-        public DIParameters(CookieContainer cookieContainer, bool isHeadless)
+        /// <summary>
+        /// Address of the remote browser
+        /// </summary>
+        public Uri RemoteBrowserAddress { get; private set; }
+
+        public DIParameters(CookieContainer cookieContainer, bool isHeadless, Uri remoteBrowserAddress)
         {
             CookieContainer = cookieContainer;
             IsHeadless = isHeadless;
+            RemoteBrowserAddress = remoteBrowserAddress;
         }
     }
 }

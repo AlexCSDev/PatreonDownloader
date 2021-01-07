@@ -15,16 +15,29 @@ namespace PatreonDownloader.PuppeteerEngine
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private IPuppeteerEngine _puppeteerEngine;
-        private bool _headlessBrowser;
+        private bool _isHeadlessBrowser;
+        private bool _isRemoteBrowser;
 
         /// <summary>
-        /// Create new instance of PuppeteerCookieRetriever (THIS CLASS IS NOT A PART OF NINJECT DI)
+        /// Create new instance of PuppeteerCookieRetriever using remote browser (THIS CLASS IS NOT A PART OF NINJECT DI)
+        /// </summary>
+        /// <param name="remoteBrowserAddress">Remote browser address</param>
+        public PuppeteerCookieRetriever(Uri remoteBrowserAddress)
+        {
+            _puppeteerEngine = new PuppeteerEngine(remoteBrowserAddress);
+            _isHeadlessBrowser = true;
+            _isRemoteBrowser = true;
+        }
+
+        /// <summary>
+        /// Create new instance of PuppeteerCookieRetriever using internal browser (THIS CLASS IS NOT A PART OF NINJECT DI)
         /// </summary>
         /// <param name="headlessBrowser">If set to false then the internal browser will be visible</param>
         public PuppeteerCookieRetriever(bool headlessBrowser = true)
         {
             _puppeteerEngine = new PuppeteerEngine(headlessBrowser);
-            _headlessBrowser = headlessBrowser;
+            _isHeadlessBrowser = headlessBrowser;
+            _isRemoteBrowser = false;
         }
 
         private async Task<IWebBrowser> RestartBrowser(bool headless)
@@ -53,6 +66,11 @@ namespace PatreonDownloader.PuppeteerEngine
                 if (response.Status == HttpStatusCode.Unauthorized)
                 {
                     _logger.Debug("We are NOT logged in, opening login page");
+                    if (_isRemoteBrowser)
+                    {
+                        await page.CloseAsync();
+                        throw new Exception("You are not logged in into your patreon account in remote browser. Please login and restart PatreonDownloader.");
+                    }
                     if (_puppeteerEngine.IsHeadless)
                     {
                         _logger.Debug("Puppeteer is in headless mode, restarting in full mode");
@@ -68,9 +86,9 @@ namespace PatreonDownloader.PuppeteerEngine
                 else
                 {
                     _logger.Debug("We are logged in");
-                    if (_puppeteerEngine.IsHeadless != _headlessBrowser)
+                    if (_puppeteerEngine.IsHeadless != _isHeadlessBrowser)
                     {
-                        browser = await RestartBrowser(_headlessBrowser);
+                        browser = await RestartBrowser(_isHeadlessBrowser);
                         page = await browser.NewPageAsync();
                     }
 
@@ -88,7 +106,15 @@ namespace PatreonDownloader.PuppeteerEngine
                 CookieContainer cookieContainer = new CookieContainer();
 
                 _logger.Debug("Calling login check");
-                await Login();
+                try
+                {
+                    await Login();
+                }
+                catch (Exception ex)
+                {
+                    _logger.Fatal($"Login error: {ex.Message}");
+                    return null;
+                }
 
                 _logger.Debug("Retrieving browser");
                 IWebBrowser browser = await _puppeteerEngine.GetBrowser();

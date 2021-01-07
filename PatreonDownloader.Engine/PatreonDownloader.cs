@@ -59,24 +59,44 @@ namespace PatreonDownloader.Engine
             get => _isRunning;
         }
 
-        // TODO: Implement cancellation token
         /// <summary>
-        /// Create a new downloader for specified url
+        /// Create new PatreonDownloader using local browser
         /// </summary>
         /// <param name="cookieContainer">Cookie container containing patreon and cloudflare session cookies</param>
-        /// <param name="headlessBrowser">If set to false then the internal browser window will be visible</param>
-        public PatreonDownloader(CookieContainer cookieContainer, bool headlessBrowser = true)
+        /// <param name="headlessBrowser">If set to false then the internal browser window will be visible.</param>
+        public PatreonDownloader(CookieContainer cookieContainer, bool headlessBrowser = true) : this(cookieContainer, headlessBrowser, null) { }
+
+        /// <summary>
+        /// Create new PatreonDownloader using remote browser
+        /// </summary>
+        /// <param name="cookieContainer">Cookie container containing patreon and cloudflare session cookies</param>
+        /// <param name="remoteBrowserAddress">Remote browser address</param>
+        public PatreonDownloader(CookieContainer cookieContainer, Uri remoteBrowserAddress) : this(cookieContainer,
+            true, remoteBrowserAddress)
+        {
+            if(remoteBrowserAddress == null)
+                throw new ArgumentNullException(nameof(remoteBrowserAddress));
+        }
+
+        // TODO: Implement cancellation token
+        /// <summary>
+        /// Create a new PatreonDownloader
+        /// </summary>
+        /// <param name="cookieContainer">Cookie container containing patreon and cloudflare session cookies</param>
+        /// <param name="headlessBrowser">If set to false then the internal browser window will be visible. Ignored if remoteBrowserAddres is set</param>
+        /// <param name="remoteBrowserAddress">Address of the remote browser</param>
+        private PatreonDownloader(CookieContainer cookieContainer, bool headlessBrowser, Uri remoteBrowserAddress)
         {
             _cookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
             _headlessBrowser = headlessBrowser;
 
             _initializationSemaphore = new SemaphoreSlim(1, 1);
 
-            _logger.Debug("Initializing PatreonDownloader...");
+            _logger.Debug($"Initializing PatreonDownloader with parameters {headlessBrowser}, {remoteBrowserAddress}...");
 
             _logger.Debug("Initializing ninject kernel");
             _kernel = new StandardKernel(new MainModule());
-            _kernel.Bind<DIParameters>().ToConstant(new DIParameters(cookieContainer, headlessBrowser));
+            _kernel.Bind<DIParameters>().ToConstant(new DIParameters(cookieContainer, remoteBrowserAddress == null ? headlessBrowser : true, remoteBrowserAddress));
 
             _logger.Debug("Initializing puppeteer engine");
             _puppeteerEngine = _kernel.Get<IPuppeteerEngine>();
