@@ -1,33 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net.Http;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using HtmlAgilityPack;
 using NLog;
-using PatreonDownloader.Common.Interfaces;
+using PatreonDownloader.Common.Enums;
+using PatreonDownloader.Common.Interfaces.Plugins;
+using PatreonDownloader.Engine.Events;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Helpers;
-using PatreonDownloader.Interfaces;
 using PatreonDownloader.Interfaces.Models;
 
-namespace PatreonDownloader.Engine.Stages.Downloading
+namespace PatreonDownloader.Engine
 {
     /// <summary>
-    /// This is the default downloader for all files
-    /// This downloader is called when no other downloader is available for url
+    /// This is the default download/parsing plugin for all files
+    /// This plugin is used when no other plugins are available for url
     /// </summary>
-    internal sealed class DirectDownloader : IDownloader
+    internal sealed class DefaultPlugin : IPlugin
     {
         private IWebDownloader _webDownloader;
         private IRemoteFilenameRetriever _remoteFilenameRetriever;
+
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
+        private bool _overwriteFiles;
 
         private static readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
 
-        static DirectDownloader()
+        public string Name => "Default plugin";
+
+        public string Author => "Aleksey Tsutsey";
+        public string ContactInformation => "https://github.com/Megalan/PatreonDownloader";
+
+        static DefaultPlugin()
         {
             _fileIdRegex =
                 new Regex(
@@ -35,7 +42,7 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                     RegexOptions.Compiled | RegexOptions.IgnoreCase);
         }
 
-        public DirectDownloader(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
+        public DefaultPlugin(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
             _remoteFilenameRetriever = remoteFilenameRetriever ??
@@ -165,12 +172,86 @@ namespace PatreonDownloader.Engine.Stages.Downloading
                 filename = $"{Path.GetFileNameWithoutExtension(filename)}_{appendStr}{Path.GetExtension(filename)}";
             }
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename));
+            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(downloadDirectory, filename), _overwriteFiles);
         }
 
-        public async Task BeforeStart()
+        public async Task BeforeStart(bool overwriteFiles)
         {
+            _overwriteFiles = overwriteFiles;
             _fileCountDict = new Dictionary<string, int>();
+        }
+
+        public async Task<List<string>> ExtractSupportedUrls(string htmlContents)
+        {
+            List<string> retList = new List<string>(); 
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(htmlContents);
+            HtmlNodeCollection imgNodeCollection = doc.DocumentNode.SelectNodes("//img");
+            if (imgNodeCollection != null)
+            {
+                foreach (var imgNode in imgNodeCollection)
+                {
+                    string url = imgNode.Attributes["src"].Value;
+
+                    if (IsAllowedUrl(url))
+                    {
+                        retList.Add(url);
+
+                        _logger.Debug($"Parsed by default plugin (image): {url}");
+                    }
+                }
+            }
+
+            HtmlNodeCollection linkNodeCollection = doc.DocumentNode.SelectNodes("//a");
+            if (linkNodeCollection != null)
+            {
+                foreach (var linkNode in linkNodeCollection)
+                {
+                    if (linkNode.Attributes["href"] != null)
+                    {
+                        var url = linkNode.Attributes["href"].Value;
+
+                        if (IsAllowedUrl(url))
+                        {
+                            retList.Add(url);
+                            _logger.Debug($"Parsed by default plugin (direct): {url}");
+                        }
+                    }
+                    else
+                    {
+                        _logger.Warn($"link with invalid href found, ignoring...");
+                    }
+                }
+            }
+
+            return retList;
+        }
+
+        private bool IsAllowedUrl(string url)
+        { 
+            if (url.StartsWith("https://mega.nz/"))
+            {
+                //This should never be called if mega plugin is installed
+                _logger.Debug($"Mega plugin not installed, file will not be downloaded: {url}");
+                return false;
+            }
+
+            if (url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 ||
+                     url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
+            {
+                //TODO: YOUTUBE SUPPORT?
+                _logger.Fatal($"[NOT SUPPORTED] YOUTUBE link found: {url}");
+                return false;
+            }
+
+            if (url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
+            {
+                //TODO: IMGUR SUPPORT
+                _logger.Fatal($"[NOT SUPPORTED] IMGUR link found: {url}");
+                return false;
+            }
+
+            return true;
         }
     }
 }

@@ -49,17 +49,17 @@ namespace PatreonDownloader.GoogleDriveDownloader
             });
         }
 
-        public void Download(string id, string path)
+        public void Download(string id, string path, bool overwrite = false)
         {
             if (Service == null)
                 return;
 
             File fileResource = Service.Files.Get(id).Execute();
 
-            DownloadFileResource(fileResource, path);
+            DownloadFileResource(fileResource, path, true, overwrite);
         }
 
-        private void DownloadFileResource(File fileResource, string path, bool rootPath = true)
+        private void DownloadFileResource(File fileResource, string path, bool rootPath = true, bool overwrite = false)
         {
             if (rootPath)
             {
@@ -75,8 +75,13 @@ namespace PatreonDownloader.GoogleDriveDownloader
             {
                 if (System.IO.File.Exists(path))
                 {
-                    Logger.Warn("[Google Drive] FILE EXISTS: " + path);
-                    return;
+                    if (!overwrite)
+                    {
+                        Logger.Warn("[Google Drive] FILE EXISTS: " + path);
+                        return;
+                    }
+                    else
+                        System.IO.File.Delete(path);
                 }
 
                 string directory = new FileInfo(path).DirectoryName;

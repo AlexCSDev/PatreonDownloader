@@ -6,10 +6,12 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using NLog;
+using PatreonDownloader.Engine.DependencyInjection;
 using PatreonDownloader.Engine.Exceptions;
 using PatreonDownloader.Engine.Models;
 using PatreonDownloader.PuppeteerEngine;
 using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
+using PatreonDownloader.Common.Models;
 
 namespace PatreonDownloader.Engine
 {
@@ -19,16 +21,14 @@ namespace PatreonDownloader.Engine
         private readonly HttpClient _httpClient;
         private readonly IPuppeteerEngine _puppeteerEngine;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private readonly bool _overwriteFiles;
 
-        public WebDownloader(CookieContainer cookieContainer, IPuppeteerEngine puppeteerEngine, bool overwriteFiles = false)
+        public WebDownloader(DIParameters diParameters, IPuppeteerEngine puppeteerEngine)
         {
             _puppeteerEngine = puppeteerEngine ?? throw new ArgumentNullException(nameof(puppeteerEngine));
-            _overwriteFiles = overwriteFiles;
 
             var handler = new HttpClientHandler();
             handler.UseCookies = true;
-            handler.CookieContainer = cookieContainer ?? throw new ArgumentNullException(nameof(cookieContainer));
+            handler.CookieContainer = diParameters.CookieContainer ?? throw new ArgumentNullException(nameof(diParameters.CookieContainer));
             _httpClient = new HttpClient(handler);
             _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2486.0 Safari/537.36 Edge/13.10586");
         }
@@ -38,7 +38,7 @@ namespace PatreonDownloader.Engine
         /// </summary>
         /// <param name="url">File url</param>
         /// <param name="path">Path where the file should be saved</param>
-        public async Task DownloadFile(string url, string path)
+        public async Task DownloadFile(string url, string path, bool overwrite = false)
         {
             if(string.IsNullOrEmpty(url))
                 throw new ArgumentException("Argument cannot be null or empty", nameof(url));
@@ -47,7 +47,7 @@ namespace PatreonDownloader.Engine
 
             if (File.Exists(path))
             {
-                if(!_overwriteFiles)
+                if(!overwrite)
                     throw new DownloadException($"File {path} already exists");
 
                 _logger.Warn($"File {path} already exists, will be overwriten!");

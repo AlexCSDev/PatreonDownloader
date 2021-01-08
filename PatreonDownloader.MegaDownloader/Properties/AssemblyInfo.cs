@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Patreon Downloader Puppeteer Cookie Retrieval Plugin")]
+[assembly: AssemblyTitle("Patreon Downloader Mega.nz Plugin")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Patreon Downloader")]
-[assembly: AssemblyCopyright("Copyright 2019-2021 Aleksey Tsutsey & Contributors")]
+[assembly: AssemblyCopyright("Copyright 2021 Aleksey Tsutsey & Contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

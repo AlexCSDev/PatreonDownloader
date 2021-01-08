@@ -10,6 +10,8 @@ using PatreonDownloader.Common.Enums;
 using PatreonDownloader.Common.Interfaces;
 using PatreonDownloader.Common.Interfaces.Plugins;
 using PatreonDownloader.Engine.Helpers;
+using PatreonDownloader.Engine.Stages.Downloading;
+using PatreonDownloader.Interfaces.Models;
 
 namespace PatreonDownloader.Engine
 {
@@ -18,13 +20,16 @@ namespace PatreonDownloader.Engine
         private static string _pluginsDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "plugins");
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        private readonly List<IDownloader> _downloaders;
-        public PluginManager()
+        private readonly List<IPlugin> _plugins;
+        private readonly IPlugin _defaultPlugin;
+        public PluginManager(IPlugin defaultPlugin)
         {
+            _defaultPlugin = defaultPlugin;
+
             if (!Directory.Exists(_pluginsDirectory))
                 Directory.CreateDirectory(_pluginsDirectory);
 
-            _downloaders = new List<IDownloader>();
+            _plugins = new List<IPlugin>();
             IEnumerable<string> files = Directory.EnumerateFiles(_pluginsDirectory);
             foreach (string file in files)
             {
@@ -52,21 +57,8 @@ namespace PatreonDownloader.Engine
                         continue;
                     }
 
-                    if (plugin.PluginType == PluginType.Downloader)
-                    {
-                        Type downloaderType =
-                            types.SingleOrDefault(x => x.GetInterfaces().Contains(typeof(IDownloader)));
-                        if (downloaderType == null)
-                        {
-                            _logger.Error(
-                                $"Invalid plugin {filename}: Plugin type is downloader but no class implementing IDownloader found");
-                            continue;
-                        }
-
-                        IDownloader downloader = Activator.CreateInstance(downloaderType) as IDownloader;
-                        _downloaders.Add(downloader);
-                    }
-
+                    _plugins.Add(plugin);
+                    
                     _logger.Info(
                         $"Loaded plugin: {plugin.Name}"); // {assembly.GetName().Version} by {plugin.Author} ({plugin.ContactInformation})
                 }
@@ -77,31 +69,67 @@ namespace PatreonDownloader.Engine
             }
         }
 
-        /// <summary>
-        /// Get downloader for url
-        /// </summary>
-        /// <param name="url">File url</param>
-        /// <returns>IDownloader if downloader is found, null if not.</returns>
-        public async Task<IDownloader> GetDownloader(string url)
+        public async Task BeforeStart(PatreonDownloaderSettings settings)
         {
-            if (string.IsNullOrEmpty(url))
-                return null;
-
-            foreach (IDownloader downloader in _downloaders)
+            foreach (IPlugin plugin in _plugins)
             {
-                if (await downloader.IsSupportedUrl(url))
-                    return downloader;
+                await plugin.BeforeStart(settings.OverwriteFiles);
             }
 
-            return null;
+            await _defaultPlugin.BeforeStart(settings.OverwriteFiles);
         }
 
-        public async Task BeforeStart()
+        public async Task DownloadCrawledUrl(CrawledUrl crawledUrl, string downloadDirectory)
         {
-            foreach (IDownloader downloader in _downloaders)
+            if(crawledUrl == null)
+                throw new ArgumentNullException(nameof(crawledUrl));
+            if(downloadDirectory == null)
+                throw new ArgumentNullException(nameof(downloadDirectory));
+
+            IPlugin downloadPlugin = _defaultPlugin;
+
+            if (_plugins != null && _plugins.Count > 0)
             {
-                await downloader.BeforeStart();
+                foreach (IPlugin plugin in _plugins)
+                {
+                    if (await plugin.IsSupportedUrl(crawledUrl.Url))
+                    {
+                        downloadPlugin = plugin;
+                        break;
+                    }
+                }
             }
+
+            await downloadPlugin.Download(crawledUrl, downloadDirectory);
+        }
+
+        public async Task<List<string>> ExtractSupportedUrls(string htmlContents)
+        {
+            HashSet<string> retHashSet = new HashSet<string>();
+            if (_plugins != null && _plugins.Count > 0)
+            {
+                foreach (IPlugin plugin in _plugins)
+                {
+                    List<string> pluginRetList = await plugin.ExtractSupportedUrls(htmlContents);
+                    if (pluginRetList != null && pluginRetList.Count > 0)
+                    {
+                        foreach(string url in pluginRetList)
+                            retHashSet.Add(url);
+                    }
+                }
+            }
+
+            List<string> defaultPluginRetList = await _defaultPlugin.ExtractSupportedUrls(htmlContents);
+            if (defaultPluginRetList != null && defaultPluginRetList.Count > 0)
+            {
+                foreach (string url in defaultPluginRetList)
+                {
+                    if(!retHashSet.Contains(url))
+                        retHashSet.Add(url);
+                }
+            }
+
+            return retHashSet.ToList();
         }
     }
 }

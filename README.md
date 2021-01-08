@@ -32,7 +32,7 @@ See docs\BUILDING.md
 	* Blacklist (configured in settings.json)
 * Plugins (via C#)
 	* Custom downloaders for adding download support for websites which need custom download logic
-	* PatreonDownloader comes with the following plugins by default: Google Drive
+	* PatreonDownloader comes with the following plugins by default: Google Drive, Mega.nz
 	
 ## Needs further testing
 * Gallery posts
@@ -40,7 +40,6 @@ See docs\BUILDING.md
 ## Known not implemented or not tested features 
 * Audio files
 * Vimeo embedded videos
-* Mega.nz external links
 * YouTube external links
 * imgur external links
 

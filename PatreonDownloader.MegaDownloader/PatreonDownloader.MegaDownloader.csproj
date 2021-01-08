@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Apis.Drive.v3" Version="1.49.0.2117" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.29" />
+    <PackageReference Include="MegaApiClient" Version="1.8.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="3.1.10" />
     <PackageReference Include="NLog" Version="4.7.6" />
   </ItemGroup>
 
