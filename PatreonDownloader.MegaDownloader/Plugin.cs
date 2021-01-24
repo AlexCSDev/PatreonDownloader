@@ -92,13 +92,14 @@ namespace PatreonDownloader.MegaDownloader
             List<string> retList = new List<string>();
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(htmlContents);
-            string plainText = string.Join(" ", doc.DocumentNode.Descendants()
+            string parseText = string.Join(" ", doc.DocumentNode.Descendants()
                 .Where(n => !n.HasChildNodes && !string.IsNullOrWhiteSpace(n.InnerText))
-                .Select(n => n.InnerText));
+                .Select(n => n.InnerText)); //first get a copy of text without all html tags
+            parseText += doc.DocumentNode.InnerHtml; //now append a copy of this text with all html tags intact (otherwise we lose all <a href=... links)
 
-            MatchCollection matchesNewFormat = _newFormatRegex.Matches(plainText);
+            MatchCollection matchesNewFormat = _newFormatRegex.Matches(parseText);
 
-            MatchCollection matchesOldFormat = _oldFormatRegex.Matches(plainText);
+            MatchCollection matchesOldFormat = _oldFormatRegex.Matches(parseText);
 
             _logger.Debug($"Found NEW:{matchesNewFormat.Count}|OLD:{matchesOldFormat.Count} possible mega links in description");
 
