@@ -191,6 +191,9 @@ namespace PatreonDownloader.Engine
             {
                 foreach (var imgNode in imgNodeCollection)
                 {
+                    if (imgNode.Attributes.Count == 0 || !imgNode.Attributes.Contains("src"))
+                        continue;
+
                     string url = imgNode.Attributes["src"].Value;
 
                     if (IsAllowedUrl(url))
@@ -207,19 +210,15 @@ namespace PatreonDownloader.Engine
             {
                 foreach (var linkNode in linkNodeCollection)
                 {
-                    if (linkNode.Attributes["href"] != null)
-                    {
-                        var url = linkNode.Attributes["href"].Value;
+                    if (linkNode.Attributes.Count == 0 || !linkNode.Attributes.Contains("href"))
+                        continue;
 
-                        if (IsAllowedUrl(url))
-                        {
-                            retList.Add(url);
-                            _logger.Debug($"Parsed by default plugin (direct): {url}");
-                        }
-                    }
-                    else
+                    var url = linkNode.Attributes["href"].Value;
+
+                    if (IsAllowedUrl(url))
                     {
-                        _logger.Warn($"link with invalid href found, ignoring...");
+                        retList.Add(url);
+                        _logger.Debug($"Parsed by default plugin (direct): {url}");
                     }
                 }
             }
