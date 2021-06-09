@@ -1,29 +1,37 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommandLine;
+using Microsoft.Extensions.Configuration;
 using NLog;
+using PatreonDownloader.App.CookieRetriever;
 using PatreonDownloader.App.Models;
-using PatreonDownloader.Common.Interfaces;
-using PatreonDownloader.Engine;
-using PatreonDownloader.Engine.Enums;
-using PatreonDownloader.Engine.Events;
-using PatreonDownloader.Engine.Exceptions;
-using PatreonDownloader.Interfaces;
+using PatreonDownloader.Implementation;
+using PatreonDownloader.Implementation.Models;
+using UniversalDownloaderPlatform.Common.Enums;
+using UniversalDownloaderPlatform.Common.Events;
+using UniversalDownloaderPlatform.Common.Interfaces.Models;
+using UniversalDownloaderPlatform.DefaultImplementations.Models;
+using UniversalDownloaderPlatform.Engine;
 
 namespace PatreonDownloader.App
 {
     class Program
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private static Engine.PatreonDownloader _patreonDownloader;
-        private static PuppeteerEngine.PuppeteerCookieRetriever _cookieRetriever;
+        private static UniversalDownloader _universalDownloader;
+        private static IConfiguration _configuration;
         private static int _filesDownloaded;
 
         static async Task Main(string[] args)
         {
+            _configuration = new ConfigurationBuilder()
+                .AddJsonFile("settings.json", true, false)
+                .Build();
+
             NLogManager.ReconfigureNLog();
 
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
@@ -31,47 +39,16 @@ namespace PatreonDownloader.App
 
             ParserResult<CommandLineOptions> parserResult = Parser.Default.ParseArguments<CommandLineOptions>(args);
 
-            string url = null;
-            bool headlessBrowser = true;
-            string remoteBrowserAddress = null;
-
-            PatreonDownloaderSettings settings = null;
+            CommandLineOptions commandLineOptions = null;
             parserResult.WithParsed(options =>
             {
-                url = options.Url;
-                headlessBrowser = !options.NoHeadless;
-                remoteBrowserAddress = options.RemoteBrowserAddress;
-                settings = new PatreonDownloaderSettings
-                {
-                    SaveAvatarAndCover = options.SaveAvatarAndCover,
-                    SaveDescriptions = options.SaveDescriptions,
-                    SaveEmbeds = options.SaveEmbeds,
-                    SaveJson = options.SaveJson,
-                    DownloadDirectory = options.DownloadDirectory,
-                    OverwriteFiles = options.OverwriteFiles
-                };
                 NLogManager.ReconfigureNLog(options.Verbose);
+                commandLineOptions = options;
             });
 
-            if (string.IsNullOrEmpty(url) || settings == null)
-                return;
-
-            Uri remoteBrowserUri = null;
             try
             {
-                if (!string.IsNullOrWhiteSpace(remoteBrowserAddress))
-                    remoteBrowserUri = new Uri(remoteBrowserAddress);
-            }
-            catch (Exception ex)
-            {
-                _logger.Fatal($"Invalid remote browser address: {remoteBrowserAddress}");
-                Environment.Exit(0);
-                return;
-            }
-
-            try
-            {
-                await RunPatreonDownloader(url, headlessBrowser, remoteBrowserUri, settings);
+                await RunPatreonDownloader(commandLineOptions);
             }
             catch (Exception ex)
             {
@@ -95,74 +72,92 @@ namespace PatreonDownloader.App
         private static void Cleanup()
         {
             _logger.Debug("Cleanup called");
-            if (_patreonDownloader != null)
+            if (_universalDownloader != null)
             {
                 _logger.Debug("Disposing downloader...");
                 try
                 {
-                    _patreonDownloader.Dispose();
-                    _patreonDownloader = null;
+                    _universalDownloader.Dispose();
+                    _universalDownloader = null;
                 }
                 catch (Exception ex)
                 {
                     _logger.Fatal($"Error during patreon downloader disposal! Exception: {ex}");
                 }
             }
-
-            if (_cookieRetriever != null)
-            {
-                _logger.Debug("Disposing cookie retriever...");
-                try
-                {
-                    _cookieRetriever.Dispose();
-                    _cookieRetriever = null;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Fatal($"Error during cookie retriever disposal! Exception: {ex}");
-                }
-            }
         }
 
-        private static async Task RunPatreonDownloader(string url, bool headlessBrowser, Uri remoteBrowserAddress, PatreonDownloaderSettings settings)
+        private static async Task RunPatreonDownloader(CommandLineOptions commandLineOptions)
         {
-            if (remoteBrowserAddress == null)
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(headlessBrowser);
-            else
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(remoteBrowserAddress);
+            if (string.IsNullOrWhiteSpace(commandLineOptions.Url))
+            {
+                _logger.Fatal("Creator url should be provided");
+                Environment.Exit(0);
+                return;
+            }
 
+            _universalDownloader = new UniversalDownloader(new PatreonDownloaderModule());
+
+            _filesDownloaded = 0;
+
+            _universalDownloader.StatusChanged += UniversalDownloaderOnStatusChanged;
+            _universalDownloader.PostCrawlStart += UniversalDownloaderOnPostCrawlStart;
+            //_patreonDownloader.PostCrawlEnd += UniversalDownloaderOnPostCrawlEnd;
+            _universalDownloader.NewCrawledUrl += UniversalDownloaderOnNewCrawledUrl;
+            _universalDownloader.CrawlerMessage += UniversalDownloaderOnCrawlerMessage;
+            _universalDownloader.FileDownloaded += UniversalDownloaderOnFileDownloaded;
+
+            PatreonDownloaderSettings settings = await InitializeSettings(commandLineOptions);
+            await _universalDownloader.Download(commandLineOptions.Url, settings);
+
+            _universalDownloader.StatusChanged -= UniversalDownloaderOnStatusChanged;
+            _universalDownloader.PostCrawlStart -= UniversalDownloaderOnPostCrawlStart;
+            //_universalDownloader.PostCrawlEnd -= UniversalDownloaderOnPostCrawlEnd;
+            _universalDownloader.NewCrawledUrl -= UniversalDownloaderOnNewCrawledUrl;
+            _universalDownloader.CrawlerMessage -= UniversalDownloaderOnCrawlerMessage;
+            _universalDownloader.FileDownloaded -= UniversalDownloaderOnFileDownloaded;
+            _universalDownloader.Dispose();
+            _universalDownloader = null;
+        }
+
+        private static async Task<PatreonDownloaderSettings> InitializeSettings(CommandLineOptions commandLineOptions)
+        {
             _logger.Info("Retrieving cookies...");
-            CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
+            /*ICookieRetriever cookieRetriever = new CookieRetriever.CookieRetriever();
+            CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies(_configuration["Email"], _configuration["Password"]);
             if (cookieContainer == null)
             {
                 throw new Exception("Unable to retrieve cookies");
             }
 
-            _cookieRetriever.Dispose();
-            _cookieRetriever = null;
+            string userAgent = await cookieRetriever.GetUserAgent();
+            if (string.IsNullOrWhiteSpace(userAgent))
+            {
+                throw new Exception("Unable to retrieve user agent");
+            }*/
 
-            await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
+            //await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
 
-            if (remoteBrowserAddress == null)
-                _patreonDownloader = new Engine.PatreonDownloader(cookieContainer, headlessBrowser);
-            else
-                _patreonDownloader = new Engine.PatreonDownloader(cookieContainer, remoteBrowserAddress);
+            PatreonDownloaderSettings settings = new PatreonDownloaderSettings
+            {
+                OverwriteFiles = commandLineOptions.OverwriteFiles,
+                UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
+                UserAgent = _configuration["UserAgent"],
+                CookieContainer = new CookieContainer(),
+                SaveAvatarAndCover = commandLineOptions.SaveAvatarAndCover,
+                SaveDescriptions = commandLineOptions.SaveDescriptions,
+                SaveEmbeds = commandLineOptions.SaveEmbeds,
+                SaveJson = commandLineOptions.SaveJson,
+                DownloadDirectory = commandLineOptions.DownloadDirectory
+            };
 
-            _filesDownloaded = 0;
+            settings.CookieContainer.Add(new Cookie("session_id", _configuration["SessionCookie"], "/", ".patreon.com"));
+            settings.CookieContainer.Add(new Cookie("__cf_bm", _configuration["CloudFlareCookie"], "/", ".patreon.com"));
 
-            _patreonDownloader.StatusChanged += PatreonDownloaderOnStatusChanged;
-            _patreonDownloader.PostCrawlStart += PatreonDownloaderOnPostCrawlStart;
-            //_patreonDownloader.PostCrawlEnd += PatreonDownloaderOnPostCrawlEnd;
-            _patreonDownloader.NewCrawledUrl += PatreonDownloaderOnNewCrawledUrl;
-            _patreonDownloader.CrawlerMessage += PatreonDownloaderOnCrawlerMessage;
-            _patreonDownloader.FileDownloaded += PatreonDownloaderOnFileDownloaded;
-            await _patreonDownloader.Download(url, settings);
-
-            _patreonDownloader.Dispose();
-            _patreonDownloader = null;
+            return settings;
         }
 
-        private static void PatreonDownloaderOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)
+        private static void UniversalDownloaderOnCrawlerMessage(object sender, CrawlerMessageEventArgs e)
         {
             switch (e.MessageType)
             {
@@ -180,24 +175,24 @@ namespace PatreonDownloader.App
             }
         }
 
-        private static void PatreonDownloaderOnNewCrawledUrl(object sender, NewCrawledUrlEventArgs e)
+        private static void UniversalDownloaderOnNewCrawledUrl(object sender, NewCrawledUrlEventArgs e)
         {
-            _logger.Info($"  + {e.CrawledUrl.UrlTypeAsFriendlyString}: {e.CrawledUrl.Url}");
+            _logger.Info($"  + {((PatreonCrawledUrl)e.CrawledUrl).UrlTypeAsFriendlyString}: {e.CrawledUrl.Url}");
         }
 
-        private static void PatreonDownloaderOnPostCrawlEnd(object sender, PostCrawlEventArgs e)
+        private static void UniversalDownloaderOnPostCrawlEnd(object sender, PostCrawlEventArgs e)
         {
             /*if(!e.Success)
                 _logger.Error($"Post cannot be parsed: {e.ErrorMessage}");*/
             //_logger.Info(e.Success ? "✓" : "✗");
         }
 
-        private static void PatreonDownloaderOnPostCrawlStart(object sender, PostCrawlEventArgs e)
+        private static void UniversalDownloaderOnPostCrawlStart(object sender, PostCrawlEventArgs e)
         {
             _logger.Info($"-> {e.PostId}");
         }
 
-        private static void PatreonDownloaderOnFileDownloaded(object sender, FileDownloadedEventArgs e)
+        private static void UniversalDownloaderOnFileDownloaded(object sender, FileDownloadedEventArgs e)
         {
             _filesDownloaded++;
             if(e.Success)
@@ -206,7 +201,7 @@ namespace PatreonDownloader.App
                 _logger.Error($"Failed to download {e.Url}: {e.ErrorMessage}");
         }
 
-        private static void PatreonDownloaderOnStatusChanged(object sender, DownloaderStatusChangedEventArgs e)
+        private static void UniversalDownloaderOnStatusChanged(object sender, DownloaderStatusChangedEventArgs e)
         {
             switch (e.Status)
             {
@@ -226,6 +221,9 @@ namespace PatreonDownloader.App
                     break;
                 case DownloaderStatus.Done:
                     _logger.Info("Finished");
+                    break;
+                case DownloaderStatus.ExportingCrawlResults:
+                    _logger.Info("Exporting crawl results...");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

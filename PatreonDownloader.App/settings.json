@@ -1,3 +1,6 @@
 {
-  "UrlBlackList": "patreon.com/posts/|tmblr.co/|t.umblr.com/redirect|mailto:|postybirb.com|picarto.tv|deviantart.com|https://twitter.com|https://steamcommunity.com|http://www.furaffinity.net|https://e621.net/post/show|https://e621.net/posts/|trello.com|https://smutba.se|https://sfmlab.com|http://fav.me|https://inkbunny.net"
+  "UrlBlackList": "patreon.com/posts/|tmblr.co/|t.umblr.com/redirect|mailto:|postybirb.com|picarto.tv|deviantart.com|https://twitter.com|https://steamcommunity.com|http://www.furaffinity.net|https://e621.net/post/show|https://e621.net/posts/|trello.com|https://smutba.se|https://sfmlab.com|http://fav.me|https://inkbunny.net",
+  "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+  "SessionCookie": "",
+  "CloudFlareCookie": ""
 }

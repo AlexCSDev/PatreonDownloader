@@ -21,5 +21,10 @@ namespace PatreonDownloader.PuppeteerEngine.Wrappers.Browser
             
             return page;
         }
+
+        public async Task<string> GetUserAgentAsync()
+        {
+            return await _browser.GetUserAgentAsync();
+        }
     }
 }

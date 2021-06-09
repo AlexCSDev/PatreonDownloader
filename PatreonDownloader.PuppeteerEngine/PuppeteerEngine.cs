@@ -8,8 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Ninject;
 using NLog;
-using PatreonDownloader.Common.Interfaces;
-using PatreonDownloader.Common.Models;
 using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
 using PuppeteerSharp;
 

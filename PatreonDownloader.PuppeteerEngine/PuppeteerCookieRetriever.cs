@@ -151,6 +151,12 @@ namespace PatreonDownloader.PuppeteerEngine
             }
         }
 
+        public async Task<string> GetUserAgent()
+        {
+            IWebBrowser browser = await _puppeteerEngine.GetBrowser();
+            return await browser.GetUserAgentAsync();
+        }
+
         public void Dispose()
         {
             _puppeteerEngine?.Dispose();

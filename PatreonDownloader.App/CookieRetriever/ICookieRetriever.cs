@@ -2,14 +2,14 @@
 using System.Net;
 using System.Threading.Tasks;
 
-namespace PatreonDownloader.Common.Interfaces
+namespace PatreonDownloader.App.CookieRetriever
 {
     /// <summary>
     /// Interface for additional implementations of cookie retrievers
     /// </summary>
-    public interface ICookieRetriever : IDisposable
+    public interface ICookieRetriever
     {
         Task<string> GetUserAgent();
-        Task<CookieContainer> RetrieveCookies();
+        Task<CookieContainer> RetrieveCookies(string username, string password);
     }
 }
