@@ -24,7 +24,18 @@ namespace PatreonDownloader.Implementation
         public event EventHandler<PostCrawlEventArgs> PostCrawlStart;
         public event EventHandler<PostCrawlEventArgs> PostCrawlEnd; 
         public event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
-        public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage; 
+        public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
+
+        //TODO: Research possibility of not hardcoding this string
+        private const string CrawlStartUrl = "https://www.patreon.com/api/posts?" +
+                                             "include=user%2Cattachments%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null" +
+                                             "&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner" +
+                                             "&fields[user]=image_url%2Cfull_name%2Curl" +
+                                             "&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl" +
+                                             "&fields[access_rule]=access_rule_type%2Camount_cents" +
+                                             "&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name" +
+                                             "&sort=-published_at" +
+                                             "&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
 
         public PatreonPageCrawler(IWebDownloader webDownloader, IPluginManager pluginManager)
         {
@@ -63,8 +74,7 @@ namespace PatreonDownloader.Implementation
                 crawledUrls.Add(new PatreonCrawledUrl { PostId = "0", Url = patreonCrawlTargetInfo.CoverUrl, UrlType = PatreonCrawledUrlType.CoverFile });
             }
 
-            //TODO: Research possibility of not hardcoding this string
-            string nextPage = $"https://www.patreon.com/api/posts?include=user%2Cattachments%2Ccampaign%2Cpoll.choices%2Cpoll.current_user_responses.user%2Cpoll.current_user_responses.choice%2Cpoll.current_user_responses.poll%2Caccess_rules.tier.null%2Cimages.null%2Caudio.null&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&fields[post]=change_visibility_at%2Ccomment_count%2Ccontent%2Ccurrent_user_can_delete%2Ccurrent_user_can_view%2Ccurrent_user_has_liked%2Cembed%2Cimage%2Cis_paid%2Clike_count%2Cmin_cents_pledged_to_view%2Cpost_file%2Cpost_metadata%2Cpublished_at%2Cpatron_count%2Cpatreon_url%2Cpost_type%2Cpledge_url%2Cthumbnail_url%2Cteaser_text%2Ctitle%2Cupgrade_url%2Curl%2Cwas_posted_by_campaign_owner&fields[user]=image_url%2Cfull_name%2Curl&fields[campaign]=show_audio_post_download_links%2Cavatar_photo_url%2Cearnings_visibility%2Cis_nsfw%2Cis_monthly%2Cname%2Curl&fields[access_rule]=access_rule_type%2Camount_cents&fields[media]=id%2Cimage_urls%2Cdownload_url%2Cmetadata%2Cfile_name&sort=-published_at&filter[campaign_id]={patreonCrawlTargetInfo.Id}&filter[is_draft]=false&filter[contains_exclusive_posts]=true&json-api-use-default-includes=false&json-api-version=1.0";
+            string nextPage = CrawlStartUrl + $"&filter[campaign_id]={patreonCrawlTargetInfo.Id}";
 
             int page = 0;
             while (!string.IsNullOrEmpty(nextPage))
