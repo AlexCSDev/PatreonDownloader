@@ -9,5 +9,6 @@ namespace PatreonDownloader.PuppeteerEngine.Wrappers.Browser
     public interface IWebBrowser
     {
         Task<IWebPage> NewPageAsync();
+        Task<string> GetUserAgentAsync();
     }
 }

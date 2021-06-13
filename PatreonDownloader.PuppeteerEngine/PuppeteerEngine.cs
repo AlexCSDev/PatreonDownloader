@@ -8,8 +8,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Ninject;
 using NLog;
-using PatreonDownloader.Common.Interfaces;
-using PatreonDownloader.Common.Models;
 using PatreonDownloader.PuppeteerEngine.Wrappers.Browser;
 using PuppeteerSharp;
 
@@ -48,16 +46,6 @@ namespace PatreonDownloader.PuppeteerEngine
         public PuppeteerEngine(bool headless = true)
         {
             Initialize(null, headless);
-        }
-
-        /// <summary>
-        /// Create a new instance of PuppeteerEngine
-        /// </summary>
-        /// <param name="diParameters">Dependency injection parameters container</param>
-        [Inject]
-        public PuppeteerEngine(DIParameters diParameters)
-        {
-            Initialize(diParameters.RemoteBrowserAddress, diParameters.IsHeadless);
         }
 
         private void Initialize(Uri remoteBrowserAddress, bool headless)

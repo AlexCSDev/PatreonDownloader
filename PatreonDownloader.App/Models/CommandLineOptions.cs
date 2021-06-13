@@ -22,9 +22,6 @@ namespace PatreonDownloader.App.Models
         [Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
         public bool Verbose { get; set; }
 
-        [Option("no-headless", Required = false, HelpText = "Show internal browser window (disable headless mode)", Default = false)]
-        public bool NoHeadless { get; set; }
-
         [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
         public bool OverwriteFiles { get; set; }
 

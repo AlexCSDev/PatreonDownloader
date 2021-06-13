@@ -1,0 +1,4 @@
+[submodule "submodules/UniversalDownloaderPlatform"]
+	path = submodules/UniversalDownloaderPlatform
+	url = git@github.com:AlexCSDev/UniversalDownloaderPlatform.git
+	branch = master

@@ -74,6 +74,9 @@ namespace PatreonDownloader.PuppeteerEngine.Wrappers.Browser
 
                 await _page.SetRequestInterceptionAsync(true);
 
+                _page.DefaultTimeout = 0;
+                _page.DefaultNavigationTimeout = 0;
+
                 // disable images to download
                 _page.Request += (sender, e) =>
                 {

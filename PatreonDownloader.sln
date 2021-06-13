@@ -3,19 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Engine", "PatreonDownloader.Engine\PatreonDownloader.Engine.csproj", "{88D67B58-02E2-4231-BB89-92BB74622560}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{2894BF59-9EC4-465B-9DBF-2D3C47633E93}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.App", "PatreonDownloader.App\PatreonDownloader.App.csproj", "{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", "PatreonDownloader.Common\PatreonDownloader.Common.csproj", "{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Implementation", "PatreonDownloader.Implementation\PatreonDownloader.Implementation.csproj", "{3C84157E-4044-4E4E-816A-0CA0EA438D16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.GoogleDriveDownloader", "PatreonDownloader.GoogleDriveDownloader\PatreonDownloader.GoogleDriveDownloader.csproj", "{D04CF88F-A0D4-4315-A013-332C1B146648}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "submodules", "submodules", "{B84B7F77-FEAC-4404-B299-70798AF91610}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PatreonDownloader.MegaDownloader", "PatreonDownloader.MegaDownloader\PatreonDownloader.MegaDownloader.csproj", "{308969A7-79AC-40A3-8D15-21581AE199C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.Common", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.Common\UniversalDownloaderPlatform.Common.csproj", "{2A752CD2-66E9-455D-8160-EB7DD5AA43A0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.DefaultImplementations", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.DefaultImplementations\UniversalDownloaderPlatform.DefaultImplementations.csproj", "{4D6CFA58-7C03-4451-AE58-7F1C148787A3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.Engine", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.Engine\UniversalDownloaderPlatform.Engine.csproj", "{A887D576-2DDB-4DDD-93FC-3C32544C0050}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", "PatreonDownloader.Common\PatreonDownloader.Common.csproj", "{13A08FFF-08CF-4147-ACED-43708274AA97}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{502F2878-6497-493E-9E7E-AFB64508F00A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,37 +25,42 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{88D67B58-02E2-4231-BB89-92BB74622560}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88D67B58-02E2-4231-BB89-92BB74622560}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88D67B58-02E2-4231-BB89-92BB74622560}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88D67B58-02E2-4231-BB89-92BB74622560}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2894BF59-9EC4-465B-9DBF-2D3C47633E93}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Release|Any CPU.Build.0 = Release|Any CPU
-		{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{26CDEACE-3F4B-4D87-9AAE-5A54DA7F74BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D04CF88F-A0D4-4315-A013-332C1B146648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D04CF88F-A0D4-4315-A013-332C1B146648}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D04CF88F-A0D4-4315-A013-332C1B146648}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D04CF88F-A0D4-4315-A013-332C1B146648}.Release|Any CPU.Build.0 = Release|Any CPU
-		{308969A7-79AC-40A3-8D15-21581AE199C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{308969A7-79AC-40A3-8D15-21581AE199C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{308969A7-79AC-40A3-8D15-21581AE199C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{308969A7-79AC-40A3-8D15-21581AE199C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C84157E-4044-4E4E-816A-0CA0EA438D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C84157E-4044-4E4E-816A-0CA0EA438D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C84157E-4044-4E4E-816A-0CA0EA438D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C84157E-4044-4E4E-816A-0CA0EA438D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D6CFA58-7C03-4451-AE58-7F1C148787A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D6CFA58-7C03-4451-AE58-7F1C148787A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D6CFA58-7C03-4451-AE58-7F1C148787A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D6CFA58-7C03-4451-AE58-7F1C148787A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0} = {B84B7F77-FEAC-4404-B299-70798AF91610}
+		{4D6CFA58-7C03-4451-AE58-7F1C148787A3} = {B84B7F77-FEAC-4404-B299-70798AF91610}
+		{A887D576-2DDB-4DDD-93FC-3C32544C0050} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D69B5C66-A2F2-44AE-B347-C072E8538DF6}
