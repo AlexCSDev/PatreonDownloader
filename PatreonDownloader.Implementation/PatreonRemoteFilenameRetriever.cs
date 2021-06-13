@@ -1,31 +1,24 @@
 ﻿using System;
-using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using NLog;
+using PatreonDownloader.Implementation.Interfaces;
 
-namespace PatreonDownloader.Engine.Helpers
+namespace PatreonDownloader.Implementation
 {
-    internal class RemoteFilenameRetriever : IRemoteFilenameRetriever
+    internal class PatreonRemoteFilenameRetriever : IRemoteFilenameRetriever
     {
         private Regex _urlRegex;
         private HttpClient _httpClient;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
-        public RemoteFilenameRetriever(CookieContainer cookieContainer)
+        public PatreonRemoteFilenameRetriever()
         {
-            if(cookieContainer == null)
-                throw new ArgumentNullException(nameof(cookieContainer));
-
             _urlRegex = new Regex(@"[^\/\&\?]+\.\w{3,4}(?=([\?&].*$|$))");
 
-            var handler = new HttpClientHandler();
-            handler.UseCookies = true;
-            handler.CookieContainer = cookieContainer;
-
-            _httpClient = new HttpClient(handler);
+            _httpClient = new HttpClient();
         }
 
         /// <summary>

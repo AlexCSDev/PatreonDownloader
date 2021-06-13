@@ -24,5 +24,8 @@ namespace PatreonDownloader.App.Models
 
         [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
         public bool OverwriteFiles { get; set; }
+
+        [Option("remote-browser-address", Required = false, HelpText = "Advanced users only. Address of the browser with remote debugging enabled. Refer to documentation for more details.")]
+        public string RemoteBrowserAddress { get; set; }
     }
 }

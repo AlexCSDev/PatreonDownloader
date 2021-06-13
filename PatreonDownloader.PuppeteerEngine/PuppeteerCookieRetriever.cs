@@ -19,7 +19,7 @@ namespace PatreonDownloader.PuppeteerEngine
         private bool _isRemoteBrowser;
 
         /// <summary>
-        /// Create new instance of PuppeteerCookieRetriever using remote browser (THIS CLASS IS NOT A PART OF NINJECT DI)
+        /// Create new instance of PuppeteerCookieRetriever using remote browser
         /// </summary>
         /// <param name="remoteBrowserAddress">Remote browser address</param>
         public PuppeteerCookieRetriever(Uri remoteBrowserAddress)
@@ -30,7 +30,7 @@ namespace PatreonDownloader.PuppeteerEngine
         }
 
         /// <summary>
-        /// Create new instance of PuppeteerCookieRetriever using internal browser (THIS CLASS IS NOT A PART OF NINJECT DI)
+        /// Create new instance of PuppeteerCookieRetriever using internal browser
         /// </summary>
         /// <param name="headlessBrowser">If set to false then the internal browser will be visible</param>
         public PuppeteerCookieRetriever(bool headlessBrowser = true)

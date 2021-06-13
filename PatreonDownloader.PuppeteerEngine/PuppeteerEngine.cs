@@ -48,16 +48,6 @@ namespace PatreonDownloader.PuppeteerEngine
             Initialize(null, headless);
         }
 
-        /// <summary>
-        /// Create a new instance of PuppeteerEngine
-        /// </summary>
-        /// <param name="diParameters">Dependency injection parameters container</param>
-        [Inject]
-        public PuppeteerEngine(DIParameters diParameters)
-        {
-            Initialize(diParameters.RemoteBrowserAddress, diParameters.IsHeadless);
-        }
-
         private void Initialize(Uri remoteBrowserAddress, bool headless)
         {
             _logger.Debug($"Initializing PuppeteerEngine with parameters {remoteBrowserAddress}, {headless}");

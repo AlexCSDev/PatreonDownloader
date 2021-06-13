@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29102.190
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{C92134F7-1A4B-4807-B6CC-2B2566238BD4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.App", "PatreonDownloader.App\PatreonDownloader.App.csproj", "{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Implementation", "PatreonDownloader.Implementation\PatreonDownloader.Implementation.csproj", "{3C84157E-4044-4E4E-816A-0CA0EA438D16}"
@@ -17,16 +15,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.Engine", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.Engine\UniversalDownloaderPlatform.Engine.csproj", "{A887D576-2DDB-4DDD-93FC-3C32544C0050}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", "PatreonDownloader.Common\PatreonDownloader.Common.csproj", "{13A08FFF-08CF-4147-ACED-43708274AA97}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{502F2878-6497-493E-9E7E-AFB64508F00A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C92134F7-1A4B-4807-B6CC-2B2566238BD4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -47,6 +45,14 @@ Global
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

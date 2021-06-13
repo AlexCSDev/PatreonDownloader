@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.Extensions.Configuration;
 using NLog;
-using PatreonDownloader.App.CookieRetriever;
 using PatreonDownloader.App.Models;
 using PatreonDownloader.Implementation;
 using PatreonDownloader.Implementation.Models;
+using PatreonDownloader.PuppeteerEngine;
 using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Events;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -23,6 +23,7 @@ namespace PatreonDownloader.App
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static UniversalDownloader _universalDownloader;
+        private static PuppeteerEngine.PuppeteerCookieRetriever _cookieRetriever;
         private static IConfiguration _configuration;
         private static int _filesDownloaded;
 
@@ -33,6 +34,25 @@ namespace PatreonDownloader.App
                 .Build();
 
             NLogManager.ReconfigureNLog();
+
+            try
+            {
+                UpdateChecker updateChecker = new UpdateChecker();
+                (bool isUpdateAvailable, string updateMessage) = await updateChecker.IsNewVersionAvailable();
+                if (isUpdateAvailable)
+                {
+                    _logger.Warn("New version is available at https://github.com/AlexCSDev/PatreonDownloader/releases");
+                    if (updateMessage != null && !updateMessage.StartsWith("!"))
+                        _logger.Warn($"Note from developer: {updateMessage}");
+                }
+
+                if (updateMessage != null && updateMessage.StartsWith("!"))
+                    _logger.Warn($"Note from developer: {updateMessage.Substring(1)}");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Error encountered while checking for updates: {ex}", ex);
+            }
 
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
             Console.CancelKeyPress += ConsoleOnCancelKeyPress;
@@ -85,6 +105,20 @@ namespace PatreonDownloader.App
                     _logger.Fatal($"Error during patreon downloader disposal! Exception: {ex}");
                 }
             }
+
+            if (_cookieRetriever != null)
+            {
+                _logger.Debug("Disposing cookie retriever...");
+                try
+                {
+                    _cookieRetriever.Dispose();
+                    _cookieRetriever = null;
+                }
+                catch (Exception ex)
+                {
+                    _logger.Fatal($"Error during cookie retriever disposal! Exception: {ex}");
+                }
+            }
         }
 
         private static async Task RunPatreonDownloader(CommandLineOptions commandLineOptions)
@@ -123,36 +157,39 @@ namespace PatreonDownloader.App
         private static async Task<PatreonDownloaderSettings> InitializeSettings(CommandLineOptions commandLineOptions)
         {
             _logger.Info("Retrieving cookies...");
-            /*ICookieRetriever cookieRetriever = new CookieRetriever.CookieRetriever();
-            CookieContainer cookieContainer = await cookieRetriever.RetrieveCookies(_configuration["Email"], _configuration["Password"]);
+            if (!string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress))
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
+            else
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(false);
+            CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
             if (cookieContainer == null)
             {
                 throw new Exception("Unable to retrieve cookies");
             }
 
-            string userAgent = await cookieRetriever.GetUserAgent();
+            string userAgent = await _cookieRetriever.GetUserAgent();
             if (string.IsNullOrWhiteSpace(userAgent))
             {
                 throw new Exception("Unable to retrieve user agent");
-            }*/
+            }
 
-            //await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
+            _cookieRetriever.Dispose();
+            _cookieRetriever = null;
+
+            await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
 
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 OverwriteFiles = commandLineOptions.OverwriteFiles,
                 UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
-                UserAgent = _configuration["UserAgent"],
-                CookieContainer = new CookieContainer(),
+                UserAgent = userAgent,
+                CookieContainer = cookieContainer,
                 SaveAvatarAndCover = commandLineOptions.SaveAvatarAndCover,
                 SaveDescriptions = commandLineOptions.SaveDescriptions,
                 SaveEmbeds = commandLineOptions.SaveEmbeds,
                 SaveJson = commandLineOptions.SaveJson,
                 DownloadDirectory = commandLineOptions.DownloadDirectory
             };
-
-            settings.CookieContainer.Add(new Cookie("session_id", _configuration["SessionCookie"], "/", ".patreon.com"));
-            settings.CookieContainer.Add(new Cookie("__cf_bm", _configuration["CloudFlareCookie"], "/", ".patreon.com"));
 
             return settings;
         }

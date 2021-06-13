@@ -20,12 +20,13 @@ namespace PatreonDownloader.Implementation
         {
             Bind<IRemoteFileSizeChecker>().To<RemoteFileSizeChecker>().InSingletonScope();
             Bind<IWebDownloader>().To<WebDownloader>().InSingletonScope();
-            Bind<IRemoteFilenameRetriever>().To<RemoteFilenameRetriever>().InSingletonScope();
+            Bind<IRemoteFilenameRetriever>().To<PatreonRemoteFilenameRetriever>().InSingletonScope();
             Bind<ICrawlTargetInfoRetriever>().To<PatreonCrawlTargetInfoRetriever>().InSingletonScope();
             Bind<ICrawledUrlProcessor>().To<PatreonCrawledUrlProcessor>();
             Bind<IPageCrawler>().To<PatreonPageCrawler>();
             Bind<IPlugin>().To<PatreonDefaultPlugin>().WhenInjectedInto<IPluginManager>();
             Bind<IUniversalDownloaderPlatformSettings>().To<PatreonDownloaderSettings>();
+            Bind<ICookieValidator>().To<PatreonCookieValidator>().InSingletonScope();
         }
     }
 }
