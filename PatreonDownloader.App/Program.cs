@@ -66,6 +66,9 @@ namespace PatreonDownloader.App
                 commandLineOptions = options;
             });
 
+            if (commandLineOptions == null)
+                return;
+
             try
             {
                 await RunPatreonDownloader(commandLineOptions);
