@@ -163,7 +163,7 @@ namespace PatreonDownloader.App
             if (!string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress))
                 _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
             else
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(false);
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(true);
             CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
             if (cookieContainer == null)
             {
