@@ -1,5 +1,5 @@
 ## Prerequisites
-* All platforms: [.NET Core SDK 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+* All platforms: [.NET SDK 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
 * Windows (optional): [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/en/vs/)
 
 ## Running from source code on all platforms
@@ -16,8 +16,8 @@ The resulting executable will require .NET Core Runtime to be installed on the c
 ## Building framework-dependent executable via command line on all platforms
 1. Launch command line in **PatreonDownloader.App** folder
 2. Execute **dotnet build -c release** (replace **-c release** with **-c debug** to build debug build)
-3. Compiled application will be placed into **PatreonDownloader.App\bin\\(Release/Debug)\netcoreapp3.1**
-4. Navigate to **PatreonDownloader.App\bin\\(Release/Debug)\netcoreapp3.1** folder and run **dotnet PatreonDownloader.App.dll**
+3. Compiled application will be placed into **PatreonDownloader.App\bin\\(Release/Debug)\net5.0**
+4. Navigate to **PatreonDownloader.App\bin\\(Release/Debug)\net5.0** folder and run **dotnet PatreonDownloader.App.dll**
 
 [Refer to official documentation to learn more about "dotnet build" command](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-build?tabs=netcore31)
 
@@ -28,17 +28,17 @@ The resulting executable will require .NET Core Runtime to be installed on the c
 2. Right click on **PatreonDownloader.App** solution and click **Publish**
 3. Select desired publish profile and click **Publish**. 
 
-Application will be compiled and published in **PatreonDownloader.App\bin\publish\net3.1-(win/linux)-(x86/x64)-(release/debug)**. 
+Application will be compiled and published in **PatreonDownloader.App\bin\publish\net5.0-(win/linux)-(x86/x64)-(release/debug)**. 
 
-The application will be published as self-contained application and will not need .NET Core Runtime to function. To run the application use **PatreonDownloader.App(.exe)** executable.
+The application will be published as self-contained application and will not need .NET Runtime to function. To run the application use **PatreonDownloader.App(.exe)** executable.
 
 ## Building standalone executable via command line on all platforms
 1. Launch command line in **PatreonDownloader.App** folder
-2. Run the following command to build self-contained release build targeting .NET Core 3.1:
+2. Run the following command to build self-contained release build targeting .NET 5.0:
 
-   Windows x64: **dotnet publish -c Release -r win-x64 --self-contained -f netcoreapp3.1 -o bin\publish\net3.1-win-x64-release**
+   Windows x64: **dotnet publish -c Release -r win-x64 --self-contained -f net5.0 -o bin\publish\net5.0-win-x64-release**
 
-   Linux x64: **dotnet publish -c Release -r linux-x64 --self-contained -f netcoreapp3.1 -o bin/publish/net3.1-linux-x64-release**
+   Linux x64: **dotnet publish -c Release -r linux-x64 --self-contained -f net5.0 -o bin/publish/net5.0-linux-x64-release**
 
 [Refer to official documentation to learn more about "dotnet publish" command](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish?tabs=netcore31)
 
@@ -47,7 +47,10 @@ Application will be compiled and published in folder specified by the **-o** par
 The application will be published as self-contained application and will not need .NET Core Runtime to function. To run the application use **PatreonDownloader.App(.exe)** executable.
 
 ## Putting additional files into PatreonDownloader folder
-PatreonDownloader comes with additional plugins which needs to be placed into appropriate folders in order to work correctly.
+PatreonDownloader uses additional plugins from Universal Download Platform which needs to be placed into appropriate folders in order to work correctly.
 
 Google drive:
-After building plugin binaries go to the output folder and copy **Google.Apis.Auth.dll, Google.Apis.Auth.PlatformServices.dll, Google.Apis.Core.dll, Google.Apis.dll, Google.Apis.Drive.v3.dll and PatreonDownloader.GoogleDriveDownloader.dll** files into the **plugins** folder inside of PatreonDownloader folder.
+After building plugin binaries go to the output folder and copy **Google.Apis.Auth.dll, Google.Apis.Auth.PlatformServices.dll, Google.Apis.Core.dll, Google.Apis.dll, Google.Apis.Drive.v3.dll and UniversalDownloaderPlatform.GoogleDriveDownloader.dll** files into the **plugins** folder inside of PatreonDownloader folder.
+
+Mega.nz:
+After building plugin binaries go to the output folder and copy **MegaApiClient.dll and UniversalDownloaderPlatform.MegaDownloader.dll** files into the **plugins** folder inside of PatreonDownloader folder.
