@@ -46,7 +46,7 @@ namespace PatreonDownloader.Implementation
             _logger.Debug("KemonoCrawledUrlProcessor initialized");
         }
 
-        public async Task ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory)
+        public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory)
         {
             PatreonCrawledUrl crawledUrl = (PatreonCrawledUrl)udpCrawledUrl;
 
@@ -173,6 +173,8 @@ namespace PatreonDownloader.Implementation
             }
 
             crawledUrl.DownloadPath = !skipChecks ? Path.Combine(downloadDirectory, filename) : downloadDirectory + Path.DirectorySeparatorChar;
+
+            return true;
         }
     }
 }

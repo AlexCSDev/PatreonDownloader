@@ -15,6 +15,11 @@ PatreonDownloader.App.exe --url #page url# --download-directory c:\downloads --d
 #### Show available commands and their descriptions
 PatreonDownloader.App.exe --help
 
+## System requirements
+Due to Cloudflare protection triggering on all connections with TLS version lower than 1.3 the application will only work on the following systems:
+* Windows 10 1903 and newer
+* Linux and other systems with OpenSSL 1.1.1 and newer
+
 ## Build instructions
 See docs\BUILDING.md
 
