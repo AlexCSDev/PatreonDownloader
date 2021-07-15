@@ -23,7 +23,7 @@ namespace PatreonDownloader.App
             string remoteVersion = remoteVersionData[0];
             string message = remoteVersionData.Length > 1 ? remoteVersionData[1] : null;
             Version currentVersion = Assembly.GetEntryAssembly().GetName().Version;
-            string currentVersionString = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Revision}";
+            string currentVersionString = $"{currentVersion.Major}.{currentVersion.Minor}.{currentVersion.Build}.{currentVersion.Revision}";
 
             return (remoteVersion != currentVersionString, !string.IsNullOrWhiteSpace(message) ? message : null);
         }

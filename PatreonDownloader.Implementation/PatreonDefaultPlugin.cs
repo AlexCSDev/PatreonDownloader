@@ -90,6 +90,8 @@ namespace PatreonDownloader.Engine
 
                     string url = imgNode.Attributes["src"].Value;
 
+                    url = url.Replace("&amp;", "&"); //sometimes there are broken links with &amp; instead of &
+
                     if (IsAllowedUrl(url))
                     {
                         retList.Add(url);
@@ -108,6 +110,8 @@ namespace PatreonDownloader.Engine
                         continue;
 
                     var url = linkNode.Attributes["href"].Value;
+
+                    url = url.Replace("&amp;", "&"); //sometimes there are broken links with &amp; instead of &
 
                     if (IsAllowedUrl(url))
                     {
