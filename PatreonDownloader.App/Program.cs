@@ -145,7 +145,7 @@ namespace PatreonDownloader.App
             _universalDownloader.FileDownloaded += UniversalDownloaderOnFileDownloaded;
 
             PatreonDownloaderSettings settings = await InitializeSettings(commandLineOptions);
-            await _universalDownloader.Download(commandLineOptions.Url, settings);
+            await _universalDownloader.Download(commandLineOptions.Url, commandLineOptions.DownloadDirectory, settings);
 
             _universalDownloader.StatusChanged -= UniversalDownloaderOnStatusChanged;
             _universalDownloader.PostCrawlStart -= UniversalDownloaderOnPostCrawlStart;
