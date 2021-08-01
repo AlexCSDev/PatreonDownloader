@@ -191,7 +191,8 @@ namespace PatreonDownloader.App
                 SaveDescriptions = commandLineOptions.SaveDescriptions,
                 SaveEmbeds = commandLineOptions.SaveEmbeds,
                 SaveJson = commandLineOptions.SaveJson,
-                DownloadDirectory = commandLineOptions.DownloadDirectory
+                DownloadDirectory = commandLineOptions.DownloadDirectory,
+                RemoteFileSizeNotAvailableAction = commandLineOptions.NoRemoteSizeAction
             };
 
             return settings;
