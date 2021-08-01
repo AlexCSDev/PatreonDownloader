@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using UniversalDownloaderPlatform.Common.Enums;
 
 namespace PatreonDownloader.App.Models
 {
@@ -24,6 +25,9 @@ namespace PatreonDownloader.App.Models
 
         [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
         public bool OverwriteFiles { get; set; }
+
+        [Option("no-remote-size-action", Required = false, HelpText = "What to do with existing files when it is not possible to retrieve file size from the server. Possible options: ReplaceExisting, KeepExisting. --overwrite-files has priority over KeepExisting.", Default = RemoteFileSizeNotAvailableAction.KeepExisting)]
+        public RemoteFileSizeNotAvailableAction NoRemoteSizeAction { get; set; }
 
         [Option("remote-browser-address", Required = false, HelpText = "Advanced users only. Address of the browser with remote debugging enabled. Refer to documentation for more details.")]
         public string RemoteBrowserAddress { get; set; }
