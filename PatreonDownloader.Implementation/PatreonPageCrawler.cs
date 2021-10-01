@@ -8,6 +8,7 @@ using NLog;
 using PatreonDownloader.Implementation.Enums;
 using PatreonDownloader.Implementation.Models;
 using PatreonDownloader.Implementation.Models.JSONObjects.Posts;
+using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Events;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -87,7 +88,7 @@ namespace PatreonDownloader.Implementation
                     await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"page_{page}.json"),
                         json);
 
-                ParsingResult result = await ParsePage(json, settings.SaveDescriptions, settings.SaveEmbeds, downloadDirectory);
+                ParsingResult result = await ParsePage(json, settings.SaveDescriptions, settings.SaveEmbeds, downloadDirectory, settings.DirectoryPattern);
 
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
@@ -102,7 +103,7 @@ namespace PatreonDownloader.Implementation
             return crawledUrls;
         }
 
-        private async Task<ParsingResult> ParsePage(string json, bool saveDescriptions, bool saveEmbeds, string downloadDirectory)
+        private async Task<ParsingResult> ParsePage(string json, bool saveDescriptions, bool saveEmbeds, string downloadDirectory, DirectoryPatternType directoryPattern)
         {
             List<PatreonCrawledUrl> crawledUrls = new List<PatreonCrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
@@ -144,8 +145,20 @@ namespace PatreonDownloader.Implementation
                 {
                     try
                     {
-                        await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"{jsonEntry.Id}_description.txt"),
-                            jsonEntry.Attributes.Content); //TODO: WRITE TITLE, AND OTHER METADATA?
+                        if (directoryPattern == DirectoryPatternType.Default)
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"{jsonEntry.Id}_description.txt"),
+                                jsonEntry.Attributes.Content); //TODO: WRITE TITLE, AND OTHER METADATA?
+                        }
+                        else
+                        {
+                            string dir = PatreonDirectoryPatternFormat.Format(downloadDirectory, directoryPattern, jsonEntry.Attributes.PublishedAt, jsonEntry.Attributes.Title);
+                            if (!Directory.Exists(dir))
+                                Directory.CreateDirectory(dir);
+
+                            await File.WriteAllTextAsync(Path.Combine(dir, $"{jsonEntry.Id}_description.html"),
+                                jsonEntry.Attributes.Content);
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -157,7 +170,9 @@ namespace PatreonDownloader.Implementation
 
                 PatreonCrawledUrl entry = new PatreonCrawledUrl
                 {
-                    PostId = jsonEntry.Id
+                    PostId = jsonEntry.Id,
+                    Title = jsonEntry.Attributes.Title,
+                    PublishAt = jsonEntry.Attributes.PublishedAt
                 };
 
                 if (jsonEntry.Attributes.Embed != null)

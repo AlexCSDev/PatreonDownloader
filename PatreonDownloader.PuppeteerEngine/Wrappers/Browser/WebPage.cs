@@ -27,6 +27,10 @@ namespace PatreonDownloader.PuppeteerEngine.Wrappers.Browser
         public async Task<IWebResponse> GoToAsync(string url, int? timeout = null, WaitUntilNavigation[] waitUntil = null)
         {
             await ConfigurePage();
+
+            if (!timeout.HasValue)
+                timeout = 60000;
+
             Response response = await _page.GoToAsync(url, timeout, waitUntil);
             IWebResponse webResponse = new WebResponse(response);
             return webResponse;

@@ -31,5 +31,8 @@ namespace PatreonDownloader.App.Models
 
         [Option("remote-browser-address", Required = false, HelpText = "Advanced users only. Address of the browser with remote debugging enabled. Refer to documentation for more details.")]
         public string RemoteBrowserAddress { get; set; }
+
+        [Option("directory-pattern", Required = false, HelpText = "Choice a pattern for the final download directory.")]
+        public DirectoryPatternType DirectoryPattern { get; set; }
     }
 }

@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Implementation.Enums;
 using PatreonDownloader.Implementation.Interfaces;
+using PatreonDownloader.Implementation.Models;
+using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Exceptions;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -46,9 +48,10 @@ namespace PatreonDownloader.Implementation
             _logger.Debug("KemonoCrawledUrlProcessor initialized");
         }
 
-        public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory)
+        public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory, IUniversalDownloaderPlatformSettings udpsettings)
         {
             PatreonCrawledUrl crawledUrl = (PatreonCrawledUrl)udpCrawledUrl;
+            PatreonDownloaderSettings settings = (PatreonDownloaderSettings)udpsettings;
 
             bool skipChecks = false; //skip sanitization, duplicate and other checks, do not pass filename to download path
             if (crawledUrl.Url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
@@ -84,6 +87,8 @@ namespace PatreonDownloader.Implementation
                 //TODO: IMGUR SUPPORT
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] IMGUR link found: {crawledUrl.Url}");
             }
+
+            downloadDirectory = PatreonDirectoryPatternFormat.Format(downloadDirectory, settings.DirectoryPattern, crawledUrl.PublishAt, crawledUrl.Title);
 
             string filename = crawledUrl.Filename;
 
@@ -129,9 +134,13 @@ namespace PatreonDownloader.Implementation
 
                     filename += $"_{remoteFilename}";
                 }
-                else
+                else if (settings.DirectoryPattern == DirectoryPatternType.Default)
                 {
                     filename += $"_{crawledUrl.Filename}";
+                }
+                else
+                {
+                    filename = crawledUrl.Filename;
                 }
 
                 _logger.Debug($"Filename for {crawledUrl.Url} is {filename}");
