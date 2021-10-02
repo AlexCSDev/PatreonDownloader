@@ -2,6 +2,11 @@
 * All platforms: [.NET SDK 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
 * Windows (optional): [Microsoft Visual Studio 2019](https://visualstudio.microsoft.com/en/vs/)
 
+## IMPORTANT: Cloning PatreonDownloader properly
+You need to clone submodules in order to build PatreonDownloader.
+If you have not yet cloned the repository use **git clone --recurse-submodules**.
+If you have cloned the repository without submodules use **git submodule update --init --recursive**.
+
 ## Running from source code on all platforms
 1. Launch command line in **PatreonDownloader.App** folder
 2. Execute **dotnet run**

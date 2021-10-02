@@ -22,8 +22,8 @@ namespace PatreonDownloader.Implementation
             Bind<IWebDownloader>().To<WebDownloader>().InSingletonScope();
             Bind<IRemoteFilenameRetriever>().To<PatreonRemoteFilenameRetriever>().InSingletonScope();
             Bind<ICrawlTargetInfoRetriever>().To<PatreonCrawlTargetInfoRetriever>().InSingletonScope();
-            Bind<ICrawledUrlProcessor>().To<PatreonCrawledUrlProcessor>();
-            Bind<IPageCrawler>().To<PatreonPageCrawler>();
+            Bind<ICrawledUrlProcessor>().To<PatreonCrawledUrlProcessor>().InSingletonScope();
+            Bind<IPageCrawler>().To<PatreonPageCrawler>().InSingletonScope();
             Bind<IPlugin>().To<PatreonDefaultPlugin>().WhenInjectedInto<IPluginManager>();
             Bind<IUniversalDownloaderPlatformSettings>().To<PatreonDownloaderSettings>();
             Bind<ICookieValidator>().To<PatreonCookieValidator>().InSingletonScope();
