@@ -181,7 +181,9 @@ namespace PatreonDownloader.Implementation
                 }
             }
 
-            if (_patreonDownloaderSettings.UseSubDirectories)
+            if (_patreonDownloaderSettings.UseSubDirectories && 
+                crawledUrl.UrlType != PatreonCrawledUrlType.AvatarFile &&
+                crawledUrl.UrlType != PatreonCrawledUrlType.CoverFile)
                 downloadDirectory = Path.Combine(downloadDirectory, PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, _patreonDownloaderSettings.SubDirectoryPattern));
 
             crawledUrl.DownloadPath = !skipChecks ? Path.Combine(downloadDirectory, filename) : downloadDirectory + Path.DirectorySeparatorChar;
