@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Helpers;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.DefaultImplementations.Models;
@@ -14,6 +15,7 @@ namespace PatreonDownloader.Implementation.Models
         private bool _saveJson;
         private bool _saveAvatarAndCover;
         private string _downloadDirectory;
+        private DirectoryPatternType _directoryPattern = DirectoryPatternType.Default;
 
         public bool SaveDescriptions
         {
@@ -46,6 +48,12 @@ namespace PatreonDownloader.Implementation.Models
         {
             get => _downloadDirectory;
             set => ConsumableSetter.Set(Consumed, ref _downloadDirectory, value);
+        }
+
+        public DirectoryPatternType DirectoryPattern
+        {
+            get => _directoryPattern;
+            set => ConsumableSetter.Set(Consumed, ref _directoryPattern, value);
         }
 
         public PatreonDownloaderSettings()

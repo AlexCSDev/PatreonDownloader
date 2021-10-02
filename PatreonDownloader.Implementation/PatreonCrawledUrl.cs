@@ -1,6 +1,5 @@
 ﻿using System;
 using PatreonDownloader.Implementation.Enums;
-using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.DefaultImplementations.Models;
 
 namespace PatreonDownloader.Implementation
@@ -8,6 +7,8 @@ namespace PatreonDownloader.Implementation
     public class PatreonCrawledUrl : CrawledUrl
     {
         public string PostId { get; set; }
+        public string Title { get; set; }
+        public DateTime PublishAt { get; set; }
         public PatreonCrawledUrlType UrlType { get; set; }
 
         public string UrlTypeAsFriendlyString
@@ -38,7 +39,7 @@ namespace PatreonDownloader.Implementation
 
         public object Clone()
         {
-            return new PatreonCrawledUrl { PostId = PostId, Url = Url, Filename = Filename, UrlType = UrlType };
+            return new PatreonCrawledUrl { PostId = PostId, Url = Url, Filename = Filename, UrlType = UrlType, Title = Title, PublishAt = PublishAt };
         }
     }
 }
