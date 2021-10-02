@@ -10,6 +10,7 @@ using PatreonDownloader.Implementation.Interfaces;
 using PatreonDownloader.Implementation.Models;
 using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Exceptions;
+using UniversalDownloaderPlatform.Common.Helpers;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 
@@ -23,6 +24,7 @@ namespace PatreonDownloader.Implementation
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
+        private PatreonDownloaderSettings _patreonDownloaderSettings;
         private static readonly Regex _googleDriveRegex;
         private static readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
 
@@ -43,15 +45,19 @@ namespace PatreonDownloader.Implementation
         {
             _remoteFilenameRetriever = remoteFilenameRetriever ??
                                        throw new ArgumentNullException(nameof(remoteFilenameRetriever));
-            _fileCountDict = new Dictionary<string, int>();
 
             _logger.Debug("KemonoCrawledUrlProcessor initialized");
         }
 
-        public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory, IUniversalDownloaderPlatformSettings udpsettings)
+        public async Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
+        {
+            _fileCountDict = new Dictionary<string, int>();
+            _patreonDownloaderSettings = (PatreonDownloaderSettings) settings;
+        }
+
+        public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory)
         {
             PatreonCrawledUrl crawledUrl = (PatreonCrawledUrl)udpCrawledUrl;
-            PatreonDownloaderSettings settings = (PatreonDownloaderSettings)udpsettings;
 
             bool skipChecks = false; //skip sanitization, duplicate and other checks, do not pass filename to download path
             if (crawledUrl.Url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
@@ -88,13 +94,14 @@ namespace PatreonDownloader.Implementation
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] IMGUR link found: {crawledUrl.Url}");
             }
 
-            downloadDirectory = PatreonDirectoryPatternFormat.Format(downloadDirectory, settings.DirectoryPattern, crawledUrl.PublishAt, crawledUrl.Title);
-
             string filename = crawledUrl.Filename;
 
             if (!skipChecks)
             {
-                filename = $"{crawledUrl.PostId}_";
+                if (!_patreonDownloaderSettings.UseSubDirectories)
+                    filename = $"{crawledUrl.PostId}_";
+                else
+                    filename = "";
 
                 switch (crawledUrl.UrlType)
                 {
@@ -134,22 +141,15 @@ namespace PatreonDownloader.Implementation
 
                     filename += $"_{remoteFilename}";
                 }
-                else if (settings.DirectoryPattern == DirectoryPatternType.Default)
-                {
-                    filename += $"_{crawledUrl.Filename}";
-                }
                 else
                 {
-                    filename = crawledUrl.Filename;
+                    filename += $"_{crawledUrl.Filename}";
                 }
 
                 _logger.Debug($"Filename for {crawledUrl.Url} is {filename}");
 
                 _logger.Debug($"Sanitizing filename: {filename}");
-                foreach (char c in _invalidFilenameCharacters)
-                {
-                    filename = filename.Replace(c, '_');
-                }
+                filename = PathSanitizer.SanitizePath(filename);
                 _logger.Debug($"Sanitized filename: {filename}");
 
 
@@ -180,6 +180,9 @@ namespace PatreonDownloader.Implementation
                     filename = $"{Path.GetFileNameWithoutExtension(filename)}_{appendStr}{Path.GetExtension(filename)}";
                 }
             }
+
+            if (_patreonDownloaderSettings.UseSubDirectories)
+                downloadDirectory = Path.Combine(downloadDirectory, PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, _patreonDownloaderSettings.SubDirectoryPattern));
 
             crawledUrl.DownloadPath = !skipChecks ? Path.Combine(downloadDirectory, filename) : downloadDirectory + Path.DirectorySeparatorChar;
 

@@ -32,7 +32,10 @@ namespace PatreonDownloader.App.Models
         [Option("remote-browser-address", Required = false, HelpText = "Advanced users only. Address of the browser with remote debugging enabled. Refer to documentation for more details.")]
         public string RemoteBrowserAddress { get; set; }
 
-        [Option("directory-pattern", Required = false, HelpText = "Choice a pattern for the final download directory.")]
-        public DirectoryPatternType DirectoryPattern { get; set; }
+        [Option("use-sub-directories", Required = false, HelpText = "Create a new directory inside of the download directory for every post instead of placing all files into a single directory.")]
+        public bool UseSubDirectories { get; set; }
+
+        [Option("sub-directory-pattern", Required = false, HelpText = "Pattern which will be used to create a name for the sub directories if --use-sub-directories is used. Supported parameters: %PostId%, %PublishedAt%, %PostTitle%.", Default = "[%PostId%] %PublishedAt% %PostTitle%")]
+        public string SubDirectoryPattern { get; set; }
     }
 }

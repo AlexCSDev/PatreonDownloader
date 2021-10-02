@@ -15,7 +15,8 @@ namespace PatreonDownloader.Implementation.Models
         private bool _saveJson;
         private bool _saveAvatarAndCover;
         private string _downloadDirectory;
-        private DirectoryPatternType _directoryPattern = DirectoryPatternType.Default;
+        private bool _useSubDirectories;
+        private string _subDirectoryPattern;
 
         public bool SaveDescriptions
         {
@@ -50,10 +51,22 @@ namespace PatreonDownloader.Implementation.Models
             set => ConsumableSetter.Set(Consumed, ref _downloadDirectory, value);
         }
 
-        public DirectoryPatternType DirectoryPattern
+        /// <summary>
+        /// Create a new directory for every post and store files of said post in that directory
+        /// </summary>
+        public bool UseSubDirectories
         {
-            get => _directoryPattern;
-            set => ConsumableSetter.Set(Consumed, ref _directoryPattern, value);
+            get => _useSubDirectories;
+            set => ConsumableSetter.Set(Consumed, ref _useSubDirectories, value);
+        }
+
+        /// <summary>
+        /// Pattern used to generate directory name if UseSubDirectories is enabled
+        /// </summary>
+        public string SubDirectoryPattern
+        {
+            get => _subDirectoryPattern;
+            set => ConsumableSetter.Set(Consumed, ref _subDirectoryPattern, value);
         }
 
         public PatreonDownloaderSettings()
@@ -63,11 +76,13 @@ namespace PatreonDownloader.Implementation.Models
             _saveJson = true;
             _saveAvatarAndCover = true;
             _downloadDirectory = null;
+            _useSubDirectories = false;
+            _subDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%";
         }
 
         public override string ToString()
         {
-            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory},OverwriteFiles={base.OverwriteFiles}";
+            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory},OverwriteFiles={base.OverwriteFiles},UseSubDirectories={_useSubDirectories}";
         }
     }
 }

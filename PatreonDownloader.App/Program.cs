@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommandLine;
 using Microsoft.Extensions.Configuration;
@@ -10,11 +8,8 @@ using NLog;
 using PatreonDownloader.App.Models;
 using PatreonDownloader.Implementation;
 using PatreonDownloader.Implementation.Models;
-using PatreonDownloader.PuppeteerEngine;
 using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Events;
-using UniversalDownloaderPlatform.Common.Interfaces.Models;
-using UniversalDownloaderPlatform.DefaultImplementations.Models;
 using UniversalDownloaderPlatform.Engine;
 
 namespace PatreonDownloader.App
@@ -161,7 +156,8 @@ namespace PatreonDownloader.App
         {
             _logger.Info("Retrieving cookies...");
             if (!string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress))
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
+                _cookieRetriever =
+                    new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
             else
                 _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(true);
             CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
@@ -193,7 +189,8 @@ namespace PatreonDownloader.App
                 SaveJson = commandLineOptions.SaveJson,
                 DownloadDirectory = commandLineOptions.DownloadDirectory,
                 RemoteFileSizeNotAvailableAction = commandLineOptions.NoRemoteSizeAction,
-                DirectoryPattern = commandLineOptions.DirectoryPattern
+                UseSubDirectories = commandLineOptions.UseSubDirectories,
+                SubDirectoryPattern = commandLineOptions.SubDirectoryPattern
             };
 
             return settings;
@@ -219,7 +216,7 @@ namespace PatreonDownloader.App
 
         private static void UniversalDownloaderOnNewCrawledUrl(object sender, NewCrawledUrlEventArgs e)
         {
-            _logger.Info($"  + {((PatreonCrawledUrl)e.CrawledUrl).UrlTypeAsFriendlyString}: {e.CrawledUrl.Url}");
+            _logger.Info($"  + {((PatreonCrawledUrl) e.CrawledUrl).UrlTypeAsFriendlyString}: {e.CrawledUrl.Url}");
         }
 
         private static void UniversalDownloaderOnPostCrawlEnd(object sender, PostCrawlEventArgs e)
@@ -237,7 +234,7 @@ namespace PatreonDownloader.App
         private static void UniversalDownloaderOnFileDownloaded(object sender, FileDownloadedEventArgs e)
         {
             _filesDownloaded++;
-            if(e.Success)
+            if (e.Success)
                 _logger.Info($"Downloaded {_filesDownloaded}/{e.TotalFiles}: {e.Url}");
             else
                 _logger.Error($"Failed to download {e.Url}: {e.ErrorMessage}");

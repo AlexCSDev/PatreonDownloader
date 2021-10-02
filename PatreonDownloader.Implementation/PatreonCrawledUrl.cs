@@ -8,7 +8,7 @@ namespace PatreonDownloader.Implementation
     {
         public string PostId { get; set; }
         public string Title { get; set; }
-        public DateTime PublishAt { get; set; }
+        public DateTime PublishedAt { get; set; }
         public PatreonCrawledUrlType UrlType { get; set; }
 
         public string UrlTypeAsFriendlyString
@@ -39,7 +39,15 @@ namespace PatreonDownloader.Implementation
 
         public object Clone()
         {
-            return new PatreonCrawledUrl { PostId = PostId, Url = Url, Filename = Filename, UrlType = UrlType, Title = Title, PublishAt = PublishAt };
+            return new PatreonCrawledUrl
+            {
+                PostId = PostId, 
+                Url = Url, 
+                Filename = Filename, 
+                UrlType = UrlType, 
+                Title = Title, 
+                PublishedAt = PublishedAt
+            };
         }
     }
 }
