@@ -20,7 +20,7 @@ namespace PatreonDownloader.Implementation
         /// <returns></returns>
         public static string CreateNameFromPattern(PatreonCrawledUrl crawledUrl, string pattern)
         {
-            string postTitle = crawledUrl.Title.Trim();
+            string postTitle = crawledUrl.Title?.Trim() ?? "No Title";
             while (postTitle.Length > 1 && postTitle[^1] == '.')
                 postTitle = postTitle.Remove(postTitle.Length - 1).Trim();
 
