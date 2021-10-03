@@ -19,6 +19,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{502F2878-6497-493E-9E7E-AFB64508F00A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C675CCB3-6202-4A24-BDB4-635F5B3783BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{32589019-22B4-49E3-9710-86407EA1F911}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +57,10 @@ Global
 		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32589019-22B4-49E3-9710-86407EA1F911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32589019-22B4-49E3-9710-86407EA1F911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32589019-22B4-49E3-9710-86407EA1F911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32589019-22B4-49E3-9710-86407EA1F911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +69,7 @@ Global
 		{2A752CD2-66E9-455D-8160-EB7DD5AA43A0} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 		{4D6CFA58-7C03-4451-AE58-7F1C148787A3} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050} = {B84B7F77-FEAC-4404-B299-70798AF91610}
+		{32589019-22B4-49E3-9710-86407EA1F911} = {C675CCB3-6202-4A24-BDB4-635F5B3783BE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D69B5C66-A2F2-44AE-B347-C072E8538DF6}
