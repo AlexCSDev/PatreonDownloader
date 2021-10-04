@@ -150,7 +150,11 @@ namespace PatreonDownloader.Implementation
                 };
 
                 string additionalFilesSaveDirectory = downloadDirectory;
-                if (_patreonDownloaderSettings.UseSubDirectories)
+                if (_patreonDownloaderSettings.UseSubDirectories && 
+                    (_patreonDownloaderSettings.SaveDescriptions || 
+                     (jsonEntry.Attributes.Embed != null && _patreonDownloaderSettings.SaveEmbeds)
+                     )
+                    )
                 {
                     additionalFilesSaveDirectory = Path.Combine(downloadDirectory, 
                         PostSubdirectoryHelper.CreateNameFromPattern(entry, _patreonDownloaderSettings.SubDirectoryPattern));

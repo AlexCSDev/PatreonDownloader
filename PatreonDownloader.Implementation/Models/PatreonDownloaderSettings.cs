@@ -88,7 +88,7 @@ namespace PatreonDownloader.Implementation.Models
             _downloadDirectory = null;
             _useSubDirectories = false;
             _subDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%";
-            _maxFilenameLength = 50;
+            _maxFilenameLength = 100;
         }
 
         public override string ToString()

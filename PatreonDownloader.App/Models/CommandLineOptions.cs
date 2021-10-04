@@ -37,7 +37,7 @@ namespace PatreonDownloader.App.Models
 
         [Option("sub-directory-pattern", Required = false, HelpText = "Pattern which will be used to create a name for the sub directories if --use-sub-directories is used. Supported parameters: %PostId%, %PublishedAt%, %PostTitle%.", Default = "[%PostId%] %PublishedAt% %PostTitle%")]
         public string SubDirectoryPattern { get; set; }
-        [Option("max-filename-length", Required = false, HelpText = "All names of downloaded files will be truncated so their length won't be more than specified value (excluding file extension)", Default = 50)]
+        [Option("max-filename-length", Required = false, HelpText = "All names of downloaded files will be truncated so their length won't be more than specified value (excluding file extension)", Default = 100)]
         public int MaxFilenameLength { get; set; }
     }
 }
