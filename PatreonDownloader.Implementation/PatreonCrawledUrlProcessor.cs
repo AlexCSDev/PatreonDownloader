@@ -152,6 +152,18 @@ namespace PatreonDownloader.Implementation
                 filename = PathSanitizer.SanitizePath(filename);
                 _logger.Debug($"Sanitized filename: {filename}");
 
+                if (filename.Length > _patreonDownloaderSettings.MaxFilenameLength)
+                {
+                    _logger.Debug($"Filename is too long, will be truncated: {filename}");
+                    string extension = Path.GetExtension(filename);
+                    if (extension.Length > 4)
+                    {
+                        _logger.Warn($"File extension for file {filename} is longer 4 characters and won't be appended to truncated filename!");
+                        extension = "";
+                    }
+                    filename = filename.Substring(0, _patreonDownloaderSettings.MaxFilenameLength) + extension;
+                    _logger.Debug($"Truncated filename: {filename}");
+                }
 
                 string key = $"{crawledUrl.PostId}_{filename.ToLowerInvariant()}";
                 if (!_fileCountDict.ContainsKey(key))
