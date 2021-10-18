@@ -1,3 +1,4 @@
+
 # PatreonDownloader
 This application is designed for downloading content posted by creators on patreon.com. 
 
@@ -50,3 +51,6 @@ See docs\BUILDING.md
 
 ## License
 All files in this repository are licensed under the license listed in LICENSE.md file unless stated otherwise.
+
+## Special thanks
+We would like to say special thanks to [JetBrains](https://jb.gg/OpenSource) for providing software licenses to our core contributors as a part of their Open Source Support Program.
