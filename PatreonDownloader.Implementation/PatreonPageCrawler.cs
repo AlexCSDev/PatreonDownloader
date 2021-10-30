@@ -58,10 +58,6 @@ namespace PatreonDownloader.Implementation
                 throw new ArgumentException("Campaign ID cannot be less than 1");
             if (string.IsNullOrEmpty(patreonCrawlTargetInfo.Name))
                 throw new ArgumentException("Campaign name cannot be null or empty");
-            if (string.IsNullOrEmpty(patreonCrawlTargetInfo.CoverUrl))
-                throw new ArgumentException("Campaign cover url cannot be null or empty");
-            if (string.IsNullOrEmpty(patreonCrawlTargetInfo.AvatarUrl))
-                throw new ArgumentException("Campaign name cannot be null or empty");
             if(string.IsNullOrWhiteSpace(downloadDirectory))
                 throw new ArgumentException("Download directory cannot be empty");
 
@@ -72,8 +68,10 @@ namespace PatreonDownloader.Implementation
             if (_patreonDownloaderSettings.SaveAvatarAndCover)
             {
                 _logger.Debug("Adding avatar and cover...");
-                crawledUrls.Add(new PatreonCrawledUrl { PostId = "0", Url = patreonCrawlTargetInfo.AvatarUrl, UrlType = PatreonCrawledUrlType.AvatarFile });
-                crawledUrls.Add(new PatreonCrawledUrl { PostId = "0", Url = patreonCrawlTargetInfo.CoverUrl, UrlType = PatreonCrawledUrlType.CoverFile });
+                if(!string.IsNullOrWhiteSpace(patreonCrawlTargetInfo.AvatarUrl))
+                    crawledUrls.Add(new PatreonCrawledUrl { PostId = "0", Url = patreonCrawlTargetInfo.AvatarUrl, UrlType = PatreonCrawledUrlType.AvatarFile });
+                if (!string.IsNullOrWhiteSpace(patreonCrawlTargetInfo.CoverUrl))
+                    crawledUrls.Add(new PatreonCrawledUrl { PostId = "0", Url = patreonCrawlTargetInfo.CoverUrl, UrlType = PatreonCrawledUrlType.CoverFile });
             }
 
             string nextPage = CrawlStartUrl + $"&filter[campaign_id]={patreonCrawlTargetInfo.Id}";
