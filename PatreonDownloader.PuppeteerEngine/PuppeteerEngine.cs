@@ -134,8 +134,9 @@ namespace PatreonDownloader.PuppeteerEngine
                     //Devtools = true,
                     Headless = _headless,
                     UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata"),
+                    DefaultViewport = null,
                     //Headless mode changes user agent so we need to force it to use "real" user agent
-                    Args = new[] { "--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3882.0 Safari/537.36\"" }
+                    Args = new[] { "--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.0 Safari/537.36\"" }
                 });
 
                 _logger.Debug("Opening new page");
