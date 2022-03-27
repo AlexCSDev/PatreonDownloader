@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Ninject;
 using Ninject.Modules;
 using PatreonDownloader.Engine;
 using PatreonDownloader.Implementation.Interfaces;
 using PatreonDownloader.Implementation.Models;
+using PatreonDownloader.PuppeteerEngine;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.Common.Interfaces.Plugins;
@@ -19,7 +21,7 @@ namespace PatreonDownloader.Implementation
         public override void Load()
         {
             Bind<IRemoteFileSizeChecker>().To<RemoteFileSizeChecker>().InSingletonScope();
-            Bind<IWebDownloader>().To<WebDownloader>().InSingletonScope();
+            Bind<IWebDownloader>().To<PatreonWebDownloader>().InSingletonScope();
             Bind<IRemoteFilenameRetriever>().To<PatreonRemoteFilenameRetriever>().InSingletonScope();
             Bind<ICrawlTargetInfoRetriever>().To<PatreonCrawlTargetInfoRetriever>().InSingletonScope();
             Bind<ICrawledUrlProcessor>().To<PatreonCrawledUrlProcessor>().InSingletonScope();

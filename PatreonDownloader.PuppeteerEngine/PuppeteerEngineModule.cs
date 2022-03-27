@@ -10,6 +10,7 @@ namespace PatreonDownloader.PuppeteerEngine
         {
             Bind<IPuppeteerEngine>().To<PuppeteerEngine>().InSingletonScope();
             Bind<ICookieRetriever>().To<PuppeteerCookieRetriever>();
+            Bind<ICaptchaSolver>().To<PuppeteerCaptchaSolver>();
             Bind<IWebBrowser>().To<WebBrowser>();
             Bind<IWebPage>().To<WebPage>();
             Bind<IWebRequest>().To<WebRequest>();

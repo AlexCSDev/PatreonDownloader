@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PatreonDownloader.Common\PatreonDownloader.Common.csproj" />
+    <ProjectReference Include="..\PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj" />
     <ProjectReference Include="..\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.DefaultImplementations\UniversalDownloaderPlatform.DefaultImplementations.csproj" />
   </ItemGroup>
 
