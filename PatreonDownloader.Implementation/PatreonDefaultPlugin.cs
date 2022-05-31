@@ -23,32 +23,18 @@ namespace PatreonDownloader.Engine
     internal sealed class PatreonDefaultPlugin : IPlugin
     {
         private IWebDownloader _webDownloader;
-        private IRemoteFilenameRetriever _remoteFilenameRetriever;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
         private bool _overwriteFiles;
-
-        private static readonly Regex _fileIdRegex; //Regex used to retrieve file id from its url
 
         public string Name => "Default plugin";
 
         public string Author => "Aleksey Tsutsey";
         public string ContactInformation => "https://github.com/Megalan/PatreonDownloader";
 
-        static PatreonDefaultPlugin()
-        {
-            _fileIdRegex =
-                new Regex(
-                    "https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)",
-                    RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        }
-
-        public PatreonDefaultPlugin(IWebDownloader webDownloader, IRemoteFilenameRetriever remoteFilenameRetriever)
+        public PatreonDefaultPlugin(IWebDownloader webDownloader)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
-            _remoteFilenameRetriever = remoteFilenameRetriever ??
-                                       throw new ArgumentNullException(nameof(remoteFilenameRetriever));
         }
 
         public async Task<bool> IsSupportedUrl(string url)
@@ -72,7 +58,6 @@ namespace PatreonDownloader.Engine
         public async Task BeforeStart(bool overwriteFiles)
         {
             _overwriteFiles = overwriteFiles;
-            _fileCountDict = new Dictionary<string, int>();
         }
 
         public async Task<List<string>> ExtractSupportedUrls(string htmlContents)
@@ -130,21 +115,6 @@ namespace PatreonDownloader.Engine
             {
                 //This should never be called if mega plugin is installed
                 _logger.Debug($"Mega plugin not installed, file will not be downloaded: {url}");
-                return false;
-            }
-
-            if (url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 ||
-                     url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
-            {
-                //TODO: YOUTUBE SUPPORT?
-                _logger.Fatal($"[NOT SUPPORTED] YOUTUBE link found: {url}");
-                return false;
-            }
-
-            if (url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
-            {
-                //TODO: IMGUR SUPPORT
-                _logger.Fatal($"[NOT SUPPORTED] IMGUR link found: {url}");
                 return false;
             }
 

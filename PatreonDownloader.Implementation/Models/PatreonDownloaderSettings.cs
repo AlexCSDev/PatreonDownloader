@@ -18,6 +18,7 @@ namespace PatreonDownloader.Implementation.Models
         private bool _useSubDirectories;
         private string _subDirectoryPattern;
         private int _maxFilenameLength;
+        private bool _fallbackToContentTypeFilenames;
 
         public bool SaveDescriptions
         {
@@ -79,6 +80,15 @@ namespace PatreonDownloader.Implementation.Models
             set => ConsumableSetter.Set(Consumed, ref _maxFilenameLength, value);
         }
 
+        /// <summary>
+        /// Fallback to using sha256 hash and Content-Type for filenames if Content-Disposition fails
+        /// </summary>
+        public bool FallbackToContentTypeFilenames
+        {
+            get => _fallbackToContentTypeFilenames;
+            set => ConsumableSetter.Set(Consumed, ref _fallbackToContentTypeFilenames, value);
+        }
+
         public PatreonDownloaderSettings()
         {
             _saveDescriptions = true;
@@ -88,12 +98,13 @@ namespace PatreonDownloader.Implementation.Models
             _downloadDirectory = null;
             _useSubDirectories = false;
             _subDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%";
+            _fallbackToContentTypeFilenames = false;
             _maxFilenameLength = 100;
         }
 
         public override string ToString()
         {
-            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory},OverwriteFiles={base.OverwriteFiles},UseSubDirectories={_useSubDirectories},MaxFilenameLength={_maxFilenameLength}";
+            return $"SaveDescriptions={_saveDescriptions},SaveEmbeds={_saveEmbeds},SaveJson={_saveJson},SaveAvatarAndCover={_saveAvatarAndCover},DownloadDirectory={_downloadDirectory},OverwriteFiles={base.OverwriteFiles},UseSubDirectories={_useSubDirectories},MaxFilenameLength={_maxFilenameLength},FallbackToContentTypeFilenames={_fallbackToContentTypeFilenames}";
         }
     }
 }

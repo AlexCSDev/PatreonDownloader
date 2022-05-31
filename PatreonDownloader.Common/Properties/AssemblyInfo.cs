@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Patreon Downloader")]
-[assembly: AssemblyCopyright("Copyright 2019-2021 Aleksey Tsutsey & Contributors")]
+[assembly: AssemblyCopyright("Copyright 2019-2022 Aleksey Tsutsey & Contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

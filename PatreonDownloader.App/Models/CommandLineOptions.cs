@@ -39,5 +39,7 @@ namespace PatreonDownloader.App.Models
         public string SubDirectoryPattern { get; set; }
         [Option("max-filename-length", Required = false, HelpText = "All names of downloaded files will be truncated so their length won't be more than specified value (excluding file extension)", Default = 100)]
         public int MaxFilenameLength { get; set; }
+        [Option("filenames-fallback-to-content-type", Required = false, HelpText = "Fallback to using filename generated from url hash if the server returns file content type (extension) and all other methods have failed. Use with caution, this might result in unwanted files being created or the same files being downloaded on every run under different names.", Default = false)]
+        public bool FilenamesFallbackToContentType { get; set; }
     }
 }

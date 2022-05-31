@@ -53,6 +53,7 @@ namespace PatreonDownloader.Implementation
         {
             _fileCountDict = new Dictionary<string, int>();
             _patreonDownloaderSettings = (PatreonDownloaderSettings) settings;
+            await _remoteFilenameRetriever.BeforeStart(settings);
         }
 
         public async Task<bool> ProcessCrawledUrl(ICrawledUrl udpCrawledUrl, string downloadDirectory)
@@ -87,11 +88,13 @@ namespace PatreonDownloader.Implementation
             {
                 //TODO: YOUTUBE SUPPORT?
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] YOUTUBE link found: {crawledUrl.Url}");
+                return false;
             }
             else if (crawledUrl.Url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
             {
                 //TODO: IMGUR SUPPORT
                 _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] IMGUR link found: {crawledUrl.Url}");
+                return false;
             }
 
             string filename = crawledUrl.Filename;

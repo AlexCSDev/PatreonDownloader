@@ -191,7 +191,8 @@ namespace PatreonDownloader.App
                 RemoteFileSizeNotAvailableAction = commandLineOptions.NoRemoteSizeAction,
                 UseSubDirectories = commandLineOptions.UseSubDirectories,
                 SubDirectoryPattern = commandLineOptions.SubDirectoryPattern,
-                MaxFilenameLength = commandLineOptions.MaxFilenameLength
+                MaxFilenameLength = commandLineOptions.MaxFilenameLength,
+                FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType
             };
 
             return settings;
