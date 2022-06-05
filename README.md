@@ -10,7 +10,7 @@ PatreonDownloader.App.exe --url #page url#. Page url should follow one of the fo
 * https://www.patreon.com/m/#numbers#/posts
 * https://www.patreon.com/user?u=#numbers#
 * https://www.patreon.com/user/posts?u=#numbers#
-* https://www.patreon.com/#creator name#/posts
+* https://www.patreon.com/#creator_name#/posts
 #### Download all available files from creator into custom directory and save all possible data (post contents, embed metadata, cover and avatar, json responses)
 PatreonDownloader.App.exe --url #page url# --download-directory c:\downloads --descriptions --embeds --campaign-images --json
 #### Show available commands and their descriptions
