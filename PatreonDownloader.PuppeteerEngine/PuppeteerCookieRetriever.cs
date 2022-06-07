@@ -17,6 +17,7 @@ namespace PatreonDownloader.PuppeteerEngine
         private IPuppeteerEngine _puppeteerEngine;
         private bool _isHeadlessBrowser;
         private bool _isRemoteBrowser;
+        private string _proxyServerAddress;
 
         /// <summary>
         /// Create new instance of PuppeteerCookieRetriever using remote browser
@@ -33,11 +34,13 @@ namespace PatreonDownloader.PuppeteerEngine
         /// Create new instance of PuppeteerCookieRetriever using internal browser
         /// </summary>
         /// <param name="headlessBrowser">If set to false then the internal browser will be visible</param>
-        public PuppeteerCookieRetriever(bool headlessBrowser = true)
+        /// <param name="proxyServerAddress">Address of the proxy server to use (null for no proxy server)</param>
+        public PuppeteerCookieRetriever(bool headlessBrowser = true, string proxyServerAddress = null)
         {
-            _puppeteerEngine = new PuppeteerEngine(headlessBrowser);
+            _puppeteerEngine = new PuppeteerEngine(headlessBrowser, proxyServerAddress);
             _isHeadlessBrowser = headlessBrowser;
             _isRemoteBrowser = false;
+            _proxyServerAddress = proxyServerAddress;
         }
 
         private async Task<IWebBrowser> RestartBrowser(bool headless)
@@ -45,7 +48,7 @@ namespace PatreonDownloader.PuppeteerEngine
             await _puppeteerEngine.CloseBrowser();
             await Task.Delay(1000); //safety first
 
-            _puppeteerEngine = new PuppeteerEngine(headless);
+            _puppeteerEngine = new PuppeteerEngine(headless, _proxyServerAddress);
             return await _puppeteerEngine.GetBrowser();
         }
 

@@ -41,5 +41,7 @@ namespace PatreonDownloader.App.Models
         public int MaxFilenameLength { get; set; }
         [Option("filenames-fallback-to-content-type", Required = false, HelpText = "Fallback to using filename generated from url hash if the server returns file content type (extension) and all other methods have failed. Use with caution, this might result in unwanted files being created or the same files being downloaded on every run under different names.", Default = false)]
         public bool FilenamesFallbackToContentType { get; set; }
+        [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
+        public string ProxyServerAddress { get; set; }
     }
 }

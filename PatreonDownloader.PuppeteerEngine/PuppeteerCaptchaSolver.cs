@@ -13,15 +13,18 @@ namespace PatreonDownloader.PuppeteerEngine
 {
     public class PuppeteerCaptchaSolver : ICaptchaSolver, IDisposable
     {
+        private readonly string _proxyServerAddress;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private IPuppeteerEngine _puppeteerEngine;
 
         /// <summary>
         /// Create new instance of PuppeteerCaptchaSolver using internal browser
         /// </summary>
-        public PuppeteerCaptchaSolver()
+        /// <param name="proxyServerAddress">Address of the proxy server to use (null for no proxy server)</param>
+        public PuppeteerCaptchaSolver(string proxyServerAddress = null)
         {
-            _puppeteerEngine = new PuppeteerEngine();
+            _proxyServerAddress = proxyServerAddress;
+            _puppeteerEngine = new PuppeteerEngine(true, _proxyServerAddress);
         }
 
         private async Task<IWebBrowser> RestartBrowser(bool headless)
@@ -29,7 +32,7 @@ namespace PatreonDownloader.PuppeteerEngine
             await _puppeteerEngine.CloseBrowser();
             await Task.Delay(1000); //safety first
 
-            _puppeteerEngine = new PuppeteerEngine(headless);
+            _puppeteerEngine = new PuppeteerEngine(headless, _proxyServerAddress);
             return await _puppeteerEngine.GetBrowser();
         }
         

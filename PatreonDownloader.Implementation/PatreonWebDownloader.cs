@@ -18,9 +18,17 @@ namespace PatreonDownloader.Implementation
     internal class PatreonWebDownloader : WebDownloader
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private string _proxyServerAddress;
+
         public PatreonWebDownloader(IRemoteFileSizeChecker remoteFileSizeChecker) : base(remoteFileSizeChecker)
         {
 
+        }
+
+        public override Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
+        {
+            _proxyServerAddress = settings.ProxyServerAddress;
+            return base.BeforeStart(settings);
         }
 
         public override async Task DownloadFile(string url, string path, bool overwrite = false)
@@ -79,7 +87,7 @@ namespace PatreonDownloader.Implementation
         {
             _logger.Warn("Captcha has been triggered, the browser window will be opened now. Please solve the captcha there.");
 
-            PuppeteerCaptchaSolver captchaSolver = new PuppeteerCaptchaSolver();
+            PuppeteerCaptchaSolver captchaSolver = new PuppeteerCaptchaSolver(_proxyServerAddress);
             CookieContainer cookies = await captchaSolver.SolveCaptcha(url);
             captchaSolver.Dispose();
             captchaSolver = null;
