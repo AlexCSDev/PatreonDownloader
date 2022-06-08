@@ -88,14 +88,14 @@ namespace PatreonDownloader.Implementation
             _logger.Warn("Captcha has been triggered, the browser window will be opened now. Please solve the captcha there.");
 
             PuppeteerCaptchaSolver captchaSolver = new PuppeteerCaptchaSolver(_proxyServerAddress);
-            CookieContainer cookies = await captchaSolver.SolveCaptcha(url);
+            CookieCollection cookieCollection = await captchaSolver.SolveCaptcha(url);
             captchaSolver.Dispose();
             captchaSolver = null;
 
-            if (cookies == null)
+            if (cookieCollection == null)
                 return false;
 
-            UpdateCookies(cookies);
+            UpdateCookies(cookieCollection);
 
             return true;
         }

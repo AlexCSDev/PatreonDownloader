@@ -134,7 +134,7 @@ namespace PatreonDownloader.PuppeteerEngine
                 _logger.Debug("Launching browser");
 
                 List<string> browserArguments = new List<string>();
-                browserArguments.Add("--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4889.0 Safari/537.36\"");
+                browserArguments.Add("--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.0 Safari/537.36\"");
                 
                 if(!string.IsNullOrWhiteSpace(_proxyServerAddress)) 
                     browserArguments.Add($"--proxy-server=\"{_proxyServerAddress}\"");

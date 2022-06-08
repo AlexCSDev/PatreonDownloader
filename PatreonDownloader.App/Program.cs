@@ -57,7 +57,7 @@ namespace PatreonDownloader.App
             CommandLineOptions commandLineOptions = null;
             parserResult.WithParsed(options =>
             {
-                NLogManager.ReconfigureNLog(options.Verbose);
+                NLogManager.ReconfigureNLog(options.LogLevel);
                 commandLineOptions = options;
             });
 

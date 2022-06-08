@@ -36,12 +36,11 @@ namespace PatreonDownloader.PuppeteerEngine
             return await _puppeteerEngine.GetBrowser();
         }
         
-        public async Task<CookieContainer> SolveCaptcha(string url)
+        public async Task<CookieCollection> SolveCaptcha(string url)
         {
             try
             {
-                CookieContainer cookieContainer = new CookieContainer();
-
+                CookieCollection cookieCollection = new CookieCollection();
 
                 _logger.Debug("Calling captcha check");
                 try
@@ -69,7 +68,7 @@ namespace PatreonDownloader.PuppeteerEngine
                     {
                         _logger.Debug($"Adding cookie: {browserCookie.Name}");
                         Cookie cookie = new Cookie(browserCookie.Name, browserCookie.Value, browserCookie.Path, browserCookie.Domain);
-                        cookieContainer.Add(cookie);
+                        cookieCollection.Add(cookie);
                     }
                 }
                 else
@@ -80,7 +79,7 @@ namespace PatreonDownloader.PuppeteerEngine
 
                 await page.CloseAsync();
 
-                return cookieContainer;
+                return cookieCollection;
             }
             catch (TimeoutException ex)
             {

@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using PatreonDownloader.App.Enums;
 using UniversalDownloaderPlatform.Common.Enums;
 
 namespace PatreonDownloader.App.Models
@@ -20,8 +21,8 @@ namespace PatreonDownloader.App.Models
         [Option("download-directory", Required = false, HelpText = "Directory to save all downloaded files in, default: #AppDirectory#/downloads/#CreatorName#.")]
         public string DownloadDirectory { get; set; }
 
-        [Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
-        public bool Verbose { get; set; }
+        [Option("log-level", Required = false, HelpText = "Logging level. Possible options: Default, Debug, Trace. Affects both console and file logging.", Default = LogLevel.Default)]
+        public LogLevel LogLevel { get; set; }
 
         [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
         public bool OverwriteFiles { get; set; }

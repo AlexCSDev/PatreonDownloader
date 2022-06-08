@@ -9,7 +9,7 @@ namespace PatreonDownloader.App
 {
     internal static class NLogManager
     {
-        public static void ReconfigureNLog(bool debug = false)
+        public static void ReconfigureNLog(Enums.LogLevel logLevel = Enums.LogLevel.Default)
         {
             LoggingConfiguration configuration = new LoggingConfiguration();
             ColoredConsoleTarget consoleTarget = new ColoredConsoleTarget("console")
@@ -25,9 +25,21 @@ namespace PatreonDownloader.App
             };
             configuration.AddTarget(fileTarget);
 
-            configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.App.*");
+            LogLevel nlogLogLevel = LogLevel.Info;
+            switch (logLevel)
+            {
+                case Enums.LogLevel.Debug:
+                    nlogLogLevel = LogLevel.Debug;
+                    break;
+                case Enums.LogLevel.Trace:
+                    nlogLogLevel = LogLevel.Trace;
+                    break;
+            }
+
+            configuration.AddRule(nlogLogLevel, LogLevel.Fatal, consoleTarget, nlogLogLevel != LogLevel.Info ? "*" : "PatreonDownloader.App.*");
+            configuration.AddRule(nlogLogLevel, LogLevel.Fatal, fileTarget, nlogLogLevel != LogLevel.Info ? "*" : "PatreonDownloader.App.*");
             //configuration.AddRule(debug ? LogLevel.Debug : LogLevel.Info, LogLevel.Fatal, consoleTarget, debug ? "*" : "PatreonDownloader.PuppeteerEngine.*");
-            configuration.AddRuleForAllLevels(fileTarget);
+            //configuration.AddRuleForAllLevels(fileTarget);
 
             LogManager.Configuration = configuration;
         }
