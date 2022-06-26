@@ -106,7 +106,8 @@ namespace PatreonDownloader.PuppeteerEngine
         {
             try
             {
-                CookieContainer cookieContainer = new CookieContainer();
+                //We need to specify custom capacities because Patreon is using a lot of cookies. See issue #125.
+                CookieContainer cookieContainer = new CookieContainer(1000, 100, CookieContainer.DefaultCookieLengthLimit);
 
                 _logger.Debug("Calling login check");
                 try

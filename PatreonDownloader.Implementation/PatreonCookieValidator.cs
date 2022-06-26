@@ -34,6 +34,8 @@ namespace PatreonDownloader.Implementation
                 throw new CookieValidationException("session_id cookie not found");
             if (cookies["patreon_device_id"] == null)
                 throw new CookieValidationException("patreon_device_id cookie not found");
+            if (cookies["datadome"] == null)
+                throw new CookieValidationException("datadome cookie not found");
 
             string apiResponse = await _webDownloader.DownloadString("https://www.patreon.com/api/current_user");
 
