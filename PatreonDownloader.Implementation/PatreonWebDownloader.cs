@@ -31,11 +31,14 @@ namespace PatreonDownloader.Implementation
             return base.BeforeStart(settings);
         }
 
-        public override async Task DownloadFile(string url, string path, bool overwrite = false)
+        public override async Task DownloadFile(string url, string path, string refererUrl = null, bool overwrite = false)
         {
+            if (string.IsNullOrWhiteSpace(refererUrl))
+                refererUrl = "https://www.patreon.com";
+
             try
             {
-                await base.DownloadFile(url, path, overwrite);
+                await base.DownloadFile(url, path, refererUrl, overwrite);
             }
             catch (DownloadException ex)
             {
@@ -46,7 +49,7 @@ namespace PatreonDownloader.Implementation
                         if (! await SolveCaptchaAndUpdateCookies(url))
                             throw;
 
-                        await this.DownloadFile(url, path, overwrite);
+                        await this.DownloadFile(url, path, refererUrl, overwrite);
                     }
                 }
                 else
@@ -56,11 +59,14 @@ namespace PatreonDownloader.Implementation
             }
         }
 
-        public override async Task<string> DownloadString(string url)
+        public override async Task<string> DownloadString(string url, string refererUrl = null)
         {
+            if (string.IsNullOrWhiteSpace(refererUrl))
+                refererUrl = "https://www.patreon.com";
+
             try
             {
-                return await base.DownloadString(url);
+                return await base.DownloadString(url, refererUrl);
             }
             catch (DownloadException ex)
             {
@@ -71,7 +77,7 @@ namespace PatreonDownloader.Implementation
                         if (!await SolveCaptchaAndUpdateCookies(url))
                             throw;
 
-                        return await this.DownloadString(url);
+                        return await this.DownloadString(url, refererUrl);
                     }
 
                     throw;
