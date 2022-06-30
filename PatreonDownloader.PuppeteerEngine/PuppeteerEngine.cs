@@ -139,6 +139,8 @@ namespace PatreonDownloader.PuppeteerEngine
                 if(!string.IsNullOrWhiteSpace(_proxyServerAddress)) 
                     browserArguments.Add($"--proxy-server=\"{_proxyServerAddress}\"");
 
+                browserArguments.Add("--disable-blink-features=AutomationControlled");
+
                 _browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     //Devtools = true,
