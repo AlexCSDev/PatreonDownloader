@@ -20,6 +20,7 @@ namespace PatreonDownloader.PuppeteerEngine
 
         private bool _headless;
         private Uri _remoteBrowserAddress;
+        private string _proxyServerAddress;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public bool IsHeadless
@@ -36,19 +37,20 @@ namespace PatreonDownloader.PuppeteerEngine
             if(remoteBrowserAddress == null)
                 throw new ArgumentNullException(nameof(remoteBrowserAddress));
 
-            Initialize(remoteBrowserAddress, true);
+            Initialize(remoteBrowserAddress, true, null);
         }
 
         /// <summary>
         /// Create a new instance of PuppeteerEngine using local browser
         /// </summary>
         /// <param name="headless">If set to false then the browser window will be visible</param>
-        public PuppeteerEngine(bool headless = true)
+        /// <param name="proxyServerAddress">Address of the proxy server to use (null for no proxy server)</param>
+        public PuppeteerEngine(bool headless = true, string proxyServerAddress = null)
         {
-            Initialize(null, headless);
+            Initialize(null, headless, proxyServerAddress);
         }
 
-        private void Initialize(Uri remoteBrowserAddress, bool headless)
+        private void Initialize(Uri remoteBrowserAddress, bool headless, string proxyServerAddress)
         {
             _logger.Debug($"Initializing PuppeteerEngine with parameters {remoteBrowserAddress}, {headless}");
 
@@ -60,6 +62,7 @@ namespace PatreonDownloader.PuppeteerEngine
             else
             {
                 _headless = headless;
+                _proxyServerAddress = proxyServerAddress;
                 KillChromeIfRunning();
             }
         }
@@ -129,6 +132,15 @@ namespace PatreonDownloader.PuppeteerEngine
                 _logger.Debug("Downloading browser");
                 await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
                 _logger.Debug("Launching browser");
+
+                List<string> browserArguments = new List<string>();
+                browserArguments.Add("--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.0 Safari/537.36\"");
+                
+                if(!string.IsNullOrWhiteSpace(_proxyServerAddress)) 
+                    browserArguments.Add($"--proxy-server=\"{_proxyServerAddress}\"");
+
+                browserArguments.Add("--disable-blink-features=AutomationControlled");
+
                 _browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     //Devtools = true,
@@ -136,7 +148,7 @@ namespace PatreonDownloader.PuppeteerEngine
                     UserDataDir = Path.Combine(Environment.CurrentDirectory, "chromedata"),
                     DefaultViewport = null,
                     //Headless mode changes user agent so we need to force it to use "real" user agent
-                    Args = new[] { "--user-agent=\"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.0 Safari/537.36\"" }
+                    Args = browserArguments.ToArray()
                 });
 
                 _logger.Debug("Opening new page");

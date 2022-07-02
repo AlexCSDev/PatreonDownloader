@@ -18,16 +18,27 @@ namespace PatreonDownloader.Implementation
     internal class PatreonWebDownloader : WebDownloader
     {
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private string _proxyServerAddress;
+
         public PatreonWebDownloader(IRemoteFileSizeChecker remoteFileSizeChecker) : base(remoteFileSizeChecker)
         {
 
         }
 
-        public override async Task DownloadFile(string url, string path, bool overwrite = false)
+        public override Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
+            _proxyServerAddress = settings.ProxyServerAddress;
+            return base.BeforeStart(settings);
+        }
+
+        public override async Task DownloadFile(string url, string path, string refererUrl = null, bool overwrite = false)
+        {
+            if (string.IsNullOrWhiteSpace(refererUrl))
+                refererUrl = "https://www.patreon.com";
+
             try
             {
-                await base.DownloadFile(url, path, overwrite);
+                await base.DownloadFile(url, path, refererUrl, overwrite);
             }
             catch (DownloadException ex)
             {
@@ -38,7 +49,7 @@ namespace PatreonDownloader.Implementation
                         if (! await SolveCaptchaAndUpdateCookies(url))
                             throw;
 
-                        await this.DownloadFile(url, path, overwrite);
+                        await this.DownloadFile(url, path, refererUrl, overwrite);
                     }
                 }
                 else
@@ -48,11 +59,14 @@ namespace PatreonDownloader.Implementation
             }
         }
 
-        public override async Task<string> DownloadString(string url)
+        public override async Task<string> DownloadString(string url, string refererUrl = null)
         {
+            if (string.IsNullOrWhiteSpace(refererUrl))
+                refererUrl = "https://www.patreon.com";
+
             try
             {
-                return await base.DownloadString(url);
+                return await base.DownloadString(url, refererUrl);
             }
             catch (DownloadException ex)
             {
@@ -63,7 +77,7 @@ namespace PatreonDownloader.Implementation
                         if (!await SolveCaptchaAndUpdateCookies(url))
                             throw;
 
-                        return await this.DownloadString(url);
+                        return await this.DownloadString(url, refererUrl);
                     }
 
                     throw;
@@ -79,15 +93,15 @@ namespace PatreonDownloader.Implementation
         {
             _logger.Warn("Captcha has been triggered, the browser window will be opened now. Please solve the captcha there.");
 
-            PuppeteerCaptchaSolver captchaSolver = new PuppeteerCaptchaSolver();
-            CookieContainer cookies = await captchaSolver.SolveCaptcha(url);
+            PuppeteerCaptchaSolver captchaSolver = new PuppeteerCaptchaSolver(_proxyServerAddress);
+            CookieCollection cookieCollection = await captchaSolver.SolveCaptcha(url);
             captchaSolver.Dispose();
             captchaSolver = null;
 
-            if (cookies == null)
+            if (cookieCollection == null)
                 return false;
 
-            UpdateCookies(cookies);
+            UpdateCookies(cookieCollection);
 
             return true;
         }

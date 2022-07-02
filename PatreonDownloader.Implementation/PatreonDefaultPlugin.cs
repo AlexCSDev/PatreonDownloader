@@ -52,7 +52,7 @@ namespace PatreonDownloader.Engine
             if(string.IsNullOrEmpty(downloadDirectory))
                 throw new ArgumentException("Argument cannot be null or empty", nameof(downloadDirectory));
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, crawledUrl.DownloadPath, _overwriteFiles);
+            await _webDownloader.DownloadFile(crawledUrl.Url, crawledUrl.DownloadPath, null, _overwriteFiles); //referer is set in PatreonWebDownloader
         }
 
         public async Task BeforeStart(bool overwriteFiles)

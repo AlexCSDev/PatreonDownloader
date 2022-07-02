@@ -1,4 +1,5 @@
 ﻿using CommandLine;
+using PatreonDownloader.App.Enums;
 using UniversalDownloaderPlatform.Common.Enums;
 
 namespace PatreonDownloader.App.Models
@@ -20,8 +21,11 @@ namespace PatreonDownloader.App.Models
         [Option("download-directory", Required = false, HelpText = "Directory to save all downloaded files in, default: #AppDirectory#/downloads/#CreatorName#.")]
         public string DownloadDirectory { get; set; }
 
-        [Option("verbose", Required = false, HelpText = "Enable verbose (debug) logging", Default = false)]
-        public bool Verbose { get; set; }
+        [Option("log-level", Required = false, HelpText = "Logging level. Possible options: Default, Debug, Trace. Affects both console and file logging.", Default = LogLevel.Default)]
+        public LogLevel LogLevel { get; set; }
+
+        [Option("log-save", Required = false, HelpText = "Create log files in the \"logs\" directory.", Default = false)]
+        public bool SaveLogs { get; set; }
 
         [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
         public bool OverwriteFiles { get; set; }
@@ -41,5 +45,7 @@ namespace PatreonDownloader.App.Models
         public int MaxFilenameLength { get; set; }
         [Option("filenames-fallback-to-content-type", Required = false, HelpText = "Fallback to using filename generated from url hash if the server returns file content type (extension) and all other methods have failed. Use with caution, this might result in unwanted files being created or the same files being downloaded on every run under different names.", Default = false)]
         public bool FilenamesFallbackToContentType { get; set; }
+        [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
+        public string ProxyServerAddress { get; set; }
     }
 }

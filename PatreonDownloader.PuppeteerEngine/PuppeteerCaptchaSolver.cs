@@ -13,15 +13,18 @@ namespace PatreonDownloader.PuppeteerEngine
 {
     public class PuppeteerCaptchaSolver : ICaptchaSolver, IDisposable
     {
+        private readonly string _proxyServerAddress;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private IPuppeteerEngine _puppeteerEngine;
 
         /// <summary>
         /// Create new instance of PuppeteerCaptchaSolver using internal browser
         /// </summary>
-        public PuppeteerCaptchaSolver()
+        /// <param name="proxyServerAddress">Address of the proxy server to use (null for no proxy server)</param>
+        public PuppeteerCaptchaSolver(string proxyServerAddress = null)
         {
-            _puppeteerEngine = new PuppeteerEngine();
+            _proxyServerAddress = proxyServerAddress;
+            _puppeteerEngine = new PuppeteerEngine(true, _proxyServerAddress);
         }
 
         private async Task<IWebBrowser> RestartBrowser(bool headless)
@@ -29,16 +32,15 @@ namespace PatreonDownloader.PuppeteerEngine
             await _puppeteerEngine.CloseBrowser();
             await Task.Delay(1000); //safety first
 
-            _puppeteerEngine = new PuppeteerEngine(headless);
+            _puppeteerEngine = new PuppeteerEngine(headless, _proxyServerAddress);
             return await _puppeteerEngine.GetBrowser();
         }
         
-        public async Task<CookieContainer> SolveCaptcha(string url)
+        public async Task<CookieCollection> SolveCaptcha(string url)
         {
             try
             {
-                CookieContainer cookieContainer = new CookieContainer();
-
+                CookieCollection cookieCollection = new CookieCollection();
 
                 _logger.Debug("Calling captcha check");
                 try
@@ -66,7 +68,7 @@ namespace PatreonDownloader.PuppeteerEngine
                     {
                         _logger.Debug($"Adding cookie: {browserCookie.Name}");
                         Cookie cookie = new Cookie(browserCookie.Name, browserCookie.Value, browserCookie.Path, browserCookie.Domain);
-                        cookieContainer.Add(cookie);
+                        cookieCollection.Add(cookie);
                     }
                 }
                 else
@@ -77,7 +79,7 @@ namespace PatreonDownloader.PuppeteerEngine
 
                 await page.CloseAsync();
 
-                return cookieContainer;
+                return cookieCollection;
             }
             catch (TimeoutException ex)
             {

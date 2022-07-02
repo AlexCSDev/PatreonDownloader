@@ -9,6 +9,6 @@ namespace PatreonDownloader.Common.Interfaces
 {
     public interface ICaptchaSolver
     {
-        Task<CookieContainer> SolveCaptcha(string url);
+        Task<CookieCollection> SolveCaptcha(string url);
     }
 }

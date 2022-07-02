@@ -57,7 +57,7 @@ namespace PatreonDownloader.App
             CommandLineOptions commandLineOptions = null;
             parserResult.WithParsed(options =>
             {
-                NLogManager.ReconfigureNLog(options.Verbose);
+                NLogManager.ReconfigureNLog(options.LogLevel, options.SaveLogs);
                 commandLineOptions = options;
             });
 
@@ -154,12 +154,18 @@ namespace PatreonDownloader.App
 
         private static async Task<PatreonDownloaderSettings> InitializeSettings(CommandLineOptions commandLineOptions)
         {
+            if (!string.IsNullOrWhiteSpace(commandLineOptions.ProxyServerAddress) &&
+                !Uri.TryCreate(commandLineOptions.ProxyServerAddress, UriKind.Absolute, out _))
+            {
+                throw new Exception($"Invalid proxy server address: {commandLineOptions.ProxyServerAddress}");
+            }
+
             _logger.Info("Retrieving cookies...");
             if (!string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress))
                 _cookieRetriever =
                     new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
             else
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(true);
+                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(true, commandLineOptions.ProxyServerAddress);
             CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
             if (cookieContainer == null)
             {
@@ -192,7 +198,8 @@ namespace PatreonDownloader.App
                 UseSubDirectories = commandLineOptions.UseSubDirectories,
                 SubDirectoryPattern = commandLineOptions.SubDirectoryPattern,
                 MaxFilenameLength = commandLineOptions.MaxFilenameLength,
-                FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType
+                FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType,
+                ProxyServerAddress = commandLineOptions.ProxyServerAddress
             };
 
             return settings;
