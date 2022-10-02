@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -86,9 +88,33 @@ namespace PatreonDownloader.Implementation
             else if (crawledUrl.Url.IndexOf("youtube.com/watch?v=", StringComparison.Ordinal) != -1 ||
                      crawledUrl.Url.IndexOf("youtu.be/", StringComparison.Ordinal) != -1)
             {
-                //TODO: YOUTUBE SUPPORT?
-                _logger.Fatal($"[{crawledUrl.PostId}] [NOT SUPPORTED] YOUTUBE link found: {crawledUrl.Url}");
-                return false;
+                try
+                {
+                    _logger.Debug($"[{crawledUrl.PostId}] YOUTUBE link found: {crawledUrl.Url}");
+
+                    bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+                    var youtubedlProcess = new Process
+                    {
+                        StartInfo = 
+                        {
+                            FileName = $"youtube-dl{(isWindows ? ".exe" : "")}",
+                            Arguments = $"{crawledUrl.Url}",
+                            UseShellExecute = false,
+                            CreateNoWindow = false,
+                            RedirectStandardOutput = false
+                        }
+                    };
+                    youtubedlProcess.Start();
+
+                    // Make sure app has finished the work
+                    youtubedlProcess.WaitForExit();
+                    
+                    skipChecks = true;
+                } catch (Exception ex)
+                {
+                    _logger.Fatal($"[{crawledUrl.PostId}] Failed to download: {crawledUrl.Url}: {ex}");
+                    return false;
+                }
             }
             else if (crawledUrl.Url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
             {
