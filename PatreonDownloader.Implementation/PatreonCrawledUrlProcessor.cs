@@ -98,7 +98,7 @@ namespace PatreonDownloader.Implementation
                         StartInfo = 
                         {
                             FileName = $"yt-dlp{(isWindows ? ".exe" : "")}",
-                            Arguments = $"{crawledUrl.Url}",
+                            Arguments = $"{crawledUrl.Url} --format mp4 -o \"{downloadDirectory}/%(title)s.%(ext)s\"",
                             UseShellExecute = false,
                             CreateNoWindow = false,
                             RedirectStandardOutput = false
