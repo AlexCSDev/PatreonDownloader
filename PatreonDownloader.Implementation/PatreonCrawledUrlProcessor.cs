@@ -97,7 +97,7 @@ namespace PatreonDownloader.Implementation
                     {
                         StartInfo = 
                         {
-                            FileName = $"youtube-dl{(isWindows ? ".exe" : "")}",
+                            FileName = $"yt-dlp{(isWindows ? ".exe" : "")}",
                             Arguments = $"{crawledUrl.Url}",
                             UseShellExecute = false,
                             CreateNoWindow = false,
