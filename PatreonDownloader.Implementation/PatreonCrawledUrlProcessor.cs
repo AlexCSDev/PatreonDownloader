@@ -93,9 +93,9 @@ namespace PatreonDownloader.Implementation
                     _logger.Debug($"[{crawledUrl.PostId}] YOUTUBE link found: {crawledUrl.Url}");
 
                     bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-                    var youtubedlProcess = new Process
+                    var youtubeProcess = new Process
                     {
-                        StartInfo = 
+                        StartInfo =
                         {
                             FileName = $"yt-dlp{(isWindows ? ".exe" : "")}",
                             Arguments = $"{crawledUrl.Url} --format mp4 -o \"{downloadDirectory}/%(title)s.%(ext)s\"",
@@ -104,17 +104,16 @@ namespace PatreonDownloader.Implementation
                             RedirectStandardOutput = false
                         }
                     };
-                    youtubedlProcess.Start();
+                    youtubeProcess.Start();
 
                     // Make sure app has finished the work
-                    youtubedlProcess.WaitForExit();
-                    
-                    skipChecks = true;
+                    youtubeProcess.WaitForExit();
+
                 } catch (Exception ex)
                 {
                     _logger.Fatal($"[{crawledUrl.PostId}] Failed to download: {crawledUrl.Url}: {ex}");
-                    return false;
                 }
+                return false; // downloading is handled here
             }
             else if (crawledUrl.Url.IndexOf("imgur.com/", StringComparison.Ordinal) != -1)
             {
@@ -222,7 +221,7 @@ namespace PatreonDownloader.Implementation
                 }
             }
 
-            if (_patreonDownloaderSettings.UseSubDirectories && 
+            if (_patreonDownloaderSettings.UseSubDirectories &&
                 crawledUrl.UrlType != PatreonCrawledUrlType.AvatarFile &&
                 crawledUrl.UrlType != PatreonCrawledUrlType.CoverFile)
                 downloadDirectory = Path.Combine(downloadDirectory, PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, _patreonDownloaderSettings.SubDirectoryPattern));
