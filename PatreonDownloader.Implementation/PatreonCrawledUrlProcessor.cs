@@ -35,7 +35,7 @@ namespace PatreonDownloader.Implementation
 
             _fileIdRegex =
                 new Regex(
-                    "https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)",
+                    "https:\\/\\/(.+)\\.patreonusercontent\\.com\\/(.+)\\/patreon-media\\/p\\/post\\/([0-9]+)\\/([a-z0-9]+)",
                     RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
             _googleDriveRegex = new Regex("https:\\/\\/drive\\.google\\.com\\/(?:file\\/d\\/|open\\?id\\=|drive\\/folders\\/|folderview\\?id=|drive\\/u\\/[0-9]+\\/folders\\/)([A-Za-z0-9_-]+)");
@@ -189,7 +189,7 @@ namespace PatreonDownloader.Implementation
                         if (matches.Count > 1)
                             throw new DownloadException($"[{crawledUrl.PostId}] More than 1 media found in URL {crawledUrl.Url}");
 
-                        appendStr = matches[0].Groups[5].Value;
+                        appendStr = matches[0].Groups[4].Value;
                     }
 
                     filename = $"{Path.GetFileNameWithoutExtension(filename)}_{appendStr}{Path.GetExtension(filename)}";
