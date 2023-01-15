@@ -140,7 +140,7 @@ namespace PatreonDownloader.App
             _universalDownloader.FileDownloaded += UniversalDownloaderOnFileDownloaded;
 
             PatreonDownloaderSettings settings = await InitializeSettings(commandLineOptions);
-            await _universalDownloader.Download(commandLineOptions.Url, commandLineOptions.DownloadDirectory, settings);
+            await _universalDownloader.Download(commandLineOptions.Url, settings);
 
             _universalDownloader.StatusChanged -= UniversalDownloaderOnStatusChanged;
             _universalDownloader.PostCrawlStart -= UniversalDownloaderOnPostCrawlStart;
@@ -185,7 +185,6 @@ namespace PatreonDownloader.App
 
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
-                OverwriteFiles = commandLineOptions.OverwriteFiles,
                 UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
                 UserAgent = userAgent,
                 CookieContainer = cookieContainer,
@@ -194,13 +193,19 @@ namespace PatreonDownloader.App
                 SaveEmbeds = commandLineOptions.SaveEmbeds,
                 SaveJson = commandLineOptions.SaveJson,
                 DownloadDirectory = commandLineOptions.DownloadDirectory,
-                RemoteFileSizeNotAvailableAction = commandLineOptions.NoRemoteSizeAction,
-                UseSubDirectories = commandLineOptions.UseSubDirectories,
+                FileExistsAction = commandLineOptions.FileExistsAction,
+                IsCheckRemoteFileSize = !commandLineOptions.IsDisableRemoteFileSizeCheck,
+                IsUseSubDirectories = commandLineOptions.UseSubDirectories,
                 SubDirectoryPattern = commandLineOptions.SubDirectoryPattern,
+                MaxSubdirectoryNameLength = commandLineOptions.MaxSubdirectoryNameLength,
                 MaxFilenameLength = commandLineOptions.MaxFilenameLength,
                 FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType,
-                ProxyServerAddress = commandLineOptions.ProxyServerAddress
+                ProxyServerAddress = commandLineOptions.ProxyServerAddress,
+                IsUseLegacyFilenaming = commandLineOptions.IsUseLegacyFilenaming
             };
+
+            if (settings.IsUseLegacyFilenaming && (settings.FileExistsAction == FileExistsAction.BackupIfDifferent || settings.FileExistsAction == FileExistsAction.ReplaceIfDifferent))
+                throw new Exception("Legacy file naming cannot be used with BackupIfDifferent or ReplaceIfDifferent file exists action");
 
             return settings;
         }

@@ -24,7 +24,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            Assert.Equal("[123456] 2020-07-07 Test Post", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%PostId%] %PublishedAt% %PostTitle%"));
+            Assert.Equal("[123456] 2020-07-07 Test Post", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%PostId%] %PublishedAt% %PostTitle%", 100));
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            Assert.Equal("[123456] 2020-07-07 Test Post", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%postId%] %PubliSHedAt% %Posttitle%"));
+            Assert.Equal("[123456] 2020-07-07 Test Post", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%postId%] %PubliSHedAt% %Posttitle%", 100));
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            Assert.Equal("[123456] 2020-07-07 No Title", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%PostId%] %PublishedAt% %PostTitle%"));
+            Assert.Equal("[123456] 2020-07-07 No Title", PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, "[%PostId%] %PublishedAt% %PostTitle%", 100));
         }
     }
 }

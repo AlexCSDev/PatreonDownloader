@@ -51,15 +51,13 @@ namespace PatreonDownloader.Implementation
             _patreonDownloaderSettings = (PatreonDownloaderSettings) settings;
         }
 
-        public async Task<List<ICrawledUrl>> Crawl(ICrawlTargetInfo crawlTargetInfo, string downloadDirectory)
+        public async Task<List<ICrawledUrl>> Crawl(ICrawlTargetInfo crawlTargetInfo)
         {
             PatreonCrawlTargetInfo patreonCrawlTargetInfo = (PatreonCrawlTargetInfo)crawlTargetInfo;
             if (patreonCrawlTargetInfo.Id < 1)
                 throw new ArgumentException("Campaign ID cannot be less than 1");
             if (string.IsNullOrEmpty(patreonCrawlTargetInfo.Name))
                 throw new ArgumentException("Campaign name cannot be null or empty");
-            if(string.IsNullOrWhiteSpace(downloadDirectory))
-                throw new ArgumentException("Download directory cannot be empty");
 
             _logger.Debug($"Starting crawling campaign {patreonCrawlTargetInfo.Name}");
             List<ICrawledUrl> crawledUrls = new List<ICrawledUrl>();
@@ -84,10 +82,10 @@ namespace PatreonDownloader.Implementation
                 string json = await _webDownloader.DownloadString(nextPage);
 
                 if(_patreonDownloaderSettings.SaveJson)
-                    await File.WriteAllTextAsync(Path.Combine(downloadDirectory, $"page_{page}.json"),
+                    await File.WriteAllTextAsync(Path.Combine(_patreonDownloaderSettings.DownloadDirectory, $"page_{page}.json"),
                         json);
 
-                ParsingResult result = await ParsePage(json, downloadDirectory);
+                ParsingResult result = await ParsePage(json);
 
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
@@ -102,7 +100,7 @@ namespace PatreonDownloader.Implementation
             return crawledUrls;
         }
 
-        private async Task<ParsingResult> ParsePage(string json, string downloadDirectory)
+        private async Task<ParsingResult> ParsePage(string json)
         {
             List<PatreonCrawledUrl> crawledUrls = new List<PatreonCrawledUrl>();
             List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
@@ -147,15 +145,15 @@ namespace PatreonDownloader.Implementation
                     PublishedAt = jsonEntry.Attributes.PublishedAt
                 };
 
-                string additionalFilesSaveDirectory = downloadDirectory;
-                if (_patreonDownloaderSettings.UseSubDirectories && 
+                string additionalFilesSaveDirectory = _patreonDownloaderSettings.DownloadDirectory;
+                if (_patreonDownloaderSettings.IsUseSubDirectories && 
                     (_patreonDownloaderSettings.SaveDescriptions || 
                      (jsonEntry.Attributes.Embed != null && _patreonDownloaderSettings.SaveEmbeds)
                      )
                     )
                 {
-                    additionalFilesSaveDirectory = Path.Combine(downloadDirectory, 
-                        PostSubdirectoryHelper.CreateNameFromPattern(entry, _patreonDownloaderSettings.SubDirectoryPattern));
+                    additionalFilesSaveDirectory = Path.Combine(_patreonDownloaderSettings.DownloadDirectory, 
+                        PostSubdirectoryHelper.CreateNameFromPattern(entry, _patreonDownloaderSettings.SubDirectoryPattern, _patreonDownloaderSettings.MaxSubdirectoryNameLength));
                     if (!Directory.Exists(additionalFilesSaveDirectory))
                         Directory.CreateDirectory(additionalFilesSaveDirectory);
                 }
@@ -165,7 +163,7 @@ namespace PatreonDownloader.Implementation
                     try
                     {
                         string filename = "description.html";
-                        if (!_patreonDownloaderSettings.UseSubDirectories)
+                        if (!_patreonDownloaderSettings.IsUseSubDirectories)
                             filename = $"{jsonEntry.Id}_{filename}";
 
                         await File.WriteAllTextAsync(Path.Combine(additionalFilesSaveDirectory, filename),
@@ -187,7 +185,7 @@ namespace PatreonDownloader.Implementation
                         try
                         {
                             string filename = "embed.txt";
-                            if (!_patreonDownloaderSettings.UseSubDirectories)
+                            if (!_patreonDownloaderSettings.IsUseSubDirectories)
                                 filename = $"{jsonEntry.Id}_{filename}";
 
                             await File.WriteAllTextAsync(
@@ -254,6 +252,7 @@ namespace PatreonDownloader.Implementation
                         subEntry.Url = attachmentData.Attributes.Url;
                         subEntry.Filename = attachmentData.Attributes.Name;
                         subEntry.UrlType = PatreonCrawledUrlType.PostAttachment;
+                        subEntry.PostId = attachmentData.Id;
                         crawledUrls.Add(subEntry);
                         _logger.Info($"[{jsonEntry.Id} A-{attachment.Id}] New attachment entry: {subEntry.Url}");
                         OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));
@@ -294,6 +293,7 @@ namespace PatreonDownloader.Implementation
                         subEntry.Url = downloadUrl;
                         subEntry.Filename = imageData.Attributes.FileName;
                         subEntry.UrlType = PatreonCrawledUrlType.PostMedia;
+                        subEntry.FileId = image.Id;
                         crawledUrls.Add(subEntry);
                         _logger.Info($"[{jsonEntry.Id} M-{image.Id}] New media entry from {subEntry.Url}");
                         OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));

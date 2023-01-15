@@ -21,21 +21,18 @@ namespace PatreonDownloader.Tests
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 CookieContainer = new CookieContainer(),
-                DownloadDirectory = "c:\\downloads",
+                DownloadDirectory = "c:\\downloads\\UnitTesting",
                 MaxDownloadRetries = 10,
-                OverwriteFiles = false,
-                RemoteFileSizeNotAvailableAction = RemoteFileSizeNotAvailableAction.KeepExisting,
+                FileExistsAction = FileExistsAction.KeepExisting,
                 RetryMultiplier = 1,
                 SaveAvatarAndCover = true,
                 SaveDescriptions = true,
                 SaveEmbeds = true,
                 SaveJson = true,
-                UseSubDirectories = true,
+                IsUseSubDirectories = true,
                 SubDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%",
                 MaxFilenameLength = 50
             };
-
-            settings.Consumed = true;
 
             PatreonCrawledUrl crawledUrl = new PatreonCrawledUrl
             {
@@ -49,8 +46,7 @@ namespace PatreonDownloader.Tests
 
             PatreonCrawledUrlProcessor crawledUrlProcessor = new PatreonCrawledUrlProcessor(new PatreonRemoteFilenameRetriever());
             await crawledUrlProcessor.BeforeStart(settings);
-            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl,
-                Path.Combine(settings.DownloadDirectory, "UnitTesting"));
+            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
             Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_https___www.patreon.com_media-u_Z0FBQUFBQmhX", crawledUrl.DownloadPath);
         }
@@ -61,21 +57,18 @@ namespace PatreonDownloader.Tests
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 CookieContainer = new CookieContainer(),
-                DownloadDirectory = "c:\\downloads",
+                DownloadDirectory = "c:\\downloads\\UnitTesting",
                 MaxDownloadRetries = 10,
-                OverwriteFiles = false,
-                RemoteFileSizeNotAvailableAction = RemoteFileSizeNotAvailableAction.KeepExisting,
+                FileExistsAction = FileExistsAction.KeepExisting,
                 RetryMultiplier = 1,
                 SaveAvatarAndCover = true,
                 SaveDescriptions = true,
                 SaveEmbeds = true,
                 SaveJson = true,
-                UseSubDirectories = true,
+                IsUseSubDirectories = true,
                 SubDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%",
                 MaxFilenameLength = 50
             };
-
-            settings.Consumed = true;
 
             PatreonCrawledUrl crawledUrl = new PatreonCrawledUrl
             {
@@ -89,8 +82,7 @@ namespace PatreonDownloader.Tests
 
             PatreonCrawledUrlProcessor crawledUrlProcessor = new PatreonCrawledUrlProcessor(new PatreonRemoteFilenameRetriever());
             await crawledUrlProcessor.BeforeStart(settings);
-            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl,
-                Path.Combine(settings.DownloadDirectory, "UnitTesting"));
+            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
             Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\post_E0OarAVlc0iipzgUC7JdvBCf9fgSmbwk3xRDjRGByTM24.png", crawledUrl.DownloadPath);
         }
@@ -101,21 +93,18 @@ namespace PatreonDownloader.Tests
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 CookieContainer = new CookieContainer(),
-                DownloadDirectory = "c:\\downloads",
+                DownloadDirectory = "c:\\downloads\\UnitTesting",
                 MaxDownloadRetries = 10,
-                OverwriteFiles = false,
-                RemoteFileSizeNotAvailableAction = RemoteFileSizeNotAvailableAction.KeepExisting,
+                FileExistsAction = FileExistsAction.KeepExisting,
                 RetryMultiplier = 1,
                 SaveAvatarAndCover = true,
                 SaveDescriptions = true,
                 SaveEmbeds = true,
                 SaveJson = true,
-                UseSubDirectories = true,
+                IsUseSubDirectories = true,
                 SubDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%",
                 MaxFilenameLength = 50
             };
-
-            settings.Consumed = true;
 
             PatreonCrawledUrlProcessor crawledUrlProcessor = new PatreonCrawledUrlProcessor(new PatreonRemoteFilenameRetriever());
             await crawledUrlProcessor.BeforeStart(settings);
@@ -130,8 +119,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl,
-                Path.Combine(settings.DownloadDirectory, "UnitTesting"));
+            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
             Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1.png", crawledUrl.DownloadPath);
 
@@ -145,8 +133,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl,
-                Path.Combine(settings.DownloadDirectory, "UnitTesting"));
+            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
             Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1_110deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
 
@@ -160,8 +147,7 @@ namespace PatreonDownloader.Tests
                 UrlType = PatreonCrawledUrlType.PostMedia
             };
 
-            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl,
-                Path.Combine(settings.DownloadDirectory, "UnitTesting"));
+            await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
             Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1_210deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
         }

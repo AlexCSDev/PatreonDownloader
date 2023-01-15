@@ -31,14 +31,14 @@ namespace PatreonDownloader.Implementation
             return base.BeforeStart(settings);
         }
 
-        public override async Task DownloadFile(string url, string path, string refererUrl = null, bool overwrite = false)
+        public override async Task DownloadFile(string url, string path, string refererUrl = null)
         {
             if (string.IsNullOrWhiteSpace(refererUrl))
                 refererUrl = "https://www.patreon.com";
 
             try
             {
-                await base.DownloadFile(url, path, refererUrl, overwrite);
+                await base.DownloadFile(url, path, refererUrl);
             }
             catch (DownloadException ex)
             {
@@ -49,7 +49,7 @@ namespace PatreonDownloader.Implementation
                         if (! await SolveCaptchaAndUpdateCookies(url))
                             throw;
 
-                        await this.DownloadFile(url, path, refererUrl, overwrite);
+                        await this.DownloadFile(url, path, refererUrl);
                     }
                 }
                 else

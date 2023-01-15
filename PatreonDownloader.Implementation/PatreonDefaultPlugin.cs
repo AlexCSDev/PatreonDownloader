@@ -25,7 +25,6 @@ namespace PatreonDownloader.Engine
         private IWebDownloader _webDownloader;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
-        private bool _overwriteFiles;
 
         public string Name => "Default plugin";
 
@@ -45,19 +44,18 @@ namespace PatreonDownloader.Engine
             return await Task.FromResult(true);
         }
 
-        public async Task Download(ICrawledUrl crawledUrl, string downloadDirectory)
+        public async Task Download(ICrawledUrl crawledUrl)
         {
             if(crawledUrl == null)
                 throw new ArgumentNullException(nameof(crawledUrl));
-            if(string.IsNullOrEmpty(downloadDirectory))
-                throw new ArgumentException("Argument cannot be null or empty", nameof(downloadDirectory));
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, crawledUrl.DownloadPath, null, _overwriteFiles); //referer is set in PatreonWebDownloader
+            await _webDownloader.DownloadFile(crawledUrl.Url, crawledUrl.DownloadPath, null); //referer is set in PatreonWebDownloader
         }
 
-        public async Task BeforeStart(bool overwriteFiles)
+        public Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
-            _overwriteFiles = overwriteFiles;
+            //Do nothing
+            return Task.CompletedTask;
         }
 
         public async Task<List<string>> ExtractSupportedUrls(string htmlContents)

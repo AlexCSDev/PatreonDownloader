@@ -17,8 +17,9 @@ namespace PatreonDownloader.Implementation
         /// </summary>
         /// <param name="crawledUrl">Crawled url with published date, post title and post id</param>
         /// <param name="pattern">Pattern for directory name</param>
+        /// <param name="lengthLimit">Limit the directory name length to this amount of characters</param>
         /// <returns></returns>
-        public static string CreateNameFromPattern(PatreonCrawledUrl crawledUrl, string pattern)
+        public static string CreateNameFromPattern(PatreonCrawledUrl crawledUrl, string pattern, int lengthLimit)
         {
             string postTitle = crawledUrl.Title?.Trim() ?? "No Title";
             while (postTitle.Length > 1 && postTitle[^1] == '.')
@@ -28,6 +29,9 @@ namespace PatreonDownloader.Implementation
                 .Replace("%publishedat%", crawledUrl.PublishedAt.ToString("yyyy-MM-dd"))
                 .Replace("%posttitle%", postTitle)
                 .Replace("%postid%", crawledUrl.PostId);
+
+            if (retString.Length > lengthLimit)
+                retString = retString.Substring(0, lengthLimit);
 
             return PathSanitizer.SanitizePath(retString);
         }

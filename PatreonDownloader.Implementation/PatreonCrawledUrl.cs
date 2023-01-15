@@ -7,6 +7,10 @@ namespace PatreonDownloader.Implementation
     public class PatreonCrawledUrl : CrawledUrl
     {
         public string PostId { get; set; }
+        /// <summary>
+        /// Internal patreon file id, only filled for media and attachments
+        /// </summary>
+        public string FileId { get; set; }
         public string Title { get; set; }
         public DateTime PublishedAt { get; set; }
         public PatreonCrawledUrlType UrlType { get; set; }
@@ -41,7 +45,8 @@ namespace PatreonDownloader.Implementation
         {
             return new PatreonCrawledUrl
             {
-                PostId = PostId, 
+                PostId = PostId,
+                FileId = FileId,
                 Url = Url, 
                 Filename = Filename, 
                 UrlType = UrlType, 

@@ -27,11 +27,22 @@ namespace PatreonDownloader.App.Models
         [Option("log-save", Required = false, HelpText = "Create log files in the \"logs\" directory.", Default = false)]
         public bool SaveLogs { get; set; }
 
-        [Option("overwrite-files", Required = false, HelpText = "Overwrite already existing files (recommended if creator might have files multiple files with the same filename or makes changes to already existing posts)", Default = false)]
-        public bool OverwriteFiles { get; set; }
+        [Option("file-exists-action", Required = false, HelpText = 
+            "What to do with files already existing on the disk.\r\nPossible options:\r\n" +
+            "BackupIfDifferent: Check remote file size if enabled and available. If it's different, disabled or not available then download remote file and compare it with existing file, create a backup copy of old file if they are different.\r\n" +
+            "ReplaceIfDifferent: Same as BackupIfDifferent, but the backup copy of the file will not be created.\r\n" +
+            "AlwaysReplace: Always replace existing file. Warning: will result in increased bandwidth usage.\r\n" +
+            "KeepExisting: Always keep existing file. The most bandwidth-friendly option.",
+            Default = FileExistsAction.BackupIfDifferent)]
+        public FileExistsAction FileExistsAction { get; set; }
 
-        [Option("no-remote-size-action", Required = false, HelpText = "What to do with existing files when it is not possible to retrieve file size from the server. Possible options: ReplaceExisting, KeepExisting. --overwrite-files has priority over KeepExisting.", Default = RemoteFileSizeNotAvailableAction.KeepExisting)]
-        public RemoteFileSizeNotAvailableAction NoRemoteSizeAction { get; set; }
+        [Option("use-legacy-file-naming", Required = false, HelpText = "Use legacy filenaming pattern (used before version 21). Not compatible with --file-exists-action BackupIfDifferent, ReplaceIfDifferent. Warning: this is compatibility option and might be removed in the future, you should not use it unless you absolutely need it.", Default = false)]
+        public bool IsUseLegacyFilenaming { get; set; }
+
+        [Option("disable-remote-file-size-check", Required = false, 
+            HelpText = "Do not ask the server for the file size (if it's available) and do not use it in various pre-download checks if the file already exists on the disk. Warning: will result in increased bandwidth usage if used with --file-exists-action BackupIfDifferent, ReplaceIfDifferent, AlwaysReplace.", 
+            Default = false)]
+        public bool IsDisableRemoteFileSizeCheck { get; set; }
 
         [Option("remote-browser-address", Required = false, HelpText = "Advanced users only. Address of the browser with remote debugging enabled. Refer to documentation for more details.")]
         public string RemoteBrowserAddress { get; set; }
@@ -41,10 +52,16 @@ namespace PatreonDownloader.App.Models
 
         [Option("sub-directory-pattern", Required = false, HelpText = "Pattern which will be used to create a name for the sub directories if --use-sub-directories is used. Supported parameters: %PostId%, %PublishedAt%, %PostTitle%.", Default = "[%PostId%] %PublishedAt% %PostTitle%")]
         public string SubDirectoryPattern { get; set; }
+
+        [Option("max-sub-directory-name-length", Required = false, HelpText = "Limits the length of the name for the subdirectories created when --use-sub-directories is used.", Default = 100)]
+        public int MaxSubdirectoryNameLength { get; set; }
+
         [Option("max-filename-length", Required = false, HelpText = "All names of downloaded files will be truncated so their length won't be more than specified value (excluding file extension)", Default = 100)]
         public int MaxFilenameLength { get; set; }
+
         [Option("filenames-fallback-to-content-type", Required = false, HelpText = "Fallback to using filename generated from url hash if the server returns file content type (extension) and all other methods have failed. Use with caution, this might result in unwanted files being created or the same files being downloaded on every run under different names.", Default = false)]
         public bool FilenamesFallbackToContentType { get; set; }
+
         [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
         public string ProxyServerAddress { get; set; }
     }

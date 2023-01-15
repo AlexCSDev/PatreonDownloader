@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Patreon Downloader")]
-[assembly: AssemblyCopyright("Copyright 2019-2022 Aleksey Tsutsey & Contributors")]
+[assembly: AssemblyCopyright("Copyright 2019-2023 Aleksey Tsutsey & Contributors")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("0.10.6.0")]
-[assembly: AssemblyFileVersion("0.10.6.0")]
+[assembly: AssemblyVersion("21.0.0.0")]
+[assembly: AssemblyFileVersion("21.0.0.0")]
