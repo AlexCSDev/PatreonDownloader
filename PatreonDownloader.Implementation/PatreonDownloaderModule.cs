@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Ninject;
+﻿using Ninject;
 using Ninject.Modules;
 using PatreonDownloader.Engine;
 using PatreonDownloader.Implementation.Interfaces;
 using PatreonDownloader.Implementation.Models;
-using PatreonDownloader.PuppeteerEngine;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.Common.Interfaces.Plugins;
 using UniversalDownloaderPlatform.DefaultImplementations;
 using UniversalDownloaderPlatform.DefaultImplementations.Interfaces;
-using UniversalDownloaderPlatform.DefaultImplementations.Models;
+using UniversalDownloaderPlatform.PuppeteerEngine;
 
 namespace PatreonDownloader.Implementation
 {
@@ -20,6 +16,8 @@ namespace PatreonDownloader.Implementation
     {
         public override void Load()
         {
+            Kernel.Load(new PuppeteerEngineModule());
+
             Bind<IRemoteFileSizeChecker>().To<RemoteFileSizeChecker>().InSingletonScope();
             Bind<IWebDownloader>().To<PatreonWebDownloader>().InSingletonScope();
             Bind<IRemoteFilenameRetriever>().To<PatreonRemoteFilenameRetriever>().InSingletonScope();

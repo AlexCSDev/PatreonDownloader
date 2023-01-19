@@ -5,10 +5,11 @@ using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Helpers;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.DefaultImplementations.Models;
+using UniversalDownloaderPlatform.PuppeteerEngine.Interfaces;
 
 namespace PatreonDownloader.Implementation.Models
 {
-    public record PatreonDownloaderSettings : UniversalDownloaderPlatformSettings
+    public record PatreonDownloaderSettings : UniversalDownloaderPlatformSettings, IPuppeteerSettings
     {
         public bool SaveDescriptions { get; init; }
 
@@ -48,6 +49,12 @@ namespace PatreonDownloader.Implementation.Models
         /// </summary>
         public bool IsUseLegacyFilenaming { get; init; }
 
+        public string LoginPageAddress { get { return "https://www.patreon.com/login"; } }
+        public string LoginCheckAddress { get { return "https://www.patreon.com/api/current_user"; } }
+        public string CaptchaCookieRetrievalAddress { get { return "https://www.patreon.com/home"; } }
+        public Uri RemoteBrowserAddress { get; init; }
+        public bool IsHeadlessBrowser { get; init; }
+
         public PatreonDownloaderSettings()
         {
             SaveDescriptions = true;
@@ -60,6 +67,7 @@ namespace PatreonDownloader.Implementation.Models
             MaxFilenameLength = 100;
             MaxSubdirectoryNameLength = 100;
             IsUseLegacyFilenaming = false;
+            IsHeadlessBrowser = true;
         }
     }
 }
