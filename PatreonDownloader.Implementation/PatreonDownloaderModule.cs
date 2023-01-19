@@ -26,7 +26,7 @@ namespace PatreonDownloader.Implementation
             Bind<IPageCrawler>().To<PatreonPageCrawler>().InSingletonScope();
             Bind<IPlugin>().To<PatreonDefaultPlugin>().WhenInjectedInto<IPluginManager>();
             Bind<IUniversalDownloaderPlatformSettings>().To<PatreonDownloaderSettings>();
-            Bind<ICookieValidator>().To<PatreonCookieValidator>().InSingletonScope();
+            Rebind<ICookieValidator>().To<PatreonCookieValidator>().InSingletonScope();
         }
     }
 }
