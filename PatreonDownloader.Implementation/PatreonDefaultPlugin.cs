@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
@@ -31,9 +32,16 @@ namespace PatreonDownloader.Engine
         public string Author => "Aleksey Tsutsey";
         public string ContactInformation => "https://github.com/Megalan/PatreonDownloader";
 
+        private IUniversalDownloaderPlatformSettings _settings;
+
         public PatreonDefaultPlugin(IWebDownloader webDownloader)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
+        }
+
+        public void OnLoad(IDependencyResolver dependencyResolver)
+        {
+            //do nothing
         }
 
         public async Task<bool> IsSupportedUrl(string url)
@@ -49,12 +57,12 @@ namespace PatreonDownloader.Engine
             if(crawledUrl == null)
                 throw new ArgumentNullException(nameof(crawledUrl));
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, crawledUrl.DownloadPath, null); //referer is set in PatreonWebDownloader
+            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(_settings.DownloadDirectory, crawledUrl.DownloadPath), null); //referer is set in PatreonWebDownloader
         }
 
         public Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
-            //Do nothing
+            _settings = settings;
             return Task.CompletedTask;
         }
 
@@ -117,6 +125,24 @@ namespace PatreonDownloader.Engine
             }
 
             return true;
+        }
+
+        public Task<bool> ProcessCrawledUrl(ICrawledUrl crawledUrl)
+        {
+            if (crawledUrl.Url.IndexOf("dropbox.com/", StringComparison.Ordinal) != -1)
+            {
+                if (!crawledUrl.Url.EndsWith("?dl=1"))
+                {
+                    if (crawledUrl.Url.EndsWith("?dl=0"))
+                        crawledUrl.Url = crawledUrl.Url.Replace("?dl=0", "?dl=1");
+                    else
+                        crawledUrl.Url = $"{crawledUrl.Url}?dl=1";
+                }
+
+                _logger.Trace($"Dropbox url found: {crawledUrl.Url}");
+            }
+
+            return Task.FromResult(false); //we still want full processing for all crawled urls passed here 
         }
     }
 }

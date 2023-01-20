@@ -18,7 +18,6 @@ namespace PatreonDownloader.App
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
         private static UniversalDownloader _universalDownloader;
-        private static PuppeteerEngine.PuppeteerCookieRetriever _cookieRetriever;
         private static IConfiguration _configuration;
         private static int _filesDownloaded;
 
@@ -103,20 +102,6 @@ namespace PatreonDownloader.App
                     _logger.Fatal($"Error during patreon downloader disposal! Exception: {ex}");
                 }
             }
-
-            if (_cookieRetriever != null)
-            {
-                _logger.Debug("Disposing cookie retriever...");
-                try
-                {
-                    _cookieRetriever.Dispose();
-                    _cookieRetriever = null;
-                }
-                catch (Exception ex)
-                {
-                    _logger.Fatal($"Error during cookie retriever disposal! Exception: {ex}");
-                }
-            }
         }
 
         private static async Task RunPatreonDownloader(CommandLineOptions commandLineOptions)
@@ -160,34 +145,11 @@ namespace PatreonDownloader.App
                 throw new Exception($"Invalid proxy server address: {commandLineOptions.ProxyServerAddress}");
             }
 
-            _logger.Info("Retrieving cookies...");
-            if (!string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress))
-                _cookieRetriever =
-                    new PuppeteerEngine.PuppeteerCookieRetriever(new Uri(commandLineOptions.RemoteBrowserAddress));
-            else
-                _cookieRetriever = new PuppeteerEngine.PuppeteerCookieRetriever(true, commandLineOptions.ProxyServerAddress);
-            CookieContainer cookieContainer = await _cookieRetriever.RetrieveCookies();
-            if (cookieContainer == null)
-            {
-                throw new Exception("Unable to retrieve cookies");
-            }
-
-            string userAgent = await _cookieRetriever.GetUserAgent();
-            if (string.IsNullOrWhiteSpace(userAgent))
-            {
-                throw new Exception("Unable to retrieve user agent");
-            }
-
-            _cookieRetriever.Dispose();
-            _cookieRetriever = null;
-
-            await Task.Delay(1000); //wait for PuppeteerCookieRetriever to close the browser
-
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
-                UserAgent = userAgent,
-                CookieContainer = cookieContainer,
+                UserAgent = null,
+                CookieContainer = null,
                 SaveAvatarAndCover = commandLineOptions.SaveAvatarAndCover,
                 SaveDescriptions = commandLineOptions.SaveDescriptions,
                 SaveEmbeds = commandLineOptions.SaveEmbeds,

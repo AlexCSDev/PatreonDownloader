@@ -252,7 +252,7 @@ namespace PatreonDownloader.Implementation
                         subEntry.Url = attachmentData.Attributes.Url;
                         subEntry.Filename = attachmentData.Attributes.Name;
                         subEntry.UrlType = PatreonCrawledUrlType.PostAttachment;
-                        subEntry.PostId = attachmentData.Id;
+                        subEntry.FileId = attachmentData.Id;
                         crawledUrls.Add(subEntry);
                         _logger.Info($"[{jsonEntry.Id} A-{attachment.Id}] New attachment entry: {subEntry.Url}");
                         OnNewCrawledUrl(new NewCrawledUrlEventArgs((CrawledUrl)subEntry.Clone()));

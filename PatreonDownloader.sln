@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29102.190
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.App", "PatreonDownloader.App\PatreonDownloader.App.csproj", "{DA8399F8-9CC8-46DB-877E-7B85F3AFCF98}"
 EndProject
@@ -15,13 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.Engine", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.Engine\UniversalDownloaderPlatform.Engine.csproj", "{A887D576-2DDB-4DDD-93FC-3C32544C0050}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Common", "PatreonDownloader.Common\PatreonDownloader.Common.csproj", "{13A08FFF-08CF-4147-ACED-43708274AA97}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.PuppeteerEngine", "PatreonDownloader.PuppeteerEngine\PatreonDownloader.PuppeteerEngine.csproj", "{502F2878-6497-493E-9E7E-AFB64508F00A}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C675CCB3-6202-4A24-BDB4-635F5B3783BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{32589019-22B4-49E3-9710-86407EA1F911}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.PuppeteerEngine", "..\XMADownloader\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.PuppeteerEngine\UniversalDownloaderPlatform.PuppeteerEngine.csproj", "{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,18 +47,14 @@ Global
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050}.Release|Any CPU.Build.0 = Release|Any CPU
-		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{13A08FFF-08CF-4147-ACED-43708274AA97}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{13A08FFF-08CF-4147-ACED-43708274AA97}.Release|Any CPU.Build.0 = Release|Any CPU
-		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{502F2878-6497-493E-9E7E-AFB64508F00A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{502F2878-6497-493E-9E7E-AFB64508F00A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{32589019-22B4-49E3-9710-86407EA1F911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{32589019-22B4-49E3-9710-86407EA1F911}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{32589019-22B4-49E3-9710-86407EA1F911}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32589019-22B4-49E3-9710-86407EA1F911}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +64,7 @@ Global
 		{4D6CFA58-7C03-4451-AE58-7F1C148787A3} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 		{A887D576-2DDB-4DDD-93FC-3C32544C0050} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 		{32589019-22B4-49E3-9710-86407EA1F911} = {C675CCB3-6202-4A24-BDB4-635F5B3783BE}
+		{2EF4E7BA-9E1C-43D7-B483-AD5D90033631} = {B84B7F77-FEAC-4404-B299-70798AF91610}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D69B5C66-A2F2-44AE-B347-C072E8538DF6}

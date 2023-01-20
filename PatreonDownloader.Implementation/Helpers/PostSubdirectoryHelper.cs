@@ -31,7 +31,7 @@ namespace PatreonDownloader.Implementation
                 .Replace("%postid%", crawledUrl.PostId);
 
             if (retString.Length > lengthLimit)
-                retString = retString.Substring(0, lengthLimit);
+                retString = $"{retString.Substring(0, lengthLimit - 1).Trim()}~";
 
             return PathSanitizer.SanitizePath(retString);
         }
