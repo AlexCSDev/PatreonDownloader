@@ -176,9 +176,9 @@ namespace PatreonDownloader.Implementation
             if (_patreonDownloaderSettings.IsUseSubDirectories && 
                 crawledUrl.UrlType != PatreonCrawledUrlType.AvatarFile &&
                 crawledUrl.UrlType != PatreonCrawledUrlType.CoverFile)
-                downloadDirectory = Path.Combine(downloadDirectory, PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, _patreonDownloaderSettings.SubDirectoryPattern, _patreonDownloaderSettings.MaxSubdirectoryNameLength));
+                downloadDirectory = PostSubdirectoryHelper.CreateNameFromPattern(crawledUrl, _patreonDownloaderSettings.SubDirectoryPattern, _patreonDownloaderSettings.MaxSubdirectoryNameLength);
 
-            crawledUrl.DownloadPath = !crawledUrl.IsProcessedByPlugin ? Path.Combine(downloadDirectory, filename) : downloadDirectory + Path.DirectorySeparatorChar;
+            crawledUrl.DownloadPath = !crawledUrl.IsProcessedByPlugin ? Path.Combine(downloadDirectory, filename) : downloadDirectory;
 
             return true;
         }

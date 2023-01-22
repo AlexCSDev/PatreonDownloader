@@ -57,6 +57,9 @@ namespace PatreonDownloader.Engine
             if(crawledUrl == null)
                 throw new ArgumentNullException(nameof(crawledUrl));
 
+            if (string.IsNullOrWhiteSpace(crawledUrl.DownloadPath))
+                throw new DownloadException($"Download path is not filled for {crawledUrl.Url}");
+
             await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(_settings.DownloadDirectory, crawledUrl.DownloadPath), null); //referer is set in PatreonWebDownloader
         }
 
