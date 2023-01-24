@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\XMADownloader\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.PuppeteerEngine\UniversalDownloaderPlatform.PuppeteerEngine.csproj" />
+    <ProjectReference Include="..\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.PuppeteerEngine\UniversalDownloaderPlatform.PuppeteerEngine.csproj" />
     <ProjectReference Include="..\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.DefaultImplementations\UniversalDownloaderPlatform.DefaultImplementations.csproj" />
   </ItemGroup>
 
