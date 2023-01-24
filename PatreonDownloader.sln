@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C675CCB3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PatreonDownloader.Tests", "PatreonDownloader.Tests\PatreonDownloader.Tests.csproj", "{32589019-22B4-49E3-9710-86407EA1F911}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.PuppeteerEngine", "..\XMADownloader\submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.PuppeteerEngine\UniversalDownloaderPlatform.PuppeteerEngine.csproj", "{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniversalDownloaderPlatform.PuppeteerEngine", "submodules\UniversalDownloaderPlatform\UniversalDownloaderPlatform.PuppeteerEngine\UniversalDownloaderPlatform.PuppeteerEngine.csproj", "{2EF4E7BA-9E1C-43D7-B483-AD5D90033631}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
