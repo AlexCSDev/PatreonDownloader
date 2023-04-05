@@ -1,3 +1,4 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J6K3Q7G)
 
 # PatreonDownloader
 This application is designed for downloading content posted by creators on patreon.com. 
