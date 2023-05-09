@@ -146,14 +146,19 @@ namespace PatreonDownloader.Implementation
                 }
 
                 string key = $"{crawledUrl.PostId}_{filename.ToLowerInvariant()}";
+                int fileCount = 1;
 
-                _fileCountDict.AddOrUpdate(key, 0, (key, oldValue) => oldValue + 1);
+                _fileCountDict.AddOrUpdate(key, 1, (key, oldValue) =>
+                {
+                    fileCount = oldValue + 1;
+                    return oldValue + 1;
+                });
 
-                if (_fileCountDict[key] > 1)
+                if (fileCount > 1)
                 {
                     _logger.Warn($"Found more than a single file with the name {filename} in the same folder in post {crawledUrl.PostId}, sequential number will be appended to its name.");
 
-                    string appendStr = _fileCountDict[key].ToString();
+                    string appendStr = fileCount.ToString();
 
                     if (crawledUrl.UrlType != PatreonCrawledUrlType.ExternalUrl)
                     {
