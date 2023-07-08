@@ -1,6 +1,9 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/J3J6K3Q7G)
 
 # PatreonDownloader
+⚠ Current state of the project: critical fixes only ⚠
+Due to various circumstances I do not have ability to spend time on this project at present time. Therefore only critical fixes will be implemented. PRs and issues will be reviewed when the time allows it.
+
 This application is designed for downloading content posted by creators on patreon.com. 
 
 IMPORTANT: You need a valid patreon account to download both free and paid content. Paid content will only be downloaded if you have an active subscription to creator's page.
