@@ -35,7 +35,7 @@ namespace PatreonDownloader.Implementation
             {
                 string pageHtml = await _webDownloader.DownloadString(url);
 
-                Regex regex = new Regex("\"self\": \"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
+                Regex regex = new Regex("\"self\":\"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
                 Match match = regex.Match(pageHtml);
                 if (!match.Success)
                 {
