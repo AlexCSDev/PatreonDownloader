@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using NLog;
 using PatreonDownloader.Implementation.Enums;
@@ -23,8 +24,9 @@ namespace PatreonDownloader.Implementation
 
         private readonly IRemoteFilenameRetriever _remoteFilenameRetriever;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        private readonly SemaphoreSlim _duplicateNamesCheckSemaphore;
 
-        private ConcurrentDictionary<string, int> _fileCountDict; //file counter for duplicate check
+        private Dictionary<string, int> _fileCountDict; //file counter for duplicate check
         private PatreonDownloaderSettings _patreonDownloaderSettings;
 
         private static readonly Regex _fileIdRegex = new Regex(
@@ -42,12 +44,14 @@ namespace PatreonDownloader.Implementation
             _remoteFilenameRetriever = remoteFilenameRetriever ??
                                        throw new ArgumentNullException(nameof(remoteFilenameRetriever));
 
+            _duplicateNamesCheckSemaphore = new SemaphoreSlim(1, 1);
+
             _logger.Debug("KemonoCrawledUrlProcessor initialized");
         }
 
         public async Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
-            _fileCountDict = new ConcurrentDictionary<string, int>();
+            _fileCountDict = new Dictionary<string, int>();
             _patreonDownloaderSettings = (PatreonDownloaderSettings) settings;
             await _remoteFilenameRetriever.BeforeStart(settings);
         }
@@ -147,13 +151,30 @@ namespace PatreonDownloader.Implementation
 
                 string key = $"{crawledUrl.PostId}_{filename.ToLowerInvariant()}";
 
-                _fileCountDict.AddOrUpdate(key, 0, (key, oldValue) => oldValue + 1);
+                //Semaphore is required because of possible race condition between multiple threads
+                await _duplicateNamesCheckSemaphore.WaitAsync();
 
-                if (_fileCountDict[key] > 1)
+                int count = -1;
+                try
+                {
+                    if(_fileCountDict.ContainsKey(key))
+                        _fileCountDict[key]++;
+                    else
+                        _fileCountDict[key] = 0;
+
+
+                    count = _fileCountDict[key];
+                }
+                finally
+                {
+                    _duplicateNamesCheckSemaphore.Release();
+                }
+
+                if (count > 1)
                 {
                     _logger.Warn($"Found more than a single file with the name {filename} in the same folder in post {crawledUrl.PostId}, sequential number will be appended to its name.");
 
-                    string appendStr = _fileCountDict[key].ToString();
+                    string appendStr = count.ToString();
 
                     if (crawledUrl.UrlType != PatreonCrawledUrlType.ExternalUrl)
                     {
