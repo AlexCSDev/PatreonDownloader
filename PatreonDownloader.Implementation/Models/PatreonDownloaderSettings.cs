@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using UniversalDownloaderPlatform.Common.Enums;
-using UniversalDownloaderPlatform.Common.Helpers;
-using UniversalDownloaderPlatform.Common.Interfaces.Models;
 using UniversalDownloaderPlatform.DefaultImplementations.Models;
 using UniversalDownloaderPlatform.PuppeteerEngine.Interfaces;
 
@@ -54,6 +49,8 @@ namespace PatreonDownloader.Implementation.Models
         public string CaptchaCookieRetrievalAddress { get { return "https://www.patreon.com/home"; } }
         public Uri RemoteBrowserAddress { get; init; }
         public bool IsHeadlessBrowser { get; init; }
+        public DateTime? PublishedAfter { get; init; }
+        public DateTime? PublishedBefore { get; init; }
 
         public PatreonDownloaderSettings()
         {

@@ -8,7 +8,6 @@ using NLog;
 using PatreonDownloader.Implementation.Enums;
 using PatreonDownloader.Implementation.Models;
 using PatreonDownloader.Implementation.Models.JSONObjects.Posts;
-using UniversalDownloaderPlatform.Common.Enums;
 using UniversalDownloaderPlatform.Common.Events;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -25,7 +24,7 @@ namespace PatreonDownloader.Implementation
         private PatreonDownloaderSettings _patreonDownloaderSettings;
 
         public event EventHandler<PostCrawlEventArgs> PostCrawlStart;
-        public event EventHandler<PostCrawlEventArgs> PostCrawlEnd; 
+        public event EventHandler<PostCrawlEventArgs> PostCrawlEnd;
         public event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
         public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
 
@@ -138,6 +137,26 @@ namespace PatreonDownloader.Implementation
                     continue;
                 }
 
+                if (_patreonDownloaderSettings.PublishedAfter != null && jsonEntry.Attributes.PublishedAt < _patreonDownloaderSettings.PublishedAfter)
+                {
+                    string msg = $"   -Not crawling because published at {jsonEntry.Attributes.PublishedAt}";
+                    _logger.Info(msg);
+
+                    OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, false, msg));
+                    OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Info, msg, jsonEntry.Id));
+                    continue;
+                }
+
+                if (_patreonDownloaderSettings.PublishedBefore != null && jsonEntry.Attributes.PublishedAt > _patreonDownloaderSettings.PublishedBefore)
+                {
+                    string msg = $"   -Not crawling because published at {jsonEntry.Attributes.PublishedAt}";
+                    _logger.Info(msg);
+
+                    OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, false, msg));
+                    OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Info, msg, jsonEntry.Id));
+                    continue;
+                }
+
                 PatreonCrawledUrl entry = new PatreonCrawledUrl
                 {
                     PostId = jsonEntry.Id,
@@ -146,13 +165,13 @@ namespace PatreonDownloader.Implementation
                 };
 
                 string additionalFilesSaveDirectory = _patreonDownloaderSettings.DownloadDirectory;
-                if (_patreonDownloaderSettings.IsUseSubDirectories && 
-                    (_patreonDownloaderSettings.SaveDescriptions || 
+                if (_patreonDownloaderSettings.IsUseSubDirectories &&
+                    (_patreonDownloaderSettings.SaveDescriptions ||
                      (jsonEntry.Attributes.Embed != null && _patreonDownloaderSettings.SaveEmbeds)
                      )
                     )
                 {
-                    additionalFilesSaveDirectory = Path.Combine(_patreonDownloaderSettings.DownloadDirectory, 
+                    additionalFilesSaveDirectory = Path.Combine(_patreonDownloaderSettings.DownloadDirectory,
                         PostSubdirectoryHelper.CreateNameFromPattern(entry, _patreonDownloaderSettings.SubDirectoryPattern, _patreonDownloaderSettings.MaxSubdirectoryNameLength));
                     if (!Directory.Exists(additionalFilesSaveDirectory))
                         Directory.CreateDirectory(additionalFilesSaveDirectory);
@@ -353,10 +372,10 @@ namespace PatreonDownloader.Implementation
                 _logger.Debug($"[{jsonEntry.Id}] Verification: Started");
                 if (jsonEntry.Type != "attachment" && jsonEntry.Type != "media")
                 {
-                    if (jsonEntry.Type != "user" && 
-                        jsonEntry.Type != "campaign" && 
-                        jsonEntry.Type != "access-rule" && 
-                        jsonEntry.Type != "reward" && 
+                    if (jsonEntry.Type != "user" &&
+                        jsonEntry.Type != "campaign" &&
+                        jsonEntry.Type != "access-rule" &&
+                        jsonEntry.Type != "reward" &&
                         jsonEntry.Type != "poll_choice" &&
                         jsonEntry.Type != "poll_response")
                     {
