@@ -69,7 +69,7 @@ namespace PatreonDownloader.Engine
             return Task.CompletedTask;
         }
 
-        public async Task<List<string>> ExtractSupportedUrls(string htmlContents)
+        public Task<List<string>> ExtractSupportedUrls(string htmlContents)
         {
             List<string> retList = new List<string>(); 
             HtmlDocument doc = new HtmlDocument();
@@ -115,7 +115,7 @@ namespace PatreonDownloader.Engine
                 }
             }
 
-            return retList;
+            return Task.FromResult(retList);
         }
 
         private bool IsAllowedUrl(string url)
