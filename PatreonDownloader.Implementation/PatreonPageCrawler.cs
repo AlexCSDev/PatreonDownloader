@@ -102,7 +102,7 @@ namespace PatreonDownloader.Implementation
         private async Task<ParsingResult> ParsePage(string json)
         {
             List<PatreonCrawledUrl> crawledUrls = new List<PatreonCrawledUrl>();
-            List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to
+            List<string> skippedIncludesList = new List<string>(); //List for all included data which current account doesn't have access to or is filtered out
 
             Root jsonRoot = JsonConvert.DeserializeObject<Root>(json);
 
@@ -125,12 +125,7 @@ namespace PatreonDownloader.Implementation
                 {
                     _logger.Warn($"[{jsonEntry.Id}] Current user cannot view this post");
 
-                    string[] skippedAttachments = jsonEntry.Relationships.AttachmentsMedia?.Data.Select(x => x.Id).ToArray() ?? new string[0];
-                    string[] skippedMedia = jsonEntry.Relationships.Images?.Data.Select(x => x.Id).ToArray() ?? new string[0];
-                    _logger.Debug($"[{jsonEntry.Id}] Adding {skippedAttachments.Length} attachments and {skippedMedia.Length} media items to skipped list");
-
-                    skippedIncludesList.AddRange(skippedAttachments);
-                    skippedIncludesList.AddRange(skippedMedia);
+                    AddSkippedIncludesFromPost(jsonEntry, skippedIncludesList);
 
                     OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, false, "Current user cannot view this post"));
                     OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Warning, "Current user cannot view this post", jsonEntry.Id));
@@ -142,6 +137,8 @@ namespace PatreonDownloader.Implementation
                     string msg = $"   -Not crawling because published at {jsonEntry.Attributes.PublishedAt}";
                     _logger.Info(msg);
 
+                    AddSkippedIncludesFromPost(jsonEntry, skippedIncludesList);
+
                     OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, false, msg));
                     OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Info, msg, jsonEntry.Id));
                     continue;
@@ -151,6 +148,8 @@ namespace PatreonDownloader.Implementation
                 {
                     string msg = $"   -Not crawling because published at {jsonEntry.Attributes.PublishedAt}";
                     _logger.Info(msg);
+
+                    AddSkippedIncludesFromPost(jsonEntry, skippedIncludesList);
 
                     OnPostCrawlEnd(new PostCrawlEventArgs(jsonEntry.Id, false, msg));
                     OnCrawlerMessage(new CrawlerMessageEventArgs(CrawlerMessageType.Info, msg, jsonEntry.Id));
@@ -417,6 +416,16 @@ namespace PatreonDownloader.Implementation
             }
 
             return new ParsingResult {CrawledUrls = crawledUrls, NextPage = jsonRoot.Links?.Next};
+        }
+
+        private void AddSkippedIncludesFromPost(RootData jsonEntry, List<string> skippedIncludesList)
+        {
+            string[] skippedAttachments = jsonEntry.Relationships.AttachmentsMedia?.Data.Select(x => x.Id).ToArray() ?? Array.Empty<string>();
+            string[] skippedMedia = jsonEntry.Relationships.Images?.Data.Select(x => x.Id).ToArray() ?? Array.Empty<string>();
+            _logger.Debug($"[{jsonEntry.Id}] Adding {skippedAttachments.Length} attachments and {skippedMedia.Length} media items to skipped list");
+
+            skippedIncludesList.AddRange(skippedAttachments);
+            skippedIncludesList.AddRange(skippedMedia);
         }
 
         private void OnPostCrawlStart(PostCrawlEventArgs e)
