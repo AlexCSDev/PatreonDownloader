@@ -50,7 +50,7 @@ namespace PatreonDownloader.Implementation.Models
         public bool IsUseLegacyFilenaming { get; init; }
 
         public string LoginPageAddress { get { return "https://www.patreon.com/login"; } }
-        public string LoginCheckAddress { get { return "https://www.patreon.com/api/badges?json-api-version=1.0&include=[]"; } }
+        public string LoginCheckAddress { get { return "https://www.patreon.com/api/badges?json-api-version=1.0&json-api-use-default-includes=false&include=[]"; } }
         public string CaptchaCookieRetrievalAddress { get { return "https://www.patreon.com/home"; } }
         public Uri RemoteBrowserAddress { get; init; }
         public bool IsHeadlessBrowser { get; init; }
