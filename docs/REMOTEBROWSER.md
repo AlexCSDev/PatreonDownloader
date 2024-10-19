@@ -3,7 +3,7 @@
 
 PatreonDownloader has support for using remote browser for situations when using local browser is not possible. (gui-less servers, etc) 
 
-In order to use this feature remote machine should be running compatible version of chromium browser. Required chromium version can be determined by running PatreonDownloader locally and checking .local-chromium subfolder.
+In order to use this feature remote machine should be running compatible version of chromium browser. Required chromium version can be determined by running PatreonDownloader locally and checking `Chrome` subfolder.
 
 Please note that login functionality is disabled while running remote browser mode. Before using remote browser with PatreonDownloader you will need to manually login into your patreon account.
 
