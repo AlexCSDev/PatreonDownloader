@@ -41,9 +41,9 @@ The application will be published as self-contained application and will not nee
 1. Launch command line in **PatreonDownloader.App** folder
 2. Run the following command to build self-contained release build targeting .NET 8.0:
 
-   Windows x64: **dotnet publish -c Release -r win-x64 --self-contained -f net8.0 -o bin\publish\net6.0-win-x64-release**
+   Windows x64: **dotnet publish -c Release -r win-x64 --self-contained -f net8.0 -o bin\publish\net8.0-win-x64-release**
 
-   Linux x64: **dotnet publish -c Release -r linux-x64 --self-contained -f net8.0 -o bin/publish/net6.0-linux-x64-release**
+   Linux x64: **dotnet publish -c Release -r linux-x64 --self-contained -f net8.0 -o bin/publish/net8.0-linux-x64-release**
 
 [Refer to official documentation to learn more about "dotnet publish" command](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish?tabs=netcore31)
 
