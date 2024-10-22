@@ -34,12 +34,6 @@ namespace PatreonDownloader.Implementation
                 throw new CookieValidationException("session_id cookie not found");
             if (cookies["patreon_device_id"] == null)
                 throw new CookieValidationException("patreon_device_id cookie not found");
-            if (cookies["datadome"] == null)
-            {
-                //Some users reported that they don't have datadome cookie and crawling still works fine, so let's ignore that for now.
-                _logger.Warn("Datadome cookie was not found. Usually this is not an issue, but if you are experiencing any issues please make sure to report it via GitHub issues page.");
-                //throw new CookieValidationException("datadome cookie not found");
-            }
 
             string apiResponse = await _webDownloader.DownloadString("https://www.patreon.com/api/current_user");
 
