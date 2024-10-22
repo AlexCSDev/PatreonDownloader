@@ -17,6 +17,8 @@ namespace PatreonDownloader.Implementation.Models
 
         public bool SaveJson { get; init; }
 
+        public bool SaveTags { get; init; }
+
         public bool SaveAvatarAndCover { get; init; }
 
         /// <summary>
@@ -60,6 +62,7 @@ namespace PatreonDownloader.Implementation.Models
             SaveDescriptions = true;
             SaveEmbeds = true;
             SaveJson = true;
+            SaveTags = true;
             SaveAvatarAndCover = true;
             IsUseSubDirectories = false;
             SubDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%";

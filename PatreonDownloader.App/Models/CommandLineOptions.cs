@@ -14,7 +14,8 @@ namespace PatreonDownloader.App.Models
         public bool SaveEmbeds { get; set; }
         [Option("json", Required = false, HelpText = "Save json data", Default = false)]
         public bool SaveJson { get; set; }
-
+        [Option("tags", Required = false, HelpText = "Save user defined tags", Default = false)]
+        public bool SaveTags { get; set; }
         [Option("campaign-images", Required = false, HelpText = "Download campaign's avatar and cover images", Default = false)]
         public bool SaveAvatarAndCover { get; set; }
 

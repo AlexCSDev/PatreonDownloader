@@ -112,6 +112,7 @@ namespace PatreonDownloader.Implementation.Models.JSONObjects.Posts
         public string Url { get; set; }
         [JsonProperty("was_posted_by_campaign_owner")]
         public bool WasPostedByCampaignOwner { get; set; }
+
     }
 
     public class AccessRules
@@ -185,8 +186,16 @@ namespace PatreonDownloader.Implementation.Models.JSONObjects.Posts
     public class UserDefinedTags
     {
         [JsonProperty("data")]
-        public List<object> Data { get; set; }
+        public List<UserDefinedTag> Data { get; set; }
     }
+    public class UserDefinedTag
+        {
+            [JsonProperty("id")]
+            public string Id { get; set; }
+
+            [JsonProperty("type")]
+            public string Type { get; set; }
+        }
 
     public class RootDataRelationships
     {
@@ -218,6 +227,8 @@ namespace PatreonDownloader.Implementation.Models.JSONObjects.Posts
         public RootDataRelationships Relationships { get; set; }
         [JsonProperty("type")]
         public string Type { get; set; }
+         [JsonProperty("user_defined_tags")]
+        public UserDefinedTags UserDefinedTags { get; set; }
     }
 
     public class ImageUrls
