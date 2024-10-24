@@ -176,15 +176,20 @@ namespace PatreonDownloader.Implementation
 
                     string appendStr = count.ToString();
 
+                    // External files captured by plugin may also Patreon files 
+                    MatchCollection matches = _fileIdRegex.Matches(crawledUrl.Url);
+
                     if (crawledUrl.UrlType != PatreonCrawledUrlType.ExternalUrl)
                     {
-                        MatchCollection matches = _fileIdRegex.Matches(crawledUrl.Url);
-
                         if (matches.Count == 0)
                             throw new DownloadException($"[{crawledUrl.PostId}] Unable to retrieve file id for {crawledUrl.Url}, contact developer!");
                         if (matches.Count > 1)
                             throw new DownloadException($"[{crawledUrl.PostId}] More than 1 media found in URL {crawledUrl.Url}");
+                    }
 
+                    // If we get file id successfully
+                    if (matches.Count == 1)
+                    {
                         appendStr = matches[0].Groups[4].Value;
                     }
 
