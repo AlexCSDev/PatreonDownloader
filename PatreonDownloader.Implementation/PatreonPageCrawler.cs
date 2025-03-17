@@ -22,10 +22,11 @@ namespace PatreonDownloader.Implementation
         private readonly IPluginManager _pluginManager;
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
+        private PatreonCrawledUrlFilter _patreonCrawledUrlFilter;
         private PatreonDownloaderSettings _patreonDownloaderSettings;
 
         public event EventHandler<PostCrawlEventArgs> PostCrawlStart;
-        public event EventHandler<PostCrawlEventArgs> PostCrawlEnd; 
+        public event EventHandler<PostCrawlEventArgs> PostCrawlEnd;
         public event EventHandler<NewCrawledUrlEventArgs> NewCrawledUrl;
         public event EventHandler<CrawlerMessageEventArgs> CrawlerMessage;
 
@@ -48,7 +49,8 @@ namespace PatreonDownloader.Implementation
 
         public async Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
-            _patreonDownloaderSettings = (PatreonDownloaderSettings) settings;
+            _patreonDownloaderSettings = (PatreonDownloaderSettings)settings;
+            _patreonCrawledUrlFilter = PatreonCrawledUrlFilter.GetInstance(settings);
         }
 
         public async Task<List<ICrawledUrl>> Crawl(ICrawlTargetInfo crawlTargetInfo)
@@ -86,6 +88,7 @@ namespace PatreonDownloader.Implementation
                         json);
 
                 ParsingResult result = await ParsePage(json);
+                _patreonCrawledUrlFilter.FilterOutPages(result.CrawledUrls);
 
                 if(result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);

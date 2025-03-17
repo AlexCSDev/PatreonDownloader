@@ -113,6 +113,9 @@ namespace PatreonDownloader.App
                 return;
             }
 
+            PatreonDownloaderSettings settings = await InitializeSettings(commandLineOptions);
+            PatreonCrawledUrlFilter filter = PatreonCrawledUrlFilter.GetInstance(settings);
+
             _universalDownloader = new UniversalDownloader(new PatreonDownloaderModule());
 
             _filesDownloaded = 0;
@@ -124,8 +127,8 @@ namespace PatreonDownloader.App
             _universalDownloader.CrawlerMessage += UniversalDownloaderOnCrawlerMessage;
             _universalDownloader.FileDownloaded += UniversalDownloaderOnFileDownloaded;
 
-            PatreonDownloaderSettings settings = await InitializeSettings(commandLineOptions);
             await _universalDownloader.Download(commandLineOptions.Url, settings);
+            filter.SaveIgnorePostsToJson();
 
             _universalDownloader.StatusChanged -= UniversalDownloaderOnStatusChanged;
             _universalDownloader.PostCrawlStart -= UniversalDownloaderOnPostCrawlStart;

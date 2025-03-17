@@ -9,6 +9,7 @@ using NLog;
 using PatreonDownloader.Implementation;
 using PatreonDownloader.Implementation.Enums;
 using PatreonDownloader.Implementation.Interfaces;
+using PatreonDownloader.Implementation.Models.JSONObjects.IgnorePosts;
 using UniversalDownloaderPlatform.Common.Exceptions;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -24,6 +25,7 @@ namespace PatreonDownloader.Engine
     internal sealed class PatreonDefaultPlugin : IPlugin
     {
         private IWebDownloader _webDownloader;
+        private PatreonCrawledUrlFilter _crawledUrlFilter;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -37,6 +39,7 @@ namespace PatreonDownloader.Engine
         public PatreonDefaultPlugin(IWebDownloader webDownloader)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
+            _crawledUrlFilter = PatreonCrawledUrlFilter.GetInstance();
         }
 
         public void OnLoad(IDependencyResolver dependencyResolver)
@@ -61,6 +64,12 @@ namespace PatreonDownloader.Engine
                 throw new DownloadException($"Download path is not filled for {crawledUrl.Url}");
 
             await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(_settings.DownloadDirectory, crawledUrl.DownloadPath), null); //referer is set in PatreonWebDownloader
+            
+            PatreonCrawledUrl crawledUrlPatreon = crawledUrl as PatreonCrawledUrl;
+            if(crawledUrlPatreon == null) throw new DownloadException("Crawled url is not of type PatreonCrawledUrl");
+            
+            IgnorePost ignorePost = new IgnorePost {Id = crawledUrlPatreon.PostId};
+            _crawledUrlFilter.AddIgnorePost(ignorePost);
         }
 
         public Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
