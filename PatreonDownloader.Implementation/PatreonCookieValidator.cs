@@ -27,6 +27,7 @@ namespace PatreonDownloader.Implementation
                 throw new ArgumentNullException(nameof(cookieContainer));
 
             CookieCollection cookies = cookieContainer.GetCookies(new Uri("https://patreon.com"));
+            cookies.Add(cookieContainer.GetCookies(new Uri("https://www.patreon.com")));
 
             if (cookies["__cf_bm"] == null)
                 throw new CookieValidationException("__cf_bm cookie not found");
