@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using NLog;
 using UniversalDownloaderPlatform.Common.Exceptions;
 using UniversalDownloaderPlatform.Common.Interfaces;
 using UniversalDownloaderPlatform.Common.Interfaces.Models;
@@ -14,11 +16,13 @@ namespace PatreonDownloader.Implementation
     internal sealed class PatreonCrawlTargetInfoRetriever : ICrawlTargetInfoRetriever
     {
         private readonly IWebDownloader _webDownloader;
+        private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public PatreonCrawlTargetInfoRetriever(IWebDownloader webDownloader)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
         }
+
         public async Task<ICrawlTargetInfo> RetrieveCrawlTargetInfo(string url)
         {
             long campaignId = await GetCampaignId(url);
@@ -38,11 +42,19 @@ namespace PatreonDownloader.Implementation
                 Regex regex = new Regex("\"self\": ?\"https:\\/\\/www\\.patreon\\.com\\/api\\/campaigns\\/(\\d+)\"");
                 Match match = regex.Match(pageHtml);
                 if (!match.Success)
-                {
-                    return -1;
-                }
+                    throw new UniversalDownloaderException($"Unable to retrieve campaign id: regex failed. Report this error to developer.");
 
                 return Convert.ToInt64(match.Groups[1].Value);
+            }
+            catch(DownloadException downloadEx)
+            {
+                if(downloadEx.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                {
+                    _logger.Fatal("Cannot retrieve creator compaign id. This usually means your network is being blocked by Patreon. If you are using VPN or proxy try running application without it. If you are NOT using VPN or proxy - try using them. This is usually NOT an issue with PatreonDownloader even if you can access Patreon via your web browser.");
+                    throw new UniversalDownloaderException($"Unable to retrieve campaign id: 403 Forbidden");
+                }
+
+                throw new UniversalDownloaderException($"Unable to retrieve campaign id: {downloadEx.Message}", downloadEx);
             }
             catch (Exception ex)
             {
