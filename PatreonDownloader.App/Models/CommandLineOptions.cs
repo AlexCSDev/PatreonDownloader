@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using PatreonDownloader.App.Enums;
+using System;
 using UniversalDownloaderPlatform.Common.Enums;
 
 namespace PatreonDownloader.App.Models
@@ -64,5 +65,12 @@ namespace PatreonDownloader.App.Models
 
         [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
         public string ProxyServerAddress { get; set; }
+
+        [Option("published-after", Required = false, HelpText = "Ignore post published before this date.")]
+        public DateTime? PublishedAfter { get; set; }
+
+        [Option("published-before", Required = false, HelpText = "Ignore post published after this date.")]
+        public DateTime? PublishedBefore { get; set; }
+
     }
 }
