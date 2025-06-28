@@ -65,6 +65,9 @@ namespace PatreonDownloader.App
 
             try
             {
+                // Ensure browser is downloaded before starting
+                await BrowserSetup.EnsureBrowserDownloaded();
+                
                 await RunPatreonDownloader(commandLineOptions);
             }
             catch (Exception ex)
