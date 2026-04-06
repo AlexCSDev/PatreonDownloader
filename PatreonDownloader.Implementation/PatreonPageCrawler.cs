@@ -73,24 +73,45 @@ namespace PatreonDownloader.Implementation
             }
 
             string nextPage = CrawlStartUrl + $"&filter[campaign_id]={patreonCrawlTargetInfo.Id}";
+            int? maxSelectedPage = _patreonDownloaderSettings.SelectedPages != null && _patreonDownloaderSettings.SelectedPages.Count > 0
+                ? _patreonDownloaderSettings.SelectedPages.Max()
+                : null;
 
             int page = 0;
             while (!string.IsNullOrEmpty(nextPage))
             {
                 page++;
+                if (maxSelectedPage.HasValue && page > maxSelectedPage.Value)
+                {
+                    _logger.Debug($"Reached highest selected page ({maxSelectedPage.Value}), stopping crawl early");
+                    break;
+                }
+
                 _logger.Debug($"Page #{page}: {nextPage}");
                 string json = await _webDownloader.DownloadString(nextPage);
 
-                if(_patreonDownloaderSettings.SaveJson)
-                    await File.WriteAllTextAsync(Path.Combine(_patreonDownloaderSettings.DownloadDirectory, $"page_{page}.json"),
-                        json);
+                bool isPageSelected = _patreonDownloaderSettings.SelectedPages == null ||
+                                      _patreonDownloaderSettings.SelectedPages.Count == 0 ||
+                                      _patreonDownloaderSettings.SelectedPages.Contains(page);
 
-                ParsingResult result = await ParsePage(json);
+                if (isPageSelected)
+                {
+                    if(_patreonDownloaderSettings.SaveJson)
+                        await File.WriteAllTextAsync(Path.Combine(_patreonDownloaderSettings.DownloadDirectory, $"page_{page}.json"),
+                            json);
 
-                if(result.CrawledUrls.Count > 0)
-                    crawledUrls.AddRange(result.CrawledUrls);
+                    ParsingResult result = await ParsePage(json);
 
-                nextPage = result.NextPage;
+                    if(result.CrawledUrls.Count > 0)
+                        crawledUrls.AddRange(result.CrawledUrls);
+
+                    nextPage = result.NextPage;
+                }
+                else
+                {
+                    _logger.Debug($"Skipping page #{page} due to --page filter");
+                    nextPage = ParseNextPage(json);
+                }
 
                 await Task.Delay(500 * rnd.Next(1, 3)); //0.5 - 1 second delay
             }
@@ -399,6 +420,12 @@ namespace PatreonDownloader.Implementation
             }
 
             return new ParsingResult {CrawledUrls = crawledUrls, NextPage = jsonRoot.Links?.Next};
+        }
+
+        private static string ParseNextPage(string json)
+        {
+            Root jsonRoot = JsonConvert.DeserializeObject<Root>(json);
+            return jsonRoot.Links?.Next;
         }
 
         private void OnPostCrawlStart(PostCrawlEventArgs e)

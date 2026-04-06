@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -148,6 +149,22 @@ namespace PatreonDownloader.App
                 throw new Exception($"Invalid proxy server address: {commandLineOptions.ProxyServerAddress}");
             }
 
+            HashSet<int> selectedPages = null;
+            if (!string.IsNullOrWhiteSpace(commandLineOptions.PageFilter))
+            {
+                try
+                {
+                    selectedPages = PageFilterParser.Parse(commandLineOptions.PageFilter);
+                }
+                catch (FormatException ex)
+                {
+                    throw new Exception($"Invalid --page filter: {ex.Message}");
+                }
+
+                if (selectedPages.Count == 0)
+                    throw new Exception("Invalid --page filter: no pages were selected");
+            }
+
             PatreonDownloaderSettings settings = new PatreonDownloaderSettings
             {
                 UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
@@ -157,6 +174,7 @@ namespace PatreonDownloader.App
                 SaveDescriptions = commandLineOptions.SaveDescriptions,
                 SaveEmbeds = commandLineOptions.SaveEmbeds,
                 SaveJson = commandLineOptions.SaveJson,
+                SelectedPages = selectedPages,
                 DownloadDirectory = commandLineOptions.DownloadDirectory,
                 FileExistsAction = commandLineOptions.FileExistsAction,
                 IsCheckRemoteFileSize = !commandLineOptions.IsDisableRemoteFileSizeCheck,

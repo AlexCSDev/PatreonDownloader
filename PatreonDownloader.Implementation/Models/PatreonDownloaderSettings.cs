@@ -20,6 +20,11 @@ namespace PatreonDownloader.Implementation.Models
         public bool SaveAvatarAndCover { get; init; }
 
         /// <summary>
+        /// Optional page numbers selected via --page filter. If null or empty, all pages are crawled.
+        /// </summary>
+        public HashSet<int> SelectedPages { get; init; }
+
+        /// <summary>
         /// Create a new directory for every post and store files of said post in that directory
         /// </summary>
         public bool IsUseSubDirectories { get; init; }
