@@ -20,6 +20,11 @@ namespace PatreonDownloader.Implementation.Models
         public bool SaveAvatarAndCover { get; init; }
 
         /// <summary>
+        /// If true, do not download remote files (images, attachments, media, etc.)
+        /// </summary>
+        public bool NoFiles { get; init; }
+
+        /// <summary>
         /// Create a new directory for every post and store files of said post in that directory
         /// </summary>
         public bool IsUseSubDirectories { get; init; }

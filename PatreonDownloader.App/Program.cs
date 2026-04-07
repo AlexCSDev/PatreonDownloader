@@ -153,6 +153,7 @@ namespace PatreonDownloader.App
                 UrlBlackList = (_configuration["UrlBlackList"] ?? "").ToLowerInvariant().Split("|").ToList(),
                 UserAgent = "Patreon/126.9.0.15 (Android; Android 14; Scale/2.10)",
                 CookieContainer = null,
+                NoFiles = commandLineOptions.NoFiles,
                 SaveAvatarAndCover = commandLineOptions.SaveAvatarAndCover,
                 SaveDescriptions = commandLineOptions.SaveDescriptions,
                 SaveEmbeds = commandLineOptions.SaveEmbeds,

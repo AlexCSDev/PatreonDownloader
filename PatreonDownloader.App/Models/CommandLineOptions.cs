@@ -8,6 +8,10 @@ namespace PatreonDownloader.App.Models
     {
         [Option("url", Required = true, HelpText = "Url of the creator's page")]
         public string Url { get; set; }
+
+        [Option("no-files", Required = false, HelpText = "Do not download files (images, attachments, media, etc.). Useful when only post metadata like descriptions is needed.", Default = false)]
+        public bool NoFiles { get; set; }
+
         [Option("descriptions", Required = false, HelpText = "Save post descriptions", Default = false)]
         public bool SaveDescriptions { get; set; }
         [Option("embeds", Required = false, HelpText = "Save embedded content metadata", Default = false)]

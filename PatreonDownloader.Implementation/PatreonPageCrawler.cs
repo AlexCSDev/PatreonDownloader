@@ -87,7 +87,7 @@ namespace PatreonDownloader.Implementation
 
                 ParsingResult result = await ParsePage(json);
 
-                if(result.CrawledUrls.Count > 0)
+                if(!_patreonDownloaderSettings.NoFiles && result.CrawledUrls.Count > 0)
                     crawledUrls.AddRange(result.CrawledUrls);
 
                 nextPage = result.NextPage;
