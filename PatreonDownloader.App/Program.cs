@@ -160,6 +160,7 @@ namespace PatreonDownloader.App
                 DownloadDirectory = commandLineOptions.DownloadDirectory,
                 FileExistsAction = commandLineOptions.FileExistsAction,
                 IsCheckRemoteFileSize = !commandLineOptions.IsDisableRemoteFileSizeCheck,
+                RemoteBrowserAddress = string.IsNullOrWhiteSpace(commandLineOptions.RemoteBrowserAddress) ? null : new Uri(commandLineOptions.RemoteBrowserAddress),
                 IsUseSubDirectories = commandLineOptions.UseSubDirectories,
                 SubDirectoryPattern = commandLineOptions.SubDirectoryPattern,
                 MaxSubdirectoryNameLength = commandLineOptions.MaxSubdirectoryNameLength,
