@@ -64,5 +64,11 @@ namespace PatreonDownloader.App.Models
 
         [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
         public string ProxyServerAddress { get; set; }
+
+        [Option("email", Required = false, HelpText = "Patreon account email used for automatic login in the browser.")]
+        public string Email { get; set; }
+
+        [Option("password", Required = false, HelpText = "Patreon account password used for automatic login in the browser.")]
+        public string Password { get; set; }
     }
 }

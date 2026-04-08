@@ -166,7 +166,9 @@ namespace PatreonDownloader.App
                 MaxFilenameLength = commandLineOptions.MaxFilenameLength,
                 FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType,
                 ProxyServerAddress = commandLineOptions.ProxyServerAddress,
-                IsUseLegacyFilenaming = commandLineOptions.IsUseLegacyFilenaming
+                IsUseLegacyFilenaming = commandLineOptions.IsUseLegacyFilenaming,
+                LoginEmail = commandLineOptions.Email,
+                LoginPassword = commandLineOptions.Password
             };
 
             if (settings.IsUseLegacyFilenaming && (settings.FileExistsAction == FileExistsAction.BackupIfDifferent || settings.FileExistsAction == FileExistsAction.ReplaceIfDifferent))
