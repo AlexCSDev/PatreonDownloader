@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -30,6 +31,24 @@ namespace PatreonDownloader.Implementation
         {
             PatreonDownloaderSettings patreonDownloaderSettings = (PatreonDownloaderSettings)settings;
             _isUseMediaType = patreonDownloaderSettings.FallbackToContentTypeFilenames;
+
+            HttpClientHandler httpClientHandler = new HttpClientHandler();
+            if (settings.CookieContainer != null)
+            {
+                httpClientHandler.UseCookies = true;
+                httpClientHandler.CookieContainer = settings.CookieContainer;
+            }
+
+            if (!string.IsNullOrWhiteSpace(settings.ProxyServerAddress))
+                httpClientHandler.Proxy = new WebProxy(settings.ProxyServerAddress);
+
+            _httpClient.Dispose();
+            _httpClient = new HttpClient(httpClientHandler);
+
+            if (!string.IsNullOrWhiteSpace(settings.UserAgent))
+                _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(settings.UserAgent);
+
+            _httpClient.DefaultRequestHeaders.Referrer = new Uri("https://www.patreon.com/");
         }
 
         /// <summary>
@@ -53,7 +72,8 @@ namespace PatreonDownloader.Implementation
                     filename = response.Content.Headers.ContentDisposition.FileName.Replace("\"", "");
                     _logger.Debug($"Content-Disposition returned: {filename}");
                 }
-                else if (!string.IsNullOrWhiteSpace(response.Content.Headers.ContentType?.MediaType) && _isUseMediaType)
+                else if (!string.IsNullOrWhiteSpace(response.Content.Headers.ContentType?.MediaType) &&
+                         (_isUseMediaType || IsPatreonMediaUrl(url)))
                 {
                     mediaType = response.Content.Headers.ContentType?.MediaType;
                 }
@@ -93,6 +113,14 @@ namespace PatreonDownloader.Implementation
             }
 
             return filename;
+        }
+
+        private static bool IsPatreonMediaUrl(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+                return false;
+
+            return uri.AbsolutePath.IndexOf("/media-u/", StringComparison.OrdinalIgnoreCase) != -1;
         }
     }
 }

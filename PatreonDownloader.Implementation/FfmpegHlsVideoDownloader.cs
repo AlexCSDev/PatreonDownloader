@@ -103,7 +103,7 @@ namespace PatreonDownloader.Implementation
             }
 
             string arguments =
-                $"-y -hide_banner -loglevel warning -headers {Quote(BuildHeaders(url))} -i {Quote(url)} -c copy -bsf:a aac_adtstoasc {Quote(temporaryPath)}";
+                $"-y -hide_banner -loglevel warning -headers {Quote(BuildHeaders(url))} -i {Quote(url)} -c copy -bsf:a aac_adtstoasc -f mp4 {Quote(temporaryPath)}";
 
             _logger.Info($"Downloading HLS video with ffmpeg: {url}");
             ProcessRunResult result = await _processRunner.RunAsync(FfmpegExecutable, arguments);

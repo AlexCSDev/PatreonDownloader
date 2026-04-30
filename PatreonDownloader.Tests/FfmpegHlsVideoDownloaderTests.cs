@@ -82,6 +82,7 @@ namespace PatreonDownloader.Tests
                                               x.Arguments.Contains("Referer: https://www.patreon.com") &&
                                               x.Arguments.Contains("User-Agent: UnitTestAgent/1.0") &&
                                               x.Arguments.Contains("-c copy") &&
+                                              x.Arguments.Contains("-f mp4") &&
                                               x.Arguments.Contains(Path.Combine(tempRoot, "video.mp4.dwnldtmp")));
             Assert.True(File.Exists(Path.Combine(tempRoot, "video.mp4")));
             Directory.Delete(tempRoot, true);
