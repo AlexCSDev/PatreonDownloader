@@ -170,7 +170,7 @@ namespace PatreonDownloader.Implementation
                     _duplicateNamesCheckSemaphore.Release();
                 }
 
-                if (count > 1)
+                if (count > 0)
                 {
                     _logger.Warn($"Found more than a single file with the name {filename} in the same folder in post {crawledUrl.PostId}, sequential number will be appended to its name.");
 

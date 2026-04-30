@@ -48,7 +48,7 @@ namespace PatreonDownloader.Tests
             await crawledUrlProcessor.BeforeStart(settings);
             await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
-            Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_https___www.patreon.com_media-u_Z0FBQUFBQmhX", crawledUrl.DownloadPath);
+            Assert.Equal(@"[123456] 2020-07-07 Test Post\media__https___www.patreon.com_media-u_Z0FBQUFBQmh", crawledUrl.DownloadPath);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace PatreonDownloader.Tests
             await crawledUrlProcessor.BeforeStart(settings);
             await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
-            Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\post_E0OarAVlc0iipzgUC7JdvBCf9fgSmbwk3xRDjRGByTM24.png", crawledUrl.DownloadPath);
+            Assert.Equal(@"[123456] 2020-07-07 Test Post\post_E0OarAVlc0iipzgUC7JdvBCf9fgSmbwk3xRDjRGByTM24.png", crawledUrl.DownloadPath);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace PatreonDownloader.Tests
 
             await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
-            Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1.png", crawledUrl.DownloadPath);
+            Assert.Equal(@"[123456] 2020-07-07 Test Post\media__1.png", crawledUrl.DownloadPath);
 
             crawledUrl = new PatreonCrawledUrl
             {
@@ -135,7 +135,7 @@ namespace PatreonDownloader.Tests
 
             await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
-            Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1_110deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
+            Assert.Equal(@"[123456] 2020-07-07 Test Post\media__1_110deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
 
             crawledUrl = new PatreonCrawledUrl
             {
@@ -149,7 +149,7 @@ namespace PatreonDownloader.Tests
 
             await crawledUrlProcessor.ProcessCrawledUrl(crawledUrl);
 
-            Assert.Equal(@"c:\downloads\UnitTesting\[123456] 2020-07-07 Test Post\media_1_210deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
+            Assert.Equal(@"[123456] 2020-07-07 Test Post\media__1_210deacb70e940d999bf2f3022e1e2f0.png", crawledUrl.DownloadPath);
         }
     }
 }
