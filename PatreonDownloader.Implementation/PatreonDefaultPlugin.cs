@@ -23,7 +23,8 @@ namespace PatreonDownloader.Engine
     /// </summary>
     internal sealed class PatreonDefaultPlugin : IPlugin
     {
-        private IWebDownloader _webDownloader;
+        private readonly IWebDownloader _webDownloader;
+        private readonly IHlsVideoDownloader _hlsVideoDownloader;
 
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
@@ -34,9 +35,10 @@ namespace PatreonDownloader.Engine
 
         private IUniversalDownloaderPlatformSettings _settings;
 
-        public PatreonDefaultPlugin(IWebDownloader webDownloader)
+        public PatreonDefaultPlugin(IWebDownloader webDownloader, IHlsVideoDownloader hlsVideoDownloader)
         {
             _webDownloader = webDownloader ?? throw new ArgumentNullException(nameof(webDownloader));
+            _hlsVideoDownloader = hlsVideoDownloader ?? throw new ArgumentNullException(nameof(hlsVideoDownloader));
         }
 
         public void OnLoad(IDependencyResolver dependencyResolver)
@@ -60,13 +62,20 @@ namespace PatreonDownloader.Engine
             if (string.IsNullOrWhiteSpace(crawledUrl.DownloadPath))
                 throw new DownloadException($"Download path is not filled for {crawledUrl.Url}");
 
-            await _webDownloader.DownloadFile(crawledUrl.Url, Path.Combine(_settings.DownloadDirectory, crawledUrl.DownloadPath), null); //referer is set in PatreonWebDownloader
+            string downloadPath = Path.Combine(_settings.DownloadDirectory, crawledUrl.DownloadPath);
+            if (_hlsVideoDownloader.IsHlsDownload(crawledUrl.Url, downloadPath) &&
+                await _hlsVideoDownloader.TryDownloadVideo(crawledUrl.Url, downloadPath))
+            {
+                return;
+            }
+
+            await _webDownloader.DownloadFile(crawledUrl.Url, downloadPath, null); //referer is set in PatreonWebDownloader
         }
 
-        public Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
+        public async Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
             _settings = settings;
-            return Task.CompletedTask;
+            await _hlsVideoDownloader.BeforeStart(settings);
         }
 
         public async Task<List<string>> ExtractSupportedUrls(string htmlContents)

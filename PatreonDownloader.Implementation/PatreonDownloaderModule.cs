@@ -20,6 +20,8 @@ namespace PatreonDownloader.Implementation
 
             Bind<IRemoteFileSizeChecker>().To<RemoteFileSizeChecker>().InSingletonScope();
             Bind<IWebDownloader>().To<PatreonWebDownloader>().InSingletonScope();
+            Bind<IProcessRunner>().To<ProcessRunner>().InSingletonScope();
+            Bind<IHlsVideoDownloader>().To<FfmpegHlsVideoDownloader>().InSingletonScope();
             Bind<IRemoteFilenameRetriever>().To<PatreonRemoteFilenameRetriever>().InSingletonScope();
             Bind<ICrawlTargetInfoRetriever>().To<PatreonCrawlTargetInfoRetriever>().InSingletonScope();
             Bind<ICrawledUrlProcessor>().To<PatreonCrawledUrlProcessor>().InSingletonScope();
