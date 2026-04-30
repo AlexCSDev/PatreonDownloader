@@ -165,6 +165,7 @@ namespace PatreonDownloader.App
                 MaxSubdirectoryNameLength = commandLineOptions.MaxSubdirectoryNameLength,
                 MaxFilenameLength = commandLineOptions.MaxFilenameLength,
                 FallbackToContentTypeFilenames = commandLineOptions.FilenamesFallbackToContentType,
+                IsSaveM3u8 = commandLineOptions.SaveM3u8,
                 ProxyServerAddress = commandLineOptions.ProxyServerAddress,
                 IsUseLegacyFilenaming = commandLineOptions.IsUseLegacyFilenaming
             };

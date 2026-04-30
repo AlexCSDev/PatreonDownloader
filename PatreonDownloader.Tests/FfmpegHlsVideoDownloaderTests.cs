@@ -64,6 +64,19 @@ namespace PatreonDownloader.Tests
         }
 
         [Fact]
+        public async Task TryDownloadVideo_SaveM3u8Enabled_DoesNotRunFfmpeg()
+        {
+            var runner = new FakeProcessRunner { Result = new ProcessRunResult(0, "ffmpeg version", "") };
+            var downloader = new FfmpegHlsVideoDownloader(runner);
+            await downloader.BeforeStart(new PatreonDownloaderSettings { IsSaveM3u8 = true });
+
+            bool handled = await downloader.TryDownloadVideo("https://example.com/video.m3u8", @"c:\downloads\video.m3u8");
+
+            Assert.False(handled);
+            Assert.Empty(runner.Calls);
+        }
+
+        [Fact]
         public async Task TryDownloadVideo_FfmpegAvailable_RunsFfmpegWithHeadersAndMp4Output()
         {
             string tempRoot = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

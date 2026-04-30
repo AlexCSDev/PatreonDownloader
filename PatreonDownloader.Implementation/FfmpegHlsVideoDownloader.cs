@@ -21,6 +21,7 @@ namespace PatreonDownloader.Implementation
         private readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         private IUniversalDownloaderPlatformSettings _settings;
+        private bool _isSaveM3u8;
         private bool _hasLoggedUnavailableWarning;
 
         public bool IsFfmpegAvailable { get; private set; }
@@ -33,6 +34,14 @@ namespace PatreonDownloader.Implementation
         public async Task BeforeStart(IUniversalDownloaderPlatformSettings settings)
         {
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _isSaveM3u8 = settings is Models.PatreonDownloaderSettings patreonSettings && patreonSettings.IsSaveM3u8;
+
+            if (_isSaveM3u8)
+            {
+                IsFfmpegAvailable = false;
+                _logger.Info("HLS manifests will be saved as .m3u8 files because --save-m3u8 is enabled.");
+                return;
+            }
 
             try
             {
@@ -67,6 +76,9 @@ namespace PatreonDownloader.Implementation
         public async Task<bool> TryDownloadVideo(string url, string path)
         {
             if (!IsHlsDownload(url, path))
+                return false;
+
+            if (_isSaveM3u8)
                 return false;
 
             if (!IsFfmpegAvailable)

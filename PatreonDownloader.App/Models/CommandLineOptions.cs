@@ -62,6 +62,9 @@ namespace PatreonDownloader.App.Models
         [Option("filenames-fallback-to-content-type", Required = false, HelpText = "Fallback to using filename generated from url hash if the server returns file content type (extension) and all other methods have failed. Use with caution, this might result in unwanted files being created or the same files being downloaded on every run under different names.", Default = false)]
         public bool FilenamesFallbackToContentType { get; set; }
 
+        [Option("save-m3u8", Required = false, HelpText = "Save HLS .m3u8 manifests instead of downloading them as .mp4 videos with ffmpeg.", Default = false)]
+        public bool SaveM3u8 { get; set; }
+
         [Option("proxy-server-address", Required = false, HelpText = "The address of proxy server to use in the following format: [<proxy-scheme>://]<proxy-host>[:<proxy-port>]. Supported protocols: http(s), socks4, socks4a, socks5.")]
         public string ProxyServerAddress { get; set; }
     }

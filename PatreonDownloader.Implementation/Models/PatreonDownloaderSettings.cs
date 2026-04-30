@@ -45,6 +45,11 @@ namespace PatreonDownloader.Implementation.Models
         public bool FallbackToContentTypeFilenames { get; init; }
 
         /// <summary>
+        /// Save HLS manifests instead of downloading videos with ffmpeg
+        /// </summary>
+        public bool IsSaveM3u8 { get; init; }
+
+        /// <summary>
         /// Use legacy file naming pattern (without addition of media/attachment ids to filenames). NOT COMPATIBLE WITH FileExistsAction BackupIfDifferent/ReplaceIfDifferent
         /// </summary>
         public bool IsUseLegacyFilenaming { get; init; }
@@ -64,6 +69,7 @@ namespace PatreonDownloader.Implementation.Models
             IsUseSubDirectories = false;
             SubDirectoryPattern = "[%PostId%] %PublishedAt% %PostTitle%";
             FallbackToContentTypeFilenames = false;
+            IsSaveM3u8 = false;
             MaxFilenameLength = 100;
             MaxSubdirectoryNameLength = 100;
             IsUseLegacyFilenaming = false;
