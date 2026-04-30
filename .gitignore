@@ -338,5 +338,8 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 
+# Local browser profile data
+chromedata/
+
 # BeatPulse healthcheck temp database
 healthchecksdb
