@@ -1,4 +1,4 @@
 [submodule "submodules/UniversalDownloaderPlatform"]
 	path = submodules/UniversalDownloaderPlatform
-	url = https://github.com/ProtagNeptune/UniversalDownloaderPlatform.git
+	url = https://github.com/AlexCSDev/UniversalDownloaderPlatform.git
 	branch = master
