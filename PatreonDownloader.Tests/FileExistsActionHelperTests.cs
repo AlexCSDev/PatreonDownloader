@@ -11,7 +11,7 @@ namespace PatreonDownloader.Tests
 
         public FileExistsActionHelperTests()
         {
-            _tempDirectory = Path.Combine(Path.GetTempPath(), "PatreonDownloader.Tests", Guid.NewGuid().ToString("N"));
+            _tempDirectory = Path.Combine(Path.GetTempPath(), $"PatreonDownloader.Tests_{Guid.NewGuid():N}");
             Directory.CreateDirectory(_tempDirectory);
         }
 
